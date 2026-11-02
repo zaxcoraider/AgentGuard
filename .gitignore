@@ -1,0 +1,83 @@
+# ─── Private planning docs (never public) ───────────────────
+details.md
+prd.md
+memory.md
+phases.md
+architecture.md
+tasks.md
+decisions.md
+HACKATHON.md
+ideas.md
+submission.json
+research/
+notes/
+scratch/
+
+# ─── Secrets & keys ─────────────────────────────────────────
+# API keys: Nebius, DGrid, Channel3, NEAR AI, Render, Intents JWT
+.env
+.env.*
+!.env.example
+*.env
+# NEAR account / agent keys
+.near-credentials/
+neardev/
+*.key
+*.pem
+*-key.json
+*_key.json
+agent-key*.json
+credentials/
+keys/
+# Local MCP/Claude configs can hold keys (commit a *.example instead)
+.mcp.json
+!.mcp.example.json
+.claude/settings.local.json
+
+# ─── Rust / NEAR contracts ──────────────────────────────────
+target/
+**/*.rs.bk
+# near-workspaces sandbox data
+.near/
+sandbox/
+
+# ─── Node / TypeScript / Next.js ────────────────────────────
+node_modules/
+.pnpm-store/
+.npm/
+.yarn/*
+!.yarn/releases
+dist/
+build/
+out/
+.next/
+.turbo/
+.vercel/
+.cache/
+*.tsbuildinfo
+coverage/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ─── Python (just in case) ──────────────────────────────────
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# ─── Runtime data (Break the Vault logs, local DBs) ──────────
+*.log
+logs/
+*.sqlite
+*.sqlite3
+*.db
+data/local/
+
+# ─── OS / editor ────────────────────────────────────────────
+.DS_Store
+.vscode/
+.idea/
+*.swp
+Thumbs.db

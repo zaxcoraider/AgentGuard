@@ -81,3 +81,6 @@ data/local/
 .idea/
 *.swp
 Thumbs.db
+
+# Sentinel runtime state
+packages/sentinel/data/

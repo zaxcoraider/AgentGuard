@@ -1,17 +1,40 @@
 {
-  "name": "@agentguard/mcp",
+  "name": "agentguard-mcp",
   "version": "0.1.0",
   "description": "MCP server that lets any AI agent pay through an AgentGuard vault on NEAR: limits enforced on-chain, not by the agent",
+  "keywords": [
+    "mcp",
+    "near",
+    "ai-agents",
+    "agent-payments",
+    "spending-limits",
+    "x402",
+    "security"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zaxcoraider/AgentGuard.git",
+    "directory": "packages/mcp"
+  },
+  "homepage": "https://github.com/zaxcoraider/AgentGuard/tree/main/packages/mcp",
   "license": "MIT",
   "type": "module",
-  "bin": { "agentguard-mcp": "dist/index.js" },
-  "files": ["dist", "README.md"],
-  "engines": { "node": ">=20" },
+  "bin": {
+    "agentguard-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsx src/index.ts",
     "test": "tsx --test test/*.test.ts",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "prepublishOnly": "npm test && npm run build"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.1",

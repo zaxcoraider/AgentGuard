@@ -31,6 +31,7 @@ Configuration (environment variables):
 | `AGENTGUARD_AGENT_KEY` | read from file | The agent's `ed25519:...` function-call key |
 | `AGENTGUARD_KEY_FILE` | `~/.near-credentials/<network>/<vault>.json` | Where to read the key if the variable above is not set (created by `scripts/gen-agent-key.mjs`) |
 | `NEAR_RPC_URL` | FastNEAR public RPC | Override the RPC endpoint |
+| `SENTINEL_URL` | `http://localhost:3000` | Where `agentguard_sentinel_check` buys checks |
 
 Without a key the server still runs, read-only.
 
@@ -55,6 +56,42 @@ Then ask Claude: *"Check if agentguard-evil.testnet is safe to pay, then pay age
   }
 }
 ```
+
+## Get your own vault (testnet, about 2 minutes)
+
+Needs [near CLI](https://github.com/near/near-cli-rs) and a testnet account (`YOU.testnet`). Every step below was run on testnet (vault `guide-test.agentguard.testnet`, see `docs/TESTNET-RESULTS.md` §9).
+
+**1. Create the vault** from the factory. 1 NEAR goes into the vault (it stays yours). The vault is born with **no full-access key**:
+```sh
+near contract call-function as-transaction agentguard.testnet create_vault json-args '{
+  "name": "my-agent",
+  "policy": {"max_per_payment": "500000000000000000000000", "daily_limit": "1000000000000000000000000",
+             "approval_threshold": "200000000000000000000000", "unknown_recipient": "require_approval",
+             "pending_ttl_ns": "86400000000000"},
+  "allowlist": ["agentguard-shop.testnet"]
+}' prepaid-gas '100 Tgas' attached-deposit '1 NEAR' sign-as YOU.testnet network-config testnet sign-with-keychain send
+```
+That's 0.5 NEAR max per payment, 1 NEAR per day, above 0.2 NEAR needs your approval, and strangers wait for you (amounts are in yoctoNEAR, 1 NEAR = 10^24).
+
+**2. Make the agent's key.** It's saved to `~/.near-credentials/testnet/my-agent.agentguard.testnet.json`; only the public key is printed:
+```sh
+node scripts/gen-agent-key.mjs my-agent.agentguard.testnet     # from the repo root
+```
+
+**3. Give that key to the vault.** It can only call `request_payment`:
+```sh
+near contract call-function as-transaction my-agent.agentguard.testnet add_agent \
+  json-args '{"public_key": "ed25519:<printed key>", "label": "my-agent"}' \
+  prepaid-gas '30 Tgas' attached-deposit '1 yoctoNEAR' sign-as YOU.testnet network-config testnet sign-with-keychain send
+```
+
+**4. Point the MCP server at it** (`AGENTGUARD_VAULT=my-agent.agentguard.testnet`, see Setup) and ask your agent to pay. Results from the test run:
+```
+agentguard_pay agentguard-shop.testnet 0.1  -> paid
+agentguard_pay agentguard-user.testnet 0.1  -> pending, unknown_recipient (approve or deny it as the owner)
+```
+
+As the owner, with 1 yoctoNEAR attached: `approve {"id": "1"}` / `deny {"id": "1"}`, `add_to_allowlist`, `set_policy`, `withdraw`, `set_paused`, and `lock_rules` (one-way; after it nobody can loosen the vault, you included). See [contracts/vault](../../contracts/vault).
 
 ## Try it without an agent
 

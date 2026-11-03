@@ -137,10 +137,24 @@ Heartbeat: rent 0.002 NEAR + 9,644 tokens × 0.0005 NEAR/1k = 0.006822 NEAR paid
 | Replay: the spent tx sent again with a fresh nonce | **409** "already used" | |
 | Unrelated tx with no matching memo | **402** "memo is not x402:…" | |
 | MCP tool `agentguard_sentinel_check` from demo2, a second purchase within 10 minutes | demo2's vault **held it**: `pending (repeat_payment)`, no check served | [9Lqa…](https://testnet.nearblocks.io/txns/9Lqa986FJ1LjTmcZWrLwWZqjAMefctpswp9BKTKSokcq) |
+| Same, retried ~9 minutes later | held again: a pending payment inside the window also counts | [EeJ2…](https://testnet.nearblocks.io/txns/EeJ2GdBAiKPSYsep28rAbfXB9rrYW7JTbNC7oNcU2qD3) |
+| Owner denies both held test payments | denied | [8zwN…](https://testnet.nearblocks.io/txns/8zwNSd1xj9TvmHGpaFxnMhzxjsTm4fLT6iz8L9RTjPQG), [9yDH…](https://testnet.nearblocks.io/txns/9yDHjPaXWkzjvSLuofsLhSs5zYtGFYwEPoH1656o6keB) |
+| MCP tool `agentguard_sentinel_check` from demo2 (stdio, `scripts/sentinel-check-demo.ts`) on `agentguard-sh0p.testnet` | vault **paid** → 200, verdict `block`: doesn't exist + lookalike of `agentguard-shop.testnet` | [GXEu…](https://testnet.nearblocks.io/txns/GXEumEKJhxnNgodhqvA8JYrU4ThW8LQUXw2N1qR2JHz9) |
 
-The last row is the buyer's firewall working: the same payee and amount twice in 10 minutes looks like the "retry, it failed" double-pay trick, so a human has to approve it. `/api/status` → `business: {checks_sold: 2, earned_near: "0.02"}`.
+The held rows are the buyer's firewall working: the same payee and amount twice in 10 minutes looks like the "retry, it failed" double-pay trick, so a human has to approve it. `/api/status` → `business: {checks_sold: 3, earned_near: "0.03"}`.
 
 Honest notes: x402 has no official NEAR scheme. This is our own `exact` scheme on `near-testnet`, in the x402 message shape. Not compatible with Base/USDC x402 facilitators (PingPay's Agent Pay needs real USDC on Base). A paid check is the same logic as the free MCP `agentguard_check_address`, plus what Sentinel has seen in attacks (shown as a hint only, since anyone can name any account).
+
+## 9. Get your own vault: the README guide, run from scratch
+
+The steps in `packages/mcp/README.md` ("Get your own vault"), run as written by `agentguard-user.testnet`:
+
+| Step | Result | Tx |
+|---|---|---|
+| `create_vault` → `guide-test.agentguard.testnet` (1 NEAR, allowlist shop) | created, no full-access key | [8C9W…](https://testnet.nearblocks.io/txns/8C9WkAG6xw6k3iTiCrfZ6x533MsXHkp68Dww8tYdVWsF) |
+| `gen-agent-key.mjs` + `add_agent` | function-call key on `request_payment` | [F97h…](https://testnet.nearblocks.io/txns/F97hc44FDSyYxdoWE32obp4ziSTb9X2QNTP6J6b9DjDa) |
+| MCP `agentguard_pay` shop 0.1 | **paid** | [8W24…](https://testnet.nearblocks.io/txns/8W24Bns2vNH49WxfvcLVaMfTgAowDL58FQgJmogj7kjH) |
+| MCP `agentguard_pay` agentguard-user 0.1 (not allowlisted) | **pending**, `unknown_recipient` | [GDUw…](https://testnet.nearblocks.io/txns/GDUwhLaSWxG7knkeDfMwrJaxow7Mni4gyD3tK5k1Nm8S) |
 
 ## What this does not prove yet
 - The owner (`agentguard-user.testnet`) can still change the policy, approve payments and withdraw on these demo vaults. That is intended: it is their money. Vault v2 adds `lock_rules()`, after which nobody, including the owner, can loosen it (tested on a local node; used for Sentinel's vault).

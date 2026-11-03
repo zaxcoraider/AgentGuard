@@ -42,8 +42,17 @@
       },
       "allowlist": [
         "agentguard-shop.testnet",
-        "agentguard-evil.testnet"
+        "agentguard-evil.testnet",
+        "sentinel.agentguard.testnet"
       ]
+    },
+    "guide-test.agentguard.testnet": {
+      "code": "v2",
+      "owner": "agentguard-user.testnet",
+      "create_tx": "8C9WkAG6xw6k3iTiCrfZ6x533MsXHkp68Dww8tYdVWsF",
+      "agent_public_key": "ed25519:DBPPKD5KF1MEEKefJSipjWpJoWJUq6pYgQH4BH5GNuvr",
+      "add_agent_tx": "F97hc44FDSyYxdoWE32obp4ziSTb9X2QNTP6J6b9DjDa",
+      "note": "made by running the packages/mcp README guide"
     }
   },
   "demo_accounts": {

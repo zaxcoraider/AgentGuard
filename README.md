@@ -1,83 +1,117 @@
 # AgentGuard
 
-**An on-chain spending firewall for AI agents on NEAR, and Sentinel, an AI agent that lives on one and invites you to rob it.**
+**A spending firewall for AI agents, enforced by a NEAR smart contract.**
 
-An AI agent that can pay is one prompt injection away from paying the wrong person. AgentGuard moves the rules out of the agent and into a NEAR contract:
+An AI agent that can pay is one prompt injection away from paying a scammer. AgentGuard takes the spending rules out of the agent's prompt and puts them in a contract the agent can't get around, and that even its owner can lock for good.
 
-- The money sits in a **vault account that has no full-access key**. It was born without one, from immutable code ([factory](contracts/factory)).
-- The agent holds only a **function-call key that can call `request_payment`**. It can ask; it cannot pay.
-- The **vault contract decides**: `paid`, `pending` (a human approves) or `blocked`, using per-payment and daily caps, an allowlist, a 10-minute repeat-payment hold, and a **shared scam registry** that it checks on every payment and that fails closed ([vault](contracts/vault), [registry](contracts/registry)).
-- After `lock_rules()`, **not even the owner** can loosen the rules or withdraw.
+**Live demo: [sentinel-47ip.onrender.com](https://sentinel-47ip.onrender.com).** Sentinel is an AI agent with real (testnet) money in an AgentGuard vault. Try to talk it into paying you.
 
-**Sentinel** ([packages/sentinel](packages/sentinel)) is the proof: a real AI agent whose treasury is an AgentGuard vault. It pays for its own thinking on-chain, earns by selling "is this address safe to pay?" checks to other agents over HTTP 402, and anyone can chat with it and try to talk it into paying them. Fooling the AI is level 1. Getting the money out is level 2, and the contract says no.
+Built for NEAR HACKATHON 2026 · Tracks: AI Security & Defense, Agent Economy, Autonomous Business · Runs on NEAR testnet · MIT
 
-Any MCP agent (Claude, Codex, ...) can use a vault through the [MCP server](packages/mcp).
+---
 
-**Try to rob Sentinel: https://sentinel-47ip.onrender.com** (NEAR testnet)
+## The problem
 
-## Try it: do X, see Y
+Today an agent's spending limits live in its prompt or in the app around it. A poisoned invoice, web page or email can talk the model out of them, and whoever runs the server can change them. Wallet keys given to agents can usually move everything.
 
-Everything runs against NEAR **testnet**. Ids are in [`deployments/testnet.json`](deployments/testnet.json), and every claim has a tx link in [`docs/TESTNET-RESULTS.md`](docs/TESTNET-RESULTS.md).
+## How AgentGuard works
 
-Needs Rust + [`cargo-near`](https://github.com/near/cargo-near) for the contracts and Node ≥ 20 for the packages. No keys are needed for anything in this section.
-
-**1. Run the contract tests** → 70 unit tests, plus sandbox tests on a local NEAR node:
-```sh
-cd contracts/vault && cargo test      # 43 unit + 1 sandbox
-cd ../factory && cargo test           # 14 unit + 6 sandbox (vault born with no full-access key, rollback + refund)
-cd ../registry && cargo test          # 13 unit
+```mermaid
+flowchart LR
+    A["AI agent<br/>(holds a key that can only ASK)"] -->|request_payment| V{"AgentGuard vault<br/>NEAR contract"}
+    R[("Shared scam registry")] -.checked on every payment.-> V
+    V -->|within the rules| P["Paid"]
+    V -->|needs a human| H["Held for owner"]
+    V -->|breaks a rule| B["Blocked, recorded on-chain"]
 ```
 
-**2. See that a vault has no full-access key** → only function-call keys limited to `request_payment`:
+1. **The money sits in a vault account with no full-access key.** A factory creates it from immutable code, and nobody holds a key that can sign a transfer out of it.
+2. **The agent only gets a key that can call `request_payment`.** It can ask to pay; it can't pay.
+3. **The contract decides each request**: per-payment and daily caps, an allowlist, a hold on repeated payments (the "it failed, please retry" trick), and a lookup in a **shared scam registry**. If the registry doesn't answer, the payment is blocked.
+4. **`lock_rules()` is one-way.** After it, nobody, owner included, can loosen the rules or withdraw. Making them stricter (pause, deny, revoke) still works.
+
+If the AI is fooled, the contract still says no.
+
+## What's in this repo
+
+| Part | What it does |
+|---|---|
+| [**Vault contract**](contracts/vault) | The firewall: every payment comes out `paid`, `pending` or `blocked`, with a reason. Includes a table of all the rules |
+| [**Factory**](contracts/factory) | Creates vaults born without a full-access key, on immutable code; refunds if creation fails |
+| [**Scam registry**](contracts/registry) | Shared blocklist: anyone reports with evidence; two reporters or a curator flag an account |
+| [**MCP server**](packages/mcp) | Lets any AI agent (Claude, Codex, ...) pay through a vault: 7 tools, plus a tested guide to get your own vault in 4 steps |
+| [**Sentinel**](packages/sentinel) | The live demo: an AI agent on a locked vault. It pays for its own thinking, sells "is this address safe to pay?" checks to other agents, and verifies that its own brain runs in a TEE |
+
+## See it in 2 minutes (no install)
+
+1. **Open [the live demo](https://sentinel-47ip.onrender.com) and try to scam Sentinel.** If you convince the AI, you'll see the vault's answer stamped on the payment: *Blocked by contract*, with a link to the transaction.
+2. **See a real blocked attack on-chain.** The AI was talked into paying 0.03 NEAR; the vault refused (`recipient_not_allowlisted`): [tx 36qW…](https://testnet.nearblocks.io/txns/36qWxB4cRBwqRiihfHPuo2GWfBXj2AVW26fSrhpeNbGg).
+3. **See that the vault is locked.** Its owner then tried to allowlist an attacker and to withdraw; both were refused: [lock tx 9QFB…](https://testnet.nearblocks.io/txns/9QFBjv7AzAqcaCjJdm8z1kq9pV47rt9Adz2XjfqaJf7h), details in [TESTNET-RESULTS §11](docs/TESTNET-RESULTS.md).
+4. **See that nobody holds a key to the money.** Sentinel's vault has a single key, and it can only call `request_payment`:
+   ```sh
+   curl -s https://rpc.testnet.fastnear.com -H 'content-type: application/json' \
+     -d '{"jsonrpc":"2.0","id":1,"method":"query","params":{"request_type":"view_access_key_list","finality":"final","account_id":"sentinel.agentguard.testnet"}}'
+   ```
+
+## Run the tests (about 5 minutes)
+
+Needs Rust with [`cargo-near`](https://github.com/near/cargo-near), and Node 24. No keys or accounts needed.
+
 ```sh
-curl -s https://rpc.testnet.fastnear.com -H 'content-type: application/json' \
-  -d '{"jsonrpc":"2.0","id":1,"method":"query","params":{"request_type":"view_access_key_list","finality":"final","account_id":"sentinel.agentguard.testnet"}}'
+# Contracts: 70 unit tests + 7 sandbox tests on a local NEAR node
+cd contracts/vault && cargo test        # 43 unit + 1 sandbox
+cd ../factory && cargo test             # 14 unit + 6 sandbox
+cd ../registry && cargo test            # 13 unit
+
+# TypeScript: 38 tests, no network needed
+cd ../../packages/mcp && npm install && npm test        # 16
+cd ../sentinel && npm install && npm test               # 22
 ```
 
-**3. See the shared registry flag a scammer** → `"status":"flagged"`:
-```sh
-curl -s https://rpc.testnet.fastnear.com -H 'content-type: application/json' \
-  -d '{"jsonrpc":"2.0","id":1,"method":"query","params":{"request_type":"call_function","finality":"final","account_id":"registry.agentguard.testnet","method_name":"get_status","args_base64":"'$(printf '{"account":"agentguard-evil.testnet"}' | base64)'"}}' \
-  | node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>console.log(Buffer.from(JSON.parse(d).result.result).toString()))'
-```
+Ask the MCP server about a real vault (read-only, no key needed). It shows the vault's rules and flags the scammer and the lookalike `agentguard-sh0p.testnet`:
 
-**4. Run the TypeScript tests** → MCP server 16, Sentinel 22 (no network: scripted model, fake vault, recorded tx shapes, a real recorded NEAR AI attestation):
-```sh
-cd packages/mcp && npm install && npm test
-cd ../sentinel && npm install && npm test
-```
-
-**5. Ask the MCP server about a vault** (read-only, no key needed) → policy, balance, `block` for the flagged account and for the lookalike `agentguard-sh0p.testnet`:
 ```sh
 cd packages/mcp && npm run build && AGENTGUARD_VAULT=demo2.agentguard.testnet npx tsx scripts/live-demo.ts
 ```
-Without the demo agent key, the read-only tools work and `agentguard_pay` returns an error saying the key is missing.
 
-## What's in the repo
+## Proof
 
-| Path | What |
+Everything is deployed on NEAR testnet (ids in [`deployments/testnet.json`](deployments/testnet.json)), and every claim below has transaction links in [`docs/TESTNET-RESULTS.md`](docs/TESTNET-RESULTS.md).
+
+| Claim | Evidence |
 |---|---|
-| [`contracts/vault`](contracts/vault) | The firewall. Decision table of every `paid` / `pending` / `blocked` reason, `lock_rules()` |
-| [`contracts/factory`](contracts/factory) | Creates vaults on immutable global code, with no `AddKey`; rollback + refund |
-| [`contracts/registry`](contracts/registry) | Shared scam registry: report, flag, curator dismiss |
-| [`packages/mcp`](packages/mcp) | MCP server, 7 tools: pay, check address, balance, policy, payment status, history, buy Sentinel's paid check |
-| [`packages/sentinel`](packages/sentinel) | Sentinel: chat API, metabolism heartbeat, paid checks over HTTP 402 |
-| [`scripts`](scripts) | Make an agent key; prove on testnet what that key can and can't do |
+| A vault runs immutable code and is born with no keys at all | Factory run + on-chain key list (§1–2) |
+| The agent's key can't transfer, add keys, change rules or withdraw | 12 refused attempts on testnet (§4) |
+| A flagged scammer is blocked even when allowlisted | Registry + vault run (§5) |
+| Any MCP agent can pay through a vault | Live MCP run (§6) |
+| A fooled AI's payment is blocked on-chain | Live page and local runs (§7, §10) |
+| Agents pay agents: another agent bought Sentinel's paid check through its own vault | HTTP 402 → vault payment → check, replay refused (§8, §10) |
+| A new user can follow the guide from nothing to a working vault | Guide run as written (§9) |
+| Sentinel's vault is locked; the owner can't loosen it | Lock + refused owner calls (§11) |
 
-## Status (honest)
+**Sentinel's brain is verified, not just claimed.** Its model runs on NEAR AI Cloud inside a TEE. Sentinel checks NEAR AI's attestation itself, with a fresh nonce, every 30 minutes: the Intel TDX quotes, the nonce and signer bound inside them, and NVIDIA's GPU attestation. Then, for each reply, it checks the signature against the exact bytes sent and received, and against a signer that passed those checks before the reply was requested. The page says "Verified" only when all of that passes. [How it works](packages/sentinel#proving-its-brain-runs-in-a-tee-srcteets).
 
-| Feature | Status |
+## Use it in your own agent
+
+Follow [**Get your own vault**](packages/mcp#get-your-own-vault-testnet-about-2-minutes): four commands to create a vault, make an agent key, add it, and point the MCP server at it. Then ask your agent to pay. The vault decides.
+
+## NEAR features used
+
+- **Global contracts by code hash:** every vault runs the same immutable code, so creating one costs almost nothing
+- **Function-call access keys** with a gas allowance: the agent's key can only call `request_payment`
+- **Cross-contract calls with callbacks:** the registry lookup on each payment, which blocks if the registry doesn't answer
+- **NEAR AI Cloud:** TEE inference, attestation reports and signed replies
+
+## Status and limits
+
+| | |
 |---|---|
-| Vault, factory, registry on testnet | ✅ working, tx links in `docs/TESTNET-RESULTS.md` |
-| A vault with no full-access key, on immutable code | ✅ testnet |
-| Shared registry blocks a flagged recipient, fails closed | ✅ testnet |
-| MCP server (stdio) | ✅ tested live on testnet |
-| Sentinel: chat, pays for its thinking, prompt-injected payment blocked on-chain | ✅ live at https://sentinel-47ip.onrender.com (testnet) |
-| Sentinel earns: paid checks over HTTP 402 in native NEAR, verified on-chain by Sentinel | ✅ live (testnet). x402-shaped, but our own NEAR scheme, not an official x402 network |
-| `lock_rules()` on Sentinel's vault | ✅ locked on testnet; the owner's attempts to allowlist an attacker and withdraw were refused (`docs/TESTNET-RESULTS.md` §11) |
-| Public Sentinel page + hosted server | ✅ https://sentinel-47ip.onrender.com (Render) |
-| TEE attestation verified in code | ✅ Sentinel checks NEAR AI Cloud's Intel TDX quotes (dcap-qvl), the nonce + signer binding, the config measurement and NVIDIA GPU attestation (NRAS), then the signature on each reply over the exact bytes. Not done: RTMR3 event-log replay, image provenance, NRAS JWT signature, TLS binding |
-| Mainnet | ❌ testnet only |
+| Working on testnet | Vault, factory, registry, MCP server, Sentinel (live, vault locked), paid checks over HTTP 402, TEE verification |
+| Testnet only | No mainnet deployment |
+| HTTP 402 | x402-shaped, but our own scheme in native NEAR, not an official x402 network |
+| TEE checks not done | RTMR3 event-log replay, image provenance, NVIDIA token signature, TLS binding |
+| Registry | Two throwaway accounts can flag an account. Curators can dismiss, and a flag can only block payments to that account, never move funds |
 
 ## License
+
 MIT

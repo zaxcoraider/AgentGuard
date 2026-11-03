@@ -68,6 +68,9 @@ function fakeGuard(status: "paid" | "pending" | "blocked", reason: string | null
     async stats() {
       return { balance_near: "5" };
     },
+    async policy() {
+      return { allowlist: ["compute.testnet"], rules_locked: true };
+    },
   };
   return guard;
 }

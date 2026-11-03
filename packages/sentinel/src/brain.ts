@@ -41,7 +41,7 @@ const TOOLS: ToolSpec[] = [
     type: "function",
     function: {
       name: "treasury",
-      description: "Your treasury balance and spending rules.",
+      description: "Your treasury balance and your vault's on-chain rules: who it may pay, limits, and whether the rules are locked.",
       parameters: { type: "object", properties: {} },
     },
   },
@@ -122,7 +122,10 @@ export class Brain {
         } else if (call.function.name === "check_address") {
           output = await this.guard.checkAddress(String(args.account ?? "")).catch((e) => ({ error: String(e) }));
         } else if (call.function.name === "treasury") {
-          output = await this.guard.stats().catch((e) => ({ error: String(e) }));
+          // Balance AND the real on-chain rules, so Sentinel never has to guess what its vault allows.
+          output = await Promise.all([this.guard.stats(), this.guard.policy()])
+            .then(([balance, rules]) => ({ balance, rules }))
+            .catch((e) => ({ error: String(e) }));
         } else {
           output = { error: `Unknown tool ${call.function.name}` };
         }

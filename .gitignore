@@ -84,3 +84,6 @@ Thumbs.db
 
 # Sentinel runtime state
 packages/sentinel/data/
+
+# Private launch drafts (not for the repo)
+launch.md

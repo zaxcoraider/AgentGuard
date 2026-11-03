@@ -5,7 +5,7 @@
 //   GET  /api/check?account=X[&vault=V]  paid "safe to pay?" check: 402 first, then pay + X-PAYMENT
 //   GET  /health
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync, rmSync, statSync } from "node:fs";
 import { join, dirname, extname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { AgentGuard, loadConfig } from "../../mcp/src/near.ts";
@@ -18,26 +18,33 @@ import { RateLimiter, clientIp } from "./ratelimit.ts";
 import { Market, isAccountId } from "./market.ts";
 import { encodeHeader } from "../../mcp/src/x402.ts";
 import { TeeVerifier } from "./tee.ts";
+import { ScriptedLLM, SimVault } from "./offline.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "../../..");
 if (existsSync(join(root, ".env"))) process.loadEnvFile(join(root, ".env"));
 
 const env = process.env;
-const guard = new AgentGuard(loadConfig({ ...env, AGENTGUARD_VAULT: env.SENTINEL_VAULT_ID || "sentinel.agentguard.testnet" }));
-const store = new Store(env.SENTINEL_STATE_FILE ?? join(here, "../data/state.json"));
-const llm = new LLM(providersFromEnv(env));
+// `npm run demo`: simulated vault + scripted replies, no keys, no model, no blockchain.
+const OFFLINE = env.SENTINEL_OFFLINE === "1" || process.argv.includes("--offline");
+const guard: AgentGuard = OFFLINE
+  ? (new SimVault() as unknown as AgentGuard)
+  : new AgentGuard(loadConfig({ ...env, AGENTGUARD_VAULT: env.SENTINEL_VAULT_ID || "sentinel.agentguard.testnet" }));
+const stateFile = env.SENTINEL_STATE_FILE ?? join(here, OFFLINE ? "../data/offline-demo.json" : "../data/state.json");
+if (OFFLINE) rmSync(stateFile, { force: true }); // every demo starts clean
+const store = new Store(stateFile);
+const llm: LLM = OFFLINE ? (new ScriptedLLM() as unknown as LLM) : new LLM(providersFromEnv(env));
 // Checks NEAR AI Cloud's TEE attestation (Intel TDX + NVIDIA GPU) and each reply's signature.
-const tee = env.NEAR_AI_API_KEY && env.TEE_VERIFY !== "off"
+const tee = !OFFLINE && env.NEAR_AI_API_KEY && env.TEE_VERIFY !== "off"
   ? new TeeVerifier({ baseUrl: env.NEAR_AI_BASE_URL ?? "https://cloud-api.near.ai/v1", apiKey: env.NEAR_AI_API_KEY, model: env.NEAR_AI_MODEL ?? "deepseek-ai/DeepSeek-V4.1-Flash-1017" })
   : undefined;
 const brain = new Brain(llm, guard, store, tee);
 const metabolism: MetabolismConfig = {
-  computeAccount: env.SENTINEL_COMPUTE_ACCOUNT ?? "compute.agentguard.testnet",
+  computeAccount: OFFLINE ? "compute.offline-demo" : (env.SENTINEL_COMPUTE_ACCOUNT ?? "compute.agentguard.testnet"),
   rentNearPerTick: env.SENTINEL_RENT_NEAR ?? "0.002",
   nearPer1kTokens: env.SENTINEL_NEAR_PER_1K_TOKENS ?? "0.0005",
   maxPerPaymentNear: "0.05",
-  tickMinutes: Number(env.SENTINEL_TICK_MINUTES ?? 10),
+  tickMinutes: Number(env.SENTINEL_TICK_MINUTES ?? (OFFLINE ? 1 : 10)), // offline: a heartbeat a minute, so you see it
 };
 const TICK_MINUTES = metabolism.tickMinutes!;
 const perIp = new RateLimiter(Number(env.TRICK_ME_MAX_PER_HOUR ?? 10), 60 * 60_000);
@@ -73,6 +80,7 @@ async function buildStatus() {
   const daysLeft = rentPerDay > 0n ? Number((available * 100n) / rentPerDay) / 100 : null;
   return {
     name: "Sentinel",
+    offline: OFFLINE,
     vault: guard.cfg.vault,
     network: guard.cfg.network,
     alive: available > BigInt(nearToYocto(metabolism.rentNearPerTick)),
@@ -97,7 +105,7 @@ async function buildStatus() {
       paid_out: paidOut(s.attack_paid_to, rules.allowlist),
     },
     attacks: { total: s.attacks_total, blocked: s.attacks_blocked, held: s.attacks_held, paid: s.attacks_paid },
-    explorer: `${guard.cfg.explorer}/address/${guard.cfg.vault}`,
+    explorer: OFFLINE ? null : `${guard.cfg.explorer}/address/${guard.cfg.vault}`,
   };
 }
 
@@ -190,6 +198,7 @@ const server = createServer(async (req, res) => {
 });
 
 async function paidCheck(req: IncomingMessage, res: ServerResponse, url: URL) {
+  if (OFFLINE) return send(res, 503, { error: "Paid checks settle on NEAR testnet, so they are off in the offline demo. Try the live server." });
   const account = (url.searchParams.get("account") ?? "").trim().toLowerCase();
   const vault = (url.searchParams.get("vault") ?? "").trim().toLowerCase() || null;
   if (!isAccountId(account)) return send(res, 400, { error: "Pass ?account=<NEAR account>, optionally &vault=<your AgentGuard vault>" });
@@ -222,6 +231,7 @@ const PORT = Number(env.PORT ?? 3000);
 server.listen(PORT, () =>
   console.log(
     `Sentinel on http://localhost:${PORT} (vault ${guard.cfg.vault}, heartbeat every ${TICK_MINUTES} min)` +
+      (OFFLINE ? " [OFFLINE DEMO: simulated vault, scripted replies, no blockchain]" : "") +
       (llm.configured ? "" : " [chat off: no model key]") +
       (guard.cfg.agentKey ? "" : " [read-only: no agent key, it can't pay]"),
   ),

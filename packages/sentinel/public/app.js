@@ -86,7 +86,9 @@ async function refreshStatus() {
     return;
   }
   $("balance").textContent = fmtNear(s.treasury.balance_near);
-  $("vault-link").href = s.explorer;
+  $("offline-banner").hidden = !s.offline;
+  if (s.explorer) $("vault-link").href = s.explorer;
+  else $("vault-link").hidden = true;
 
   const line = $("pulse-line");
   line.replaceChildren();
@@ -130,7 +132,9 @@ async function refreshStatus() {
   }
 
   const t = s.tee;
-  if (t && t.checked) {
+  if (s.offline) {
+    $("tee-line").textContent = "In the offline demo there is no AI: the replies are scripted, and the vault is simulated.";
+  } else if (t && t.checked) {
     const when = new Date(t.checked_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     $("tee-line").textContent = t.ok
       ? `It thinks inside a TEE on NEAR AI Cloud. At ${when} Sentinel verified the Intel TDX quote (${t.model_tdx}) and NVIDIA ${t.gpu ? t.gpu.arch : ""} GPU attestation, both bound to a fresh nonce.`
@@ -311,6 +315,8 @@ function proof(r) {
   } else if (v && v.status === "failed") {
     p.classList.add("proof-bad");
     p.textContent = `Not verified: ${v.reason}.`;
+  } else if (r.provider === "offline-demo") {
+    p.textContent = "Offline demo: a scripted reply, not an AI.";
   } else if (r.tee) {
     p.textContent = `Answered by ${model} on NEAR AI Cloud (TEE). This reply's signature couldn't be checked: ${v ? v.reason : "verification is off"}.`;
   } else {

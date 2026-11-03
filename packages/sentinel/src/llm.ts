@@ -46,19 +46,23 @@ export function providersFromEnv(env = process.env): Provider[] {
       model: env.NEAR_AI_MODEL ?? "deepseek-ai/DeepSeek-V4.1-Flash-1017",
       tee: true,
     });
-  if (env.NEBIUS_API_KEY && env.NEBIUS_BASE_URL)
-    list.push({ name: "nebius", baseUrl: env.NEBIUS_BASE_URL, apiKey: env.NEBIUS_API_KEY, model: env.NEBIUS_MODEL ?? "deepseek-ai/DeepSeek-V4.1-Flash-1017", tee: false });
-  if (env.DGRID_API_KEY && env.DGRID_BASE_URL)
-    list.push({ name: "dgrid", baseUrl: env.DGRID_BASE_URL, apiKey: env.DGRID_API_KEY, model: env.DGRID_MODEL ?? "openai/gpt-5-nano", tee: false });
+  if (env.NEBIUS_API_KEY)
+    list.push({ name: "nebius", baseUrl: env.NEBIUS_BASE_URL || "https://api.tokenfactory.nebius.com/v1", apiKey: env.NEBIUS_API_KEY, model: env.NEBIUS_MODEL ?? "deepseek-ai/DeepSeek-V4.1-Flash-1017", tee: false });
+  if (env.DGRID_API_KEY)
+    list.push({ name: "dgrid", baseUrl: env.DGRID_BASE_URL || "https://api.dgrid.ai/v1", apiKey: env.DGRID_API_KEY, model: env.DGRID_MODEL ?? "openai/gpt-5-nano", tee: false });
   return list;
 }
 
 export class LLM {
-  constructor(private readonly providers: Provider[], private readonly timeoutMs = 60_000) {
-    if (!providers.length) throw new Error("No LLM provider configured: set NEAR_AI_API_KEY (or NEBIUS_*/DGRID_*) in .env");
+  constructor(private readonly providers: Provider[], private readonly timeoutMs = 60_000) {}
+
+  /** False when no model key is set: the server still runs (page, status, feed, paid checks), chat is off. */
+  get configured() {
+    return this.providers.length > 0;
   }
 
   async chat(messages: ChatMessage[], tools: ToolSpec[] = [], maxTokens = 600): Promise<ChatResult> {
+    if (!this.configured) throw new Error("No LLM provider configured: set NEAR_AI_API_KEY (or NEBIUS_API_KEY / DGRID_API_KEY)");
     const errors: string[] = [];
     for (const p of this.providers) {
       try {

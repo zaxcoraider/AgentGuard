@@ -137,6 +137,7 @@ const server = createServer(async (req, res) => {
       return send(res, 200, store.state.feed.slice(0, limit));
     }
     if (url.pathname === "/api/chat" && req.method === "POST") {
+      if (!llm.configured) return send(res, 503, { error: "Chat is off on this server: no model key is set (NEAR_AI_API_KEY). Everything else works." });
       const ip = visitor(req);
       if (!perIp.allow(ip)) return send(res, 429, { error: "Easy there: 10 tries per hour per visitor. Come back soon." });
       if (!global.allow("all")) return send(res, 429, { error: "Sentinel has talked enough for today. Try again tomorrow." });
@@ -183,5 +184,12 @@ async function heartbeat() {
 }
 
 const PORT = Number(env.PORT ?? 3000);
-server.listen(PORT, () => console.log(`Sentinel on http://localhost:${PORT} (vault ${guard.cfg.vault}, heartbeat every ${TICK_MINUTES} min)`));
-if (env.SENTINEL_HEARTBEAT !== "off") setInterval(heartbeat, TICK_MINUTES * 60_000);
+server.listen(PORT, () =>
+  console.log(
+    `Sentinel on http://localhost:${PORT} (vault ${guard.cfg.vault}, heartbeat every ${TICK_MINUTES} min)` +
+      (llm.configured ? "" : " [chat off: no model key]") +
+      (guard.cfg.agentKey ? "" : " [read-only: no agent key, it can't pay]"),
+  ),
+);
+// Without an agent key Sentinel can't pay, so there is no heartbeat (it would only log failures).
+if (env.SENTINEL_HEARTBEAT !== "off" && guard.cfg.agentKey) setInterval(heartbeat, TICK_MINUTES * 60_000);

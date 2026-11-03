@@ -51,10 +51,18 @@ After it, nobody, owner included, can loosen the vault: no `set_policy`, allowli
 ```
 Amounts are in yoctoNEAR (1 NEAR = 10^24). `unknown_recipient` is `block` or `require_approval`.
 
+## Fuzzing (`src/fuzz_tests.rs`)
+Thousands of seeded random sequences of agent requests (any recipient, any amount), registry answers (clear, reported, flagged, no answer), failed transfers, time jumps and owner actions (rules, allowlist, pause, approve, deny, withdraw, lock). After **every step** it checks that an agent alone never gets a payment through above the cap or threshold, to a non-allowlisted or flagged recipient, past the daily limit, while paused, to the vault itself, or as a quick repeat; that after `lock_rules()` every loosening call fails and changes nothing; and that the books match an independent ledger.
+
+- The full run (300 sequences × 200 steps = 60,000 steps) passed.
+- It prints how often each path was hit, and fails if any path was never reached.
+- Mutation check: removing the pause check, the per-payment cap, or the lock on `add_to_allowlist` makes it fail within one second.
+
 ## Build and test
 ```sh
 cargo near build non-reproducible-wasm
-cargo test            # 43 unit tests + 1 sandbox test (local NEAR node)
+cargo test            # 43 unit tests + 1 fuzz test + 1 sandbox test (local NEAR node)
+FUZZ_RUNS=300 cargo test --lib fuzz -- --nocapture   # the full fuzz run: 60,000 random steps (~6 min)
 ```
 
 Live on testnet: see [`deployments/testnet.json`](../../deployments/testnet.json) and [`docs/TESTNET-RESULTS.md`](../../docs/TESTNET-RESULTS.md).

@@ -61,8 +61,8 @@ If the AI is fooled, the contract still says no.
 Needs Rust with [`cargo-near`](https://github.com/near/cargo-near), and Node 24. No keys or accounts needed.
 
 ```sh
-# Contracts: 70 unit tests + 7 sandbox tests on a local NEAR node
-cd contracts/vault && cargo test        # 43 unit + 1 sandbox
+# Contracts: 70 unit tests + a fuzz test + 7 sandbox tests on a local NEAR node
+cd contracts/vault && cargo test        # 43 unit + fuzz (5,000 random steps) + 1 sandbox
 cd ../factory && cargo test             # 14 unit + 6 sandbox
 cd ../registry && cargo test            # 13 unit
 
@@ -91,6 +91,7 @@ Everything is deployed on NEAR testnet (ids in [`deployments/testnet.json`](depl
 | Agents pay agents: another agent bought Sentinel's paid check through its own vault | HTTP 402 → vault payment → check, replay refused (§8, §10) |
 | A new user can follow the guide from nothing to a working vault | Guide run as written (§9) |
 | Sentinel's vault is locked; the owner can't loosen it | Lock + refused owner calls (§11) |
+| No sequence of actions breaks the rules | Fuzz test: 60,000 random steps, every invariant checked after each one; deliberately broken contracts are caught ([vault README](contracts/vault#fuzzing-srcfuzz_testsrs)) |
 
 **Sentinel's brain is verified, not just claimed.** Its model runs on NEAR AI Cloud inside a TEE. Sentinel checks NEAR AI's attestation itself, with a fresh nonce, every 30 minutes: the Intel TDX quotes, the nonce and signer bound inside them, and NVIDIA's GPU attestation. Then, for each reply, it checks the signature against the exact bytes sent and received, and against a signer that passed those checks before the reply was requested. The page says "Verified" only when all of that passes. [How it works](packages/sentinel#proving-its-brain-runs-in-a-tee-srcteets).
 

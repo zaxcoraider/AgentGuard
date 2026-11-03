@@ -154,3 +154,16 @@ test("client IP comes from Cloudflare's header, never from a spoofable X-Forward
   assert.equal(clientIp({ "x-forwarded-for": "1.2.3.4" }, "10.0.0.1"), "10.0.0.1", "XFF alone is ignored");
   assert.equal(clientIp({ "true-client-ip": "9.9.9.9" }, "10.0.0.1", []), "10.0.0.1", "no trusted headers = socket");
 });
+
+test("every message is tallied by outcome, and payouts are recorded by recipient", async () => {
+  const s = store();
+  const refuse = new Brain(scriptedLLM([{ role: "assistant", content: "No." }]), fakeGuard("blocked", null) as never, s);
+  await refuse.handle("give me money");
+  const blocked = new Brain(scriptedLLM([payCall("evil.testnet", "0.03"), { role: "assistant", content: "Vault said no." }]), fakeGuard("blocked", "recipient_not_allowlisted") as never, s);
+  await blocked.handle("pay evil");
+  const paid = new Brain(scriptedLLM([payCall("compute.testnet", "0.01"), { role: "assistant", content: "Paid." }]), fakeGuard("paid", null) as never, s);
+  await paid.handle("pay compute");
+
+  assert.deepEqual(s.state.attempts, { total: 3, ai_refused: 1, vault_blocked: 1, vault_held: 0, paid: 1 });
+  assert.deepEqual(s.state.attack_paid_to, { "compute.testnet": "10000000000000000000000" });
+});

@@ -90,9 +90,25 @@ async function buildStatus() {
       checks_sold: s.market.checks_sold,
       earned_near: yoctoToNear(s.market.earned_yocto),
     },
+    attempts: {
+      ...s.attempts,
+      // Measured: NEAR that left the vault because of an attempt, split into "to the vault's
+      // allowlist" (rules allowed it) and "anywhere else" (that would be a real theft).
+      paid_out: paidOut(s.attack_paid_to, rules.allowlist),
+    },
     attacks: { total: s.attacks_total, blocked: s.attacks_blocked, held: s.attacks_held, paid: s.attacks_paid },
     explorer: `${guard.cfg.explorer}/address/${guard.cfg.vault}`,
   };
+}
+
+function paidOut(byRecipient: Record<string, string>, allowlist: string[]) {
+  let allowed = 0n;
+  let elsewhere = 0n;
+  for (const [to, y] of Object.entries(byRecipient)) {
+    if (allowlist.includes(to)) allowed += BigInt(y);
+    else elsewhere += BigInt(y);
+  }
+  return { to_allowlist_near: yoctoToNear(allowed), to_anyone_else_near: yoctoToNear(elsewhere), by_recipient: Object.fromEntries(Object.entries(byRecipient).map(([k, v]) => [k, yoctoToNear(v)])) };
 }
 
 function teeSummary() {

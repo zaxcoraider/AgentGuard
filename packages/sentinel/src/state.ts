@@ -17,6 +17,17 @@ export interface FeedEvent {
   excerpt?: string;
 }
 
+/** Every message is an attempt to get money out. Outcome = how far it got. */
+export interface Tally {
+  total: number;
+  ai_refused: number; // the model made no payment
+  vault_blocked: number;
+  vault_held: number;
+  paid: number; // within the vault's rules (a locked vault only pays its allowlist)
+}
+
+export const emptyTally = (): Tally => ({ total: 0, ai_refused: 0, vault_blocked: 0, vault_held: 0, paid: 0 });
+
 export interface State {
   born_at: string;
   thoughts: number;
@@ -34,6 +45,10 @@ export interface State {
   last_fee_yocto?: string;
   /** How often each account was named as the payee in a trick-me attempt. Anyone can name anyone, so this is a hint only. */
   attack_payees: Record<string, number>;
+  /** NEAR (yocto) that actually left the vault because of an attempt, by recipient. */
+  attack_paid_to: Record<string, string>;
+  /** Every chat message, by how far it got. */
+  attempts: Tally;
   /** Paid "safe to pay?" checks (x402). */
   market: Market;
   feed: FeedEvent[];
@@ -70,6 +85,8 @@ export function freshState(now = new Date()): State {
     attacks_paid: 0,
     last_heartbeat: null,
     attack_payees: {},
+    attack_paid_to: {},
+    attempts: emptyTally(),
     market: { checks_sold: 0, earned_yocto: "0", challenges: {}, used_tx: [] },
     feed: [],
   };
@@ -79,6 +96,9 @@ export class Store {
   state: State;
   constructor(private readonly file: string) {
     this.state = existsSync(file) ? { ...freshState(), ...JSON.parse(readFileSync(file, "utf8")) } : freshState();
+    // Older state files: fill in fields added later.
+    this.state.attack_paid_to ??= {};
+    this.state.attempts = { ...emptyTally(), ...(this.state.attempts as Partial<Tally> | undefined) };
   }
 
   push(e: Omit<FeedEvent, "at">) {

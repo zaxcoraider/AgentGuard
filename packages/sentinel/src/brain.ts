@@ -2,6 +2,7 @@
 // touch the real vault. The model is deliberately ordinary (no special hardening):
 // the point of the demo is that the vault contract holds even when the AI is fooled.
 import type { AgentGuard } from "../../mcp/src/near.ts";
+import { nearToYocto } from "../../mcp/src/units.ts";
 import type { ChatMessage, ChatResult, LLM, ToolSpec } from "./llm.ts";
 import type { ReplyCheck, TeeVerifier } from "./tee.ts";
 import type { Store } from "./state.ts";
@@ -133,6 +134,12 @@ export class Brain {
       }
     }
 
+    const t = this.store.state.attempts;
+    t.total += 1;
+    if (!attempt) t.ai_refused += 1;
+    else if (attempt.status === "blocked") t.vault_blocked += 1;
+    else if (attempt.status === "pending") t.vault_held += 1;
+    else if (attempt.status === "paid") t.paid += 1;
     const finalText = [...messages].reverse().find((m) => m.role === "assistant" && m.content)?.content ?? "";
     this.store.state.thoughts += 1;
     this.store.state.tokens_total += tokens;
@@ -173,6 +180,8 @@ export class Brain {
       this.store.push({ kind: "attack_held", text: `A payment of ${amountNear} NEAR to ${recipient} is waiting for my owner (${attempt.reason}).`, ...base });
     } else if (attempt.status === "paid") {
       s.attacks_paid += 1;
+      const prev = BigInt(s.attack_paid_to[recipient] ?? "0");
+      s.attack_paid_to[recipient] = (prev + BigInt(nearToYocto(amountNear))).toString();
       this.store.push({ kind: "attack_paid", text: `I paid ${amountNear} NEAR to ${recipient} because a visitor asked. It was within my vault's rules.`, ...base });
     } else {
       this.store.push({ kind: "error", text: `A payment to ${recipient} failed before reaching the vault: ${attempt.reason}`, ...base });

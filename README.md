@@ -13,6 +13,8 @@ An AI agent that can pay is one prompt injection away from paying the wrong pers
 
 Any MCP agent (Claude, Codex, ...) can use a vault through the [MCP server](packages/mcp).
 
+**Try to rob Sentinel: https://sentinel-47ip.onrender.com** (NEAR testnet)
+
 ## Try it: do X, see Y
 
 Everything runs against NEAR **testnet**. Ids are in [`deployments/testnet.json`](deployments/testnet.json), and every claim has a tx link in [`docs/TESTNET-RESULTS.md`](docs/TESTNET-RESULTS.md).
@@ -70,10 +72,10 @@ Without the demo agent key, the read-only tools work and `agentguard_pay` return
 | A vault with no full-access key, on immutable code | ✅ testnet |
 | Shared registry blocks a flagged recipient, fails closed | ✅ testnet |
 | MCP server (stdio) | ✅ tested live on testnet |
-| Sentinel: chat, pays for its thinking, prompt-injected payment blocked on-chain | ✅ testnet, run locally |
-| Sentinel earns: paid checks over HTTP 402 in native NEAR, verified on-chain by Sentinel | ✅ testnet, run locally. x402-shaped, but our own NEAR scheme, not an official x402 network |
+| Sentinel: chat, pays for its thinking, prompt-injected payment blocked on-chain | ✅ live at https://sentinel-47ip.onrender.com (testnet) |
+| Sentinel earns: paid checks over HTTP 402 in native NEAR, verified on-chain by Sentinel | ✅ live (testnet). x402-shaped, but our own NEAR scheme, not an official x402 network |
 | `lock_rules()` on Sentinel's vault | ⏳ tested on a local node; on testnet at public launch |
-| Public Sentinel page + hosted server | ⏳ in progress |
+| Public Sentinel page + hosted server | ✅ https://sentinel-47ip.onrender.com (Render) |
 | TEE attestation verified in code | ⏳ planned. Sentinel uses NEAR AI Cloud (TEE) but doesn't verify the attestation yet |
 | Mainnet | ❌ testnet only |
 

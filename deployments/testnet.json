@@ -87,5 +87,13 @@
       "agentguard.testnet"
     ],
     "deploy_tx": "HZNUVfJ8d1KBqb7jHhjDcugnTJ3YHk58PvLALq26s4Yf"
+  },
+  "services": {
+    "sentinel": {
+      "url": "https://sentinel-47ip.onrender.com",
+      "host": "Render (render.yaml)",
+      "vault": "sentinel.agentguard.testnet",
+      "deployed": "2026-11-03"
+    }
   }
 }

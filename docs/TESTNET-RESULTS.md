@@ -1,5 +1,7 @@
 # Testnet results (2026-11-03)
 
+Sections 1–4: vault v1. Section 5: vault v2 with the shared registry.
+
 Everything here happened on NEAR **testnet** and can be checked on the explorer. Ids: [deployments/testnet.json](../deployments/testnet.json).
 
 ## 1. Vault code is immutable
@@ -73,6 +75,30 @@ Result: 12 PASS, 0 FAIL, 0 UNSURE
 
 The near CLI checks each transaction against the key's permission (read from the chain) before sending it. The NEAR runtime enforces the same limits for transactions that are sent anyway: `contracts/vault/tests/sandbox.rs` and `contracts/factory/tests/sandbox.rs` send them to a local node and check that they fail.
 
+## 5. Shared registry: one vault's attacker is blocked everywhere (vault v2)
+
+Vault code v2 (`BBUDpRJDfVgX6UFAFQjhb9rUMoS58Fq99kpVa6zeZjzA`, [publish tx](https://testnet.nearblocks.io/txns/5iieo4HZ3EWwvF4UncmUFeEFij6gdz9PXyzrUcQZsryT)) asks the shared registry `registry.agentguard.testnet` ([deploy tx](https://testnet.nearblocks.io/txns/HZNUVfJ8d1KBqb7jHhjDcugnTJ3YHk58PvLALq26s4Yf)) about the recipient before every payment. The factory was upgraded in place ([tx](https://testnet.nearblocks.io/txns/GP957JvBLEsfwK7C4fnKA4PDoiJrd7mhBPn53427XBur)): new vaults get v2 and the registry; `demo` keeps its v1 code forever.
+
+To make the point, `demo2.agentguard.testnet` **allowlists the attacker**. The registry still stops it:
+
+| Step | Result | Tx |
+|---|---|---|
+| Agent pays the attacker 0.1 NEAR (no reports yet, allowlisted) | **paid** | [Ehtm…](https://testnet.nearblocks.io/txns/EhtMoPs1a1K6sgrBnNsE4uoHQ9Fk2JwUhT3Mz4HzGqx7) |
+| `agentguard-user` reports it, with evidence | registry: `reported` | [6WVg…](https://testnet.nearblocks.io/txns/6WVgorTZUrwfgUgApNoaE3d4W1hqQPoJDFDiHceB9mcU) |
+| Agent pays the attacker 0.11 NEAR | **pending**, `recipient_reported` | [28dd…](https://testnet.nearblocks.io/txns/28dd4rPvBq7DGCo249doF2v2koSR8kdmqmpB5jK9Pk3c) |
+| `agentguard-shop` reports it too (2nd distinct reporter) | registry: `flagged` | [86hr…](https://testnet.nearblocks.io/txns/86hreVpehjX2dLGvmRy3r9eR9SChG9keT3bDKiBe6rsz) |
+| Agent pays the attacker 0.12 NEAR | **blocked**, `recipient_flagged` | [AdDc…](https://testnet.nearblocks.io/txns/AdDcNid9765X4ejghfHsub7tt5wVER6EJsLtdSw5pwZ3) |
+| Agent pays the shop 0.1 NEAR | **paid** | [8QuF…](https://testnet.nearblocks.io/txns/8QuFXwGXjwsQeRs9hxtDFfd6HgzcvmJEdr2wkZSbzLZZ) |
+
+```sh
+near contract call-function as-read-only registry.agentguard.testnet get_entry json-args '{"account":"agentguard-evil.testnet"}' network-config testnet now
+```
+
+If the registry can't answer, the vault blocks the payment (`registry_unavailable`). That is tested on a local node in `contracts/factory/tests/sandbox.rs` (`missing_registry_fails_closed`), as is `lock_rules()` (`locked_vault_cannot_be_loosened_or_drained_by_owner`).
+
+How flagging works: any account can report (0.01 NEAR storage deposit, one report per reporter). 1 report → `reported` (payments wait for the owner). 2 distinct reporters or a curator → `flagged` (blocked). A curator can `dismiss`, and new reports don't override that. Reports can only make a vault stricter, so a false report at worst makes a payment wait.
+
 ## What this does not prove yet
-- The owner (`agentguard-user.testnet`) can still change the policy, approve payments and withdraw. That is intended: it is their money. A "lock the rules" option for Sentinel's vault is planned.
+- The owner (`agentguard-user.testnet`) can still change the policy, approve payments and withdraw on these demo vaults. That is intended: it is their money. Vault v2 adds `lock_rules()`, after which nobody, including the owner, can loosen it (tested on a local node; used for Sentinel's vault).
+- Sybil reports: two throwaway accounts can flag an account. Curators can dismiss, and a flag only blocks payments to that account (it can't move funds).
 - The 0.25 NEAR gas allowance limits how many requests one agent key can make. When it runs out, the owner adds a new key.

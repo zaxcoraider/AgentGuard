@@ -13,6 +13,9 @@
 //!
 //! If any step fails, the whole batch is rolled back and the deposit is refunded
 //! to the creator in `on_vault_created`.
+//!
+//! New vaults are pointed at the factory's shared `registry` (blocklist) by
+//! default. The vault owner can change that until they call `lock_rules()`.
 
 use near_sdk::json_types::{Base58CryptoHash, U64};
 use near_sdk::serde_json::json;
@@ -70,12 +73,24 @@ pub enum Event {
     VaultCreateFailed { vault: AccountId, refunded_to: AccountId, amount: NearToken },
     #[event_version("1.0.0")]
     CodeHashUpdated { code_hash: Base58CryptoHash },
+    #[event_version("1.0.0")]
+    RegistryUpdated { registry: Option<AccountId> },
 }
 
 #[near(contract_state)]
 #[derive(PanicOnDefault)]
 pub struct Factory {
     /// Can point *future* vaults at a new code hash. Has no power over existing vaults.
+    admin: AccountId,
+    vault_code_hash: CryptoHash,
+    vaults: IterableMap<AccountId, VaultInfo>,
+    /// Shared blocklist new vaults use by default.
+    registry: Option<AccountId>,
+}
+
+/// State layout before `registry` was added (v1, Nov 3).
+#[near]
+struct FactoryV1 {
     admin: AccountId,
     vault_code_hash: CryptoHash,
     vaults: IterableMap<AccountId, VaultInfo>,
@@ -86,12 +101,21 @@ impl Factory {
     /// `vault_code_hash`: hash of the vault wasm already published as a global
     /// contract (by hash).
     #[init]
-    pub fn new(vault_code_hash: Base58CryptoHash) -> Self {
+    pub fn new(vault_code_hash: Base58CryptoHash, registry: Option<AccountId>) -> Self {
         Self {
             admin: env::predecessor_account_id(),
             vault_code_hash: vault_code_hash.into(),
             vaults: IterableMap::new(StorageKey::Vaults),
+            registry,
         }
+    }
+
+    /// Upgrade v1 state (no registry field) after deploying new factory code.
+    #[private]
+    #[init(ignore_state)]
+    pub fn migrate(vault_code_hash: Base58CryptoHash, registry: Option<AccountId>) -> Self {
+        let old: FactoryV1 = env::state_read().unwrap_or_else(|| env::panic_str("No v1 state to migrate"));
+        Self { admin: old.admin, vault_code_hash: vault_code_hash.into(), vaults: old.vaults, registry }
     }
 
     /// Create `<name>.<factory>` owned by `owner` (default: the caller).
@@ -112,7 +136,12 @@ impl Factory {
         let owner = owner.unwrap_or_else(|| creator.clone());
         require!(owner != vault, "A vault cannot own itself");
 
-        let args = json!({ "owner": owner, "policy": policy, "allowlist": allowlist.unwrap_or_default() })
+        let args = json!({
+            "owner": owner,
+            "policy": policy,
+            "allowlist": allowlist.unwrap_or_default(),
+            "registry": self.registry,
+        })
             .to_string()
             .into_bytes();
 
@@ -160,7 +189,18 @@ impl Factory {
         Event::CodeHashUpdated { code_hash: vault_code_hash }.emit();
     }
 
+    /// Default registry for *new* vaults.
+    pub fn set_registry(&mut self, registry: Option<AccountId>) {
+        require!(env::predecessor_account_id() == self.admin, "Only the factory admin can do this");
+        self.registry = registry.clone();
+        Event::RegistryUpdated { registry }.emit();
+    }
+
     // ───────────────────────── Views ─────────────────────────
+
+    pub fn get_registry(&self) -> Option<&AccountId> {
+        self.registry.as_ref()
+    }
 
     pub fn get_vault_code_hash(&self) -> Base58CryptoHash {
         self.vault_code_hash.into()

@@ -12,8 +12,17 @@
 //!   recipient, over the approval threshold, or a repeat of a recent payment
 //! - `blocked` — violates policy; recorded onchain (not a panic) so blocked
 //!   attempts stay visible in history and stats
+//!
+//! Shared registry: if the vault has a `registry`, every request first asks it
+//! about the recipient (cross-contract view). `flagged` → blocked, `reported` →
+//! pending. If the registry doesn't answer, the payment is blocked (fail closed).
+//!
+//! `lock_rules()`: a one-way switch. After it, nobody (not even the owner) can
+//! loosen the vault: no policy/allowlist/registry changes, no new agents, no
+//! approvals, no withdrawals. Only stricter actions remain (deny, pause, revoke).
 
 use near_sdk::json_types::U64;
+use near_sdk::{PromiseError, PromiseOrValue};
 use near_sdk::store::{IterableMap, IterableSet, LookupMap};
 use near_sdk::{
     AccountId, Allowance, BorshStorageKey, Gas, NearToken, PanicOnDefault, Promise, PublicKey,
@@ -37,6 +46,8 @@ const STORAGE_RESERVE: NearToken = NearToken::from_millinear(500);
 /// Default gas allowance for an agent key (pays the agent's tx fees).
 const DEFAULT_AGENT_ALLOWANCE: NearToken = NearToken::from_millinear(250);
 const GAS_FOR_SETTLE: Gas = Gas::from_tgas(10);
+const GAS_FOR_REGISTRY_VIEW: Gas = Gas::from_tgas(5);
+const GAS_FOR_DECIDE: Gas = Gas::from_tgas(40);
 const AGENT_METHOD: &str = "request_payment";
 
 #[derive(BorshStorageKey)]
@@ -70,6 +81,31 @@ pub struct Policy {
     pub unknown_recipient: UnknownRecipient,
     /// Pending approvals expire after this many nanoseconds.
     pub pending_ttl_ns: U64,
+}
+
+/// The registry's answer about a recipient (mirrors registry `StatusView`).
+#[near(serializers = [json])]
+#[derive(Clone, Copy, PartialEq, Debug)]
+#[serde(rename_all = "snake_case")]
+pub enum RegistryStatus {
+    Clear,
+    Reported,
+    Flagged,
+    Dismissed,
+}
+
+#[near(serializers = [json])]
+#[derive(Clone, Debug)]
+pub struct RegistryView {
+    pub status: RegistryStatus,
+}
+
+/// Outcome of the registry lookup for one request.
+#[derive(Clone, Copy, PartialEq, Debug)]
+enum RegistryCheck {
+    NotConfigured,
+    Answer(RegistryStatus),
+    Unavailable,
 }
 
 #[near(serializers = [json, borsh])]
@@ -128,6 +164,7 @@ pub struct Stats {
     pub blocked_amount: NearToken,
     pub pending_count: u32,
     pub paused: bool,
+    pub locked: bool,
 }
 
 #[near(event_json(standard = "agentguard"))]
@@ -148,6 +185,10 @@ pub enum Event {
     AgentRevoked { public_key: PublicKey },
     #[event_version("1.0.0")]
     Paused { paused: bool },
+    #[event_version("1.0.0")]
+    RulesLocked {},
+    #[event_version("1.0.0")]
+    RegistryUpdated { registry: Option<AccountId> },
 }
 
 #[near(contract_state)]
@@ -167,12 +208,21 @@ pub struct Vault {
     paid_count: u64,
     blocked_count: u64,
     blocked_amount: NearToken,
+    /// Shared blocklist checked on every request (None = not used).
+    registry: Option<AccountId>,
+    /// One-way: once true, nothing can loosen the vault.
+    locked: bool,
 }
 
 #[near]
 impl Vault {
     #[init]
-    pub fn new(owner: AccountId, policy: Policy, allowlist: Option<Vec<AccountId>>) -> Self {
+    pub fn new(
+        owner: AccountId,
+        policy: Policy,
+        allowlist: Option<Vec<AccountId>>,
+        registry: Option<AccountId>,
+    ) -> Self {
         Self::validate_policy(&policy);
         let mut set = IterableSet::new(StorageKey::Allowlist);
         for a in allowlist.unwrap_or_default() {
@@ -192,20 +242,23 @@ impl Vault {
             paid_count: 0,
             blocked_count: 0,
             blocked_amount: NearToken::from_yoctonear(0),
+            registry,
+            locked: false,
         }
     }
 
     // ───────────────────────── Agent entrypoint ─────────────────────────
 
     /// The ONLY method an agent key can call. Must be signed by a registered,
-    /// active agent key on this vault account.
+    /// active agent key on this vault account. With a registry configured, the
+    /// result arrives after the registry lookup (same `PaymentResult`).
     pub fn request_payment(
         &mut self,
         recipient: AccountId,
         amount: NearToken,
         memo: Option<String>,
         force_review: Option<bool>,
-    ) -> PaymentResult {
+    ) -> PromiseOrValue<PaymentResult> {
         require!(
             env::predecessor_account_id() == env::current_account_id(),
             "Only agent keys on this vault can request payments"
@@ -221,11 +274,284 @@ impl Vault {
         require!(amount.as_yoctonear() > 0, "Amount must be positive");
         let memo = memo.unwrap_or_default();
         require!(memo.len() <= MAX_MEMO_LEN, "Memo too long");
+        let force_review = force_review.unwrap_or(false);
 
+        match self.registry.clone() {
+            None => PromiseOrValue::Value(self.decide(
+                agent,
+                recipient,
+                amount,
+                memo,
+                force_review,
+                RegistryCheck::NotConfigured,
+            )),
+            Some(registry) => PromiseOrValue::Promise(
+                Promise::new(registry)
+                    .function_call(
+                        "get_status",
+                        near_sdk::serde_json::json!({ "account": recipient }).to_string().into_bytes(),
+                        NearToken::from_yoctonear(0),
+                        GAS_FOR_REGISTRY_VIEW,
+                    )
+                    .then(
+                        Self::ext(env::current_account_id())
+                            .with_static_gas(GAS_FOR_DECIDE)
+                            .on_registry_checked(agent, recipient, amount, memo, force_review),
+                    ),
+            ),
+        }
+    }
+
+    /// Callback after the registry lookup. Fails closed: no answer → blocked.
+    #[private]
+    pub fn on_registry_checked(
+        &mut self,
+        agent: String,
+        recipient: AccountId,
+        amount: NearToken,
+        memo: String,
+        force_review: bool,
+        #[callback_result] answer: Result<RegistryView, PromiseError>,
+    ) -> PaymentResult {
+        let check = match answer {
+            Ok(v) => RegistryCheck::Answer(v.status),
+            Err(_) => RegistryCheck::Unavailable,
+        };
+        self.decide(agent, recipient, amount, memo, force_review, check)
+    }
+
+    // ───────────────────────── Owner methods ─────────────────────────
+
+    /// Approve a pending payment. Owner overrides the approval threshold and
+    /// the daily limit, but never the available balance. Returns the final
+    /// status (`approved`, or `expired` if the request timed out).
+    #[payable]
+    pub fn approve(&mut self, id: U64) -> Status {
+        self.assert_owner();
+        self.assert_unlocked();
+        let mut p = self.take_pending(id.0);
+        if self.is_expired(&p) {
+            self.resolve(&mut p, Status::Expired);
+            self.history.insert(id.0, p);
+            return Status::Expired;
+        }
+        require!(p.amount <= self.available(), "Insufficient vault balance");
+        self.prune_spends();
+        self.record_spend(id.0, p.amount);
+        self.resolve(&mut p, Status::Approved);
+        let (recipient, amount) = (p.recipient.clone(), p.amount);
+        self.history.insert(id.0, p);
+        self.send(id.0, recipient, amount);
+        Status::Approved
+    }
+
+    #[payable]
+    pub fn deny(&mut self, id: U64) {
+        self.assert_owner();
+        let mut p = self.take_pending(id.0);
+        self.resolve(&mut p, Status::Denied);
+        self.history.insert(id.0, p);
+    }
+
+    #[payable]
+    pub fn set_policy(&mut self, policy: Policy) {
+        self.assert_owner();
+        self.assert_unlocked();
+        Self::validate_policy(&policy);
+        self.policy = policy.clone();
+        Event::PolicyUpdated { policy }.emit();
+    }
+
+    #[payable]
+    pub fn add_to_allowlist(&mut self, accounts: Vec<AccountId>) {
+        self.assert_owner();
+        self.assert_unlocked();
+        for a in accounts {
+            self.allowlist.insert(a);
+        }
+    }
+
+    #[payable]
+    pub fn remove_from_allowlist(&mut self, accounts: Vec<AccountId>) {
+        self.assert_owner();
+        for a in accounts {
+            self.allowlist.remove(&a);
+        }
+    }
+
+    /// Register an agent and add its function-call key to this vault account.
+    /// The key can only call `request_payment` on this contract.
+    #[payable]
+    pub fn add_agent(&mut self, public_key: PublicKey, label: String, gas_allowance: Option<NearToken>) -> Promise {
+        self.assert_owner();
+        self.assert_unlocked();
+        require!(!label.is_empty() && label.len() <= MAX_LABEL_LEN, "Invalid label");
+        require!(!self.agents.contains_key(&public_key), "Agent key already registered");
+        let allowance = Allowance::limited(gas_allowance.unwrap_or(DEFAULT_AGENT_ALLOWANCE))
+            .unwrap_or_else(|| env::panic_str("Gas allowance must be positive"));
+        self.agents.insert(
+            public_key.clone(),
+            Agent { public_key: public_key.clone(), label: label.clone(), active: true, added_at: U64(env::block_timestamp()) },
+        );
+        Event::AgentAdded { public_key: public_key.clone(), label }.emit();
+        Promise::new(env::current_account_id()).add_access_key_allowance(
+            public_key,
+            allowance,
+            env::current_account_id(),
+            AGENT_METHOD,
+        )
+    }
+
+    /// Revoke an agent: mark inactive and delete its key from the account.
+    #[payable]
+    pub fn revoke_agent(&mut self, public_key: PublicKey) -> Promise {
+        self.assert_owner();
+        let agent = self
+            .agents
+            .get_mut(&public_key)
+            .unwrap_or_else(|| env::panic_str("Unknown agent key"));
+        require!(agent.active, "Agent already revoked");
+        agent.active = false;
+        Event::AgentRevoked { public_key: public_key.clone() }.emit();
+        Promise::new(env::current_account_id()).delete_key(public_key)
+    }
+
+    /// Kill switch: while paused, every agent request is blocked.
+    #[payable]
+    pub fn set_paused(&mut self, paused: bool) {
+        self.assert_owner();
+        self.paused = paused;
+        Event::Paused { paused }.emit();
+    }
+
+    #[payable]
+    pub fn withdraw(&mut self, amount: NearToken) -> Promise {
+        self.assert_owner();
+        self.assert_unlocked();
+        require!(amount <= self.available(), "Insufficient vault balance");
+        Promise::new(self.owner.clone()).transfer(amount)
+    }
+
+    /// Point the vault at a shared registry (or `None` to stop using one).
+    #[payable]
+    pub fn set_registry(&mut self, registry: Option<AccountId>) {
+        self.assert_owner();
+        self.assert_unlocked();
+        self.registry = registry.clone();
+        Event::RegistryUpdated { registry }.emit();
+    }
+
+    /// One-way switch: after this, nothing can loosen the vault. No policy,
+    /// allowlist or registry changes, no new agents, no approvals, no
+    /// withdrawals. Deny, pause/unpause, remove_from_allowlist and revoke_agent
+    /// still work (they can only make it stricter or stop it).
+    #[payable]
+    pub fn lock_rules(&mut self) {
+        self.assert_owner();
+        self.assert_unlocked();
+        self.locked = true;
+        Event::RulesLocked {}.emit();
+    }
+
+    /// Anyone can top up the vault.
+    #[payable]
+    pub fn deposit(&mut self) {}
+
+    // ───────────────────────── Callbacks ─────────────────────────
+
+    #[private]
+    pub fn on_payment_settled(&mut self, id: U64) -> bool {
+        let ok = env::promise_result_checked(0, 0).is_ok();
+        if !ok && let Some(mut p) = self.history.get(&id.0).cloned() {
+            // Undo the spend: it never left the vault.
+            self.unrecord_spend(id.0, p.amount);
+            p.status = Status::Failed;
+            p.reason = Some("transfer_failed".into());
+            p.resolved_at = Some(U64(env::block_timestamp()));
+            self.history.insert(id.0, p);
+            Event::PaymentResolved { id, status: Status::Failed }.emit();
+        }
+        ok
+    }
+
+    // ───────────────────────── Views ─────────────────────────
+
+    pub fn get_owner(&self) -> &AccountId {
+        &self.owner
+    }
+
+    pub fn get_policy(&self) -> &Policy {
+        &self.policy
+    }
+
+    pub fn get_registry(&self) -> Option<&AccountId> {
+        self.registry.as_ref()
+    }
+
+    pub fn is_locked(&self) -> bool {
+        self.locked
+    }
+
+    pub fn get_allowlist(&self) -> Vec<&AccountId> {
+        self.allowlist.iter().collect()
+    }
+
+    pub fn get_agents(&self) -> Vec<&Agent> {
+        self.agents.values().collect()
+    }
+
+    pub fn get_payment(&self, id: U64) -> Option<&Payment> {
+        self.history.get(&id.0)
+    }
+
+    pub fn get_pending(&self) -> Vec<&Payment> {
+        self.pending.iter().filter_map(|id| self.history.get(id)).collect()
+    }
+
+    /// Newest first. `before` = exclusive upper id bound (for paging).
+    pub fn get_history(&self, before: Option<U64>, limit: Option<u32>) -> Vec<&Payment> {
+        let limit = limit.unwrap_or(50).min(100) as usize;
+        let start = before.map(|b| b.0).unwrap_or(self.next_id).min(self.next_id);
+        let floor = self.next_id.saturating_sub(MAX_HISTORY);
+        (floor..start).rev().filter_map(|id| self.history.get(&id)).take(limit).collect()
+    }
+
+    pub fn get_stats(&self) -> Stats {
+        let cutoff = env::block_timestamp().saturating_sub(DAY_NS);
+        let spent_24h = self
+            .spends
+            .iter()
+            .filter(|(t, _, _)| *t > cutoff)
+            .fold(NearToken::from_yoctonear(0), |acc, (_, _, a)| acc.saturating_add(*a));
+        Stats {
+            balance: env::account_balance(),
+            available: self.available(),
+            spent_24h,
+            total_paid: self.total_paid,
+            paid_count: U64(self.paid_count),
+            blocked_count: U64(self.blocked_count),
+            blocked_amount: self.blocked_amount,
+            pending_count: self.pending.len(),
+            paused: self.paused,
+            locked: self.locked,
+        }
+    }
+
+    // ───────────────────────── Internals ─────────────────────────
+
+    fn decide(
+        &mut self,
+        agent: String,
+        recipient: AccountId,
+        amount: NearToken,
+        memo: String,
+        force_review: bool,
+        registry: RegistryCheck,
+    ) -> PaymentResult {
         self.prune_spends();
         self.expire_stale_pending();
 
-        let verdict = self.evaluate(&recipient, amount, force_review.unwrap_or(false));
+        let verdict = self.evaluate(&recipient, amount, force_review, registry);
         let id = self.next_id;
         self.next_id += 1;
         let mut payment = Payment {
@@ -274,191 +600,7 @@ impl Vault {
         result
     }
 
-    // ───────────────────────── Owner methods ─────────────────────────
-
-    /// Approve a pending payment. Owner overrides the approval threshold and
-    /// the daily limit, but never the available balance. Returns the final
-    /// status (`approved`, or `expired` if the request timed out).
-    #[payable]
-    pub fn approve(&mut self, id: U64) -> Status {
-        self.assert_owner();
-        let mut p = self.take_pending(id.0);
-        if self.is_expired(&p) {
-            self.resolve(&mut p, Status::Expired);
-            self.history.insert(id.0, p);
-            return Status::Expired;
-        }
-        require!(p.amount <= self.available(), "Insufficient vault balance");
-        self.prune_spends();
-        self.record_spend(id.0, p.amount);
-        self.resolve(&mut p, Status::Approved);
-        let (recipient, amount) = (p.recipient.clone(), p.amount);
-        self.history.insert(id.0, p);
-        self.send(id.0, recipient, amount);
-        Status::Approved
-    }
-
-    #[payable]
-    pub fn deny(&mut self, id: U64) {
-        self.assert_owner();
-        let mut p = self.take_pending(id.0);
-        self.resolve(&mut p, Status::Denied);
-        self.history.insert(id.0, p);
-    }
-
-    #[payable]
-    pub fn set_policy(&mut self, policy: Policy) {
-        self.assert_owner();
-        Self::validate_policy(&policy);
-        self.policy = policy.clone();
-        Event::PolicyUpdated { policy }.emit();
-    }
-
-    #[payable]
-    pub fn add_to_allowlist(&mut self, accounts: Vec<AccountId>) {
-        self.assert_owner();
-        for a in accounts {
-            self.allowlist.insert(a);
-        }
-    }
-
-    #[payable]
-    pub fn remove_from_allowlist(&mut self, accounts: Vec<AccountId>) {
-        self.assert_owner();
-        for a in accounts {
-            self.allowlist.remove(&a);
-        }
-    }
-
-    /// Register an agent and add its function-call key to this vault account.
-    /// The key can only call `request_payment` on this contract.
-    #[payable]
-    pub fn add_agent(&mut self, public_key: PublicKey, label: String, gas_allowance: Option<NearToken>) -> Promise {
-        self.assert_owner();
-        require!(!label.is_empty() && label.len() <= MAX_LABEL_LEN, "Invalid label");
-        require!(!self.agents.contains_key(&public_key), "Agent key already registered");
-        let allowance = Allowance::limited(gas_allowance.unwrap_or(DEFAULT_AGENT_ALLOWANCE))
-            .unwrap_or_else(|| env::panic_str("Gas allowance must be positive"));
-        self.agents.insert(
-            public_key.clone(),
-            Agent { public_key: public_key.clone(), label: label.clone(), active: true, added_at: U64(env::block_timestamp()) },
-        );
-        Event::AgentAdded { public_key: public_key.clone(), label }.emit();
-        Promise::new(env::current_account_id()).add_access_key_allowance(
-            public_key,
-            allowance,
-            env::current_account_id(),
-            AGENT_METHOD,
-        )
-    }
-
-    /// Revoke an agent: mark inactive and delete its key from the account.
-    #[payable]
-    pub fn revoke_agent(&mut self, public_key: PublicKey) -> Promise {
-        self.assert_owner();
-        let agent = self
-            .agents
-            .get_mut(&public_key)
-            .unwrap_or_else(|| env::panic_str("Unknown agent key"));
-        require!(agent.active, "Agent already revoked");
-        agent.active = false;
-        Event::AgentRevoked { public_key: public_key.clone() }.emit();
-        Promise::new(env::current_account_id()).delete_key(public_key)
-    }
-
-    /// Kill switch: while paused, every agent request is blocked.
-    #[payable]
-    pub fn set_paused(&mut self, paused: bool) {
-        self.assert_owner();
-        self.paused = paused;
-        Event::Paused { paused }.emit();
-    }
-
-    #[payable]
-    pub fn withdraw(&mut self, amount: NearToken) -> Promise {
-        self.assert_owner();
-        require!(amount <= self.available(), "Insufficient vault balance");
-        Promise::new(self.owner.clone()).transfer(amount)
-    }
-
-    /// Anyone can top up the vault.
-    #[payable]
-    pub fn deposit(&mut self) {}
-
-    // ───────────────────────── Callbacks ─────────────────────────
-
-    #[private]
-    pub fn on_payment_settled(&mut self, id: U64) -> bool {
-        let ok = env::promise_result_checked(0, 0).is_ok();
-        if !ok && let Some(mut p) = self.history.get(&id.0).cloned() {
-            // Undo the spend: it never left the vault.
-            self.unrecord_spend(id.0, p.amount);
-            p.status = Status::Failed;
-            p.reason = Some("transfer_failed".into());
-            p.resolved_at = Some(U64(env::block_timestamp()));
-            self.history.insert(id.0, p);
-            Event::PaymentResolved { id, status: Status::Failed }.emit();
-        }
-        ok
-    }
-
-    // ───────────────────────── Views ─────────────────────────
-
-    pub fn get_owner(&self) -> &AccountId {
-        &self.owner
-    }
-
-    pub fn get_policy(&self) -> &Policy {
-        &self.policy
-    }
-
-    pub fn get_allowlist(&self) -> Vec<&AccountId> {
-        self.allowlist.iter().collect()
-    }
-
-    pub fn get_agents(&self) -> Vec<&Agent> {
-        self.agents.values().collect()
-    }
-
-    pub fn get_payment(&self, id: U64) -> Option<&Payment> {
-        self.history.get(&id.0)
-    }
-
-    pub fn get_pending(&self) -> Vec<&Payment> {
-        self.pending.iter().filter_map(|id| self.history.get(id)).collect()
-    }
-
-    /// Newest first. `before` = exclusive upper id bound (for paging).
-    pub fn get_history(&self, before: Option<U64>, limit: Option<u32>) -> Vec<&Payment> {
-        let limit = limit.unwrap_or(50).min(100) as usize;
-        let start = before.map(|b| b.0).unwrap_or(self.next_id).min(self.next_id);
-        let floor = self.next_id.saturating_sub(MAX_HISTORY);
-        (floor..start).rev().filter_map(|id| self.history.get(&id)).take(limit).collect()
-    }
-
-    pub fn get_stats(&self) -> Stats {
-        let cutoff = env::block_timestamp().saturating_sub(DAY_NS);
-        let spent_24h = self
-            .spends
-            .iter()
-            .filter(|(t, _, _)| *t > cutoff)
-            .fold(NearToken::from_yoctonear(0), |acc, (_, _, a)| acc.saturating_add(*a));
-        Stats {
-            balance: env::account_balance(),
-            available: self.available(),
-            spent_24h,
-            total_paid: self.total_paid,
-            paid_count: U64(self.paid_count),
-            blocked_count: U64(self.blocked_count),
-            blocked_amount: self.blocked_amount,
-            pending_count: self.pending.len(),
-            paused: self.paused,
-        }
-    }
-
-    // ───────────────────────── Internals ─────────────────────────
-
-    fn evaluate(&self, recipient: &AccountId, amount: NearToken, force_review: bool) -> Verdict {
+    fn evaluate(&self, recipient: &AccountId, amount: NearToken, force_review: bool, registry: RegistryCheck) -> Verdict {
         let p = &self.policy;
         if self.paused {
             return Verdict::Block("vault_paused".into());
@@ -475,12 +617,20 @@ impl Vault {
         if amount > self.available() {
             return Verdict::Block("insufficient_funds".into());
         }
+        match registry {
+            RegistryCheck::Unavailable => return Verdict::Block("registry_unavailable".into()),
+            RegistryCheck::Answer(RegistryStatus::Flagged) => return Verdict::Block("recipient_flagged".into()),
+            _ => {}
+        }
+        let reported = registry == RegistryCheck::Answer(RegistryStatus::Reported);
         let allowlisted = self.allowlist.contains(recipient);
         let review_reason = if !allowlisted {
             match p.unknown_recipient {
                 UnknownRecipient::Block => return Verdict::Block("recipient_not_allowlisted".into()),
                 UnknownRecipient::RequireApproval => Some("unknown_recipient"),
             }
+        } else if reported {
+            Some("recipient_reported")
         } else if amount > p.approval_threshold {
             Some("over_approval_threshold")
         } else if self.is_repeat(recipient, amount) {
@@ -593,6 +743,10 @@ impl Vault {
         // 1 yoctoNEAR forces a full-access key signature (wallet confirmation).
         assert_one_yocto();
         require!(env::predecessor_account_id() == self.owner, "Only the owner can do this");
+    }
+
+    fn assert_unlocked(&self) {
+        require!(!self.locked, "Rules are locked: this vault can no longer be loosened");
     }
 
     fn validate_policy(p: &Policy) {

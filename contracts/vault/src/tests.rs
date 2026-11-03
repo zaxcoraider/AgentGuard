@@ -59,15 +59,22 @@ fn as_owner(ts: u64) {
 
 fn setup() -> Vault {
     set_ctx(vault_id(), other_pk(), 0, 1_000);
-    let mut v = Vault::new(owner(), policy(), Some(vec![shop()]));
+    let mut v = Vault::new(owner(), policy(), Some(vec![shop()]), None);
     as_owner(1_000);
     let _ = v.add_agent(agent_pk(), "shopping-agent".into(), None);
     v
 }
 
+fn value(r: PromiseOrValue<PaymentResult>) -> PaymentResult {
+    match r {
+        PromiseOrValue::Value(v) => v,
+        PromiseOrValue::Promise(_) => panic!("expected an immediate result (no registry)"),
+    }
+}
+
 fn pay(v: &mut Vault, to: AccountId, amount: NearToken, ts: u64) -> PaymentResult {
     as_agent(ts);
-    v.request_payment(to, amount, Some("test".into()), None)
+    value(v.request_payment(to, amount, Some("test".into()), None))
 }
 
 // ─────────────── happy path ───────────────
@@ -169,7 +176,7 @@ fn insufficient_funds_blocked() {
 fn unregistered_key_cannot_request() {
     let mut v = setup();
     set_ctx(vault_id(), other_pk(), 0, 2_000);
-    v.request_payment(shop(), near(0.1), None, None);
+    let _ = v.request_payment(shop(), near(0.1), None, None);
 }
 
 #[test]
@@ -177,7 +184,7 @@ fn unregistered_key_cannot_request() {
 fn outside_account_cannot_request() {
     let mut v = setup();
     set_ctx(evil(), agent_pk(), 0, 2_000);
-    v.request_payment(shop(), near(0.1), None, None);
+    let _ = v.request_payment(shop(), near(0.1), None, None);
 }
 
 #[test]
@@ -246,12 +253,12 @@ fn deny_pending() {
 fn force_review_flag_only_makes_it_stricter() {
     let mut v = setup();
     as_agent(2_000);
-    let r = v.request_payment(shop(), near(0.2), None, Some(true));
+    let r = value(v.request_payment(shop(), near(0.2), None, Some(true)));
     assert_eq!(r.status, Status::Pending);
     assert_eq!(r.reason.as_deref(), Some("flagged_for_review"));
     // force_review cannot unblock a blocked payment.
     as_agent(2_001);
-    let r = v.request_payment(shop(), near(50.0), None, Some(false));
+    let r = value(v.request_payment(shop(), near(50.0), None, Some(false)));
     assert_eq!(r.status, Status::Blocked);
 }
 
@@ -332,7 +339,7 @@ fn invalid_policy_rejected() {
     let mut p = policy();
     p.approval_threshold = near(3.0);
     set_ctx(vault_id(), other_pk(), 0, 1_000);
-    Vault::new(owner(), p, None);
+    Vault::new(owner(), p, None, None);
 }
 
 // ─────────────── repeat payments ───────────────
@@ -394,4 +401,163 @@ fn failed_payment_can_be_retried_at_once() {
     testing_env!(b.build(), test_vm_config(), RuntimeFeesConfig::test(), Default::default(), vec![PromiseResult::Failed]);
     v.on_payment_settled(r.id);
     assert_eq!(pay(&mut v, shop(), near(0.5), 3_000).status, Status::Paid);
+}
+
+// ─────────────── shared registry ───────────────
+
+fn registry_id() -> AccountId {
+    "registry.agentguard.testnet".parse().unwrap()
+}
+
+fn with_registry() -> Vault {
+    let mut v = setup();
+    as_owner(1_500);
+    v.set_registry(Some(registry_id()));
+    v
+}
+
+/// Run the registry callback as if the registry answered `answer`.
+fn checked(v: &mut Vault, to: AccountId, amount: NearToken, answer: Result<RegistryStatus, ()>) -> PaymentResult {
+    as_agent(2_000);
+    // The agent call returns a promise to the registry...
+    assert!(matches!(v.request_payment(to.clone(), amount, None, None), PromiseOrValue::Promise(_)));
+    // ...and the vault decides in the callback.
+    set_ctx(vault_id(), agent_pk(), 0, 2_100);
+    let answer = answer.map(|status| RegistryView { status }).map_err(|_| PromiseError::Failed);
+    v.on_registry_checked("shopping-agent".into(), to, amount, String::new(), false, answer)
+}
+
+#[test]
+fn clear_recipient_pays_normally() {
+    let mut v = with_registry();
+    let r = checked(&mut v, shop(), near(0.5), Ok(RegistryStatus::Clear));
+    assert_eq!(r.status, Status::Paid);
+}
+
+#[test]
+fn flagged_recipient_is_blocked_even_if_allowlisted() {
+    let mut v = with_registry();
+    let r = checked(&mut v, shop(), near(0.5), Ok(RegistryStatus::Flagged));
+    assert_eq!(r.status, Status::Blocked);
+    assert_eq!(r.reason.as_deref(), Some("recipient_flagged"));
+}
+
+#[test]
+fn reported_recipient_waits_for_owner() {
+    let mut v = with_registry();
+    let r = checked(&mut v, shop(), near(0.5), Ok(RegistryStatus::Reported));
+    assert_eq!(r.status, Status::Pending);
+    assert_eq!(r.reason.as_deref(), Some("recipient_reported"));
+}
+
+#[test]
+fn dismissed_recipient_pays_normally() {
+    let mut v = with_registry();
+    let r = checked(&mut v, shop(), near(0.5), Ok(RegistryStatus::Dismissed));
+    assert_eq!(r.status, Status::Paid);
+}
+
+#[test]
+fn registry_down_fails_closed() {
+    let mut v = with_registry();
+    let r = checked(&mut v, shop(), near(0.5), Err(()));
+    assert_eq!(r.status, Status::Blocked);
+    assert_eq!(r.reason.as_deref(), Some("registry_unavailable"));
+}
+
+#[test]
+fn hard_limits_still_apply_with_registry() {
+    let mut v = with_registry();
+    let r = checked(&mut v, shop(), near(50.0), Ok(RegistryStatus::Clear));
+    assert_eq!(r.reason.as_deref(), Some("over_per_payment_limit"));
+}
+
+// ─────────────── lock_rules ───────────────
+
+fn locked() -> Vault {
+    let mut v = setup();
+    as_owner(1_500);
+    v.lock_rules();
+    v
+}
+
+#[test]
+fn lock_is_visible() {
+    let v = locked();
+    assert!(v.is_locked());
+    assert!(v.get_stats().locked);
+    assert!(get_logs().iter().any(|l| l.contains("rules_locked")));
+}
+
+#[test]
+#[should_panic(expected = "Rules are locked")]
+fn locked_vault_rejects_policy_change() {
+    let mut v = locked();
+    as_owner(2_000);
+    v.set_policy(policy());
+}
+
+#[test]
+#[should_panic(expected = "Rules are locked")]
+fn locked_vault_rejects_allowlist_add() {
+    let mut v = locked();
+    as_owner(2_000);
+    v.add_to_allowlist(vec![evil()]);
+}
+
+#[test]
+#[should_panic(expected = "Rules are locked")]
+fn locked_vault_rejects_withdraw() {
+    let mut v = locked();
+    as_owner(2_000);
+    let _ = v.withdraw(near(1.0));
+}
+
+#[test]
+#[should_panic(expected = "Rules are locked")]
+fn locked_vault_rejects_new_agents() {
+    let mut v = locked();
+    as_owner(2_000);
+    let _ = v.add_agent(other_pk(), "second".into(), None);
+}
+
+#[test]
+#[should_panic(expected = "Rules are locked")]
+fn locked_vault_rejects_registry_change() {
+    let mut v = locked();
+    as_owner(2_000);
+    v.set_registry(None);
+}
+
+#[test]
+#[should_panic(expected = "Rules are locked")]
+fn locked_vault_cannot_approve() {
+    let mut v = setup();
+    let r = pay(&mut v, evil(), near(0.5), 1_200);
+    as_owner(1_500);
+    v.lock_rules();
+    v.approve(r.id);
+}
+
+#[test]
+#[should_panic(expected = "Rules are locked")]
+fn lock_is_one_way() {
+    let mut v = locked();
+    as_owner(2_000);
+    v.lock_rules();
+}
+
+#[test]
+fn locked_vault_still_pays_within_rules_and_allows_stricter_actions() {
+    let mut v = locked();
+    assert_eq!(pay(&mut v, shop(), near(0.5), 2_000).status, Status::Paid);
+    let r = pay(&mut v, evil(), near(0.5), 2_100);
+    assert_eq!(r.status, Status::Pending);
+    as_owner(2_200);
+    v.deny(r.id);
+    v.remove_from_allowlist(vec![shop()]);
+    v.set_paused(true);
+    assert_eq!(pay(&mut v, shop(), near(0.1), 2_300).reason.as_deref(), Some("vault_paused"));
+    as_owner(2_400);
+    let _ = v.revoke_agent(agent_pk());
 }

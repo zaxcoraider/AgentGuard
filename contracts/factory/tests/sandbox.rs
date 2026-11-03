@@ -14,6 +14,7 @@ struct Env {
     user: AccountId,
     shop: AccountId,
     code_hash: String,
+    registry: AccountId,
     _sandbox: near_sandbox::Sandbox,
 }
 
@@ -38,6 +39,12 @@ async fn balance(env: &Env, id: &AccountId) -> NearToken {
 }
 
 async fn setup() -> testresult::TestResult<Env> {
+    setup_with(None).await
+}
+
+/// `registry`: Some(true) = deploy a real registry and use it; Some(false) =
+/// point vaults at an account with no registry code (to test fail-closed).
+async fn setup_with(registry: Option<bool>) -> testresult::TestResult<Env> {
     let root = env!("CARGO_MANIFEST_DIR");
     let vault_wasm = build(&format!("{root}/../vault/Cargo.toml"))?;
     let factory_wasm = build(&format!("{root}/Cargo.toml"))?;
@@ -46,8 +53,8 @@ async fn setup() -> testresult::TestResult<Env> {
     let net = NetworkConfig::from_rpc_url("sandbox", sandbox.rpc_addr.parse()?);
     let genesis = Signer::from_secret_key(near_sandbox::config::DEFAULT_GENESIS_ACCOUNT_PRIVATE_KEY.parse()?)?;
     let mk = |n: &str| -> AccountId { n.parse().unwrap() };
-    let (factory, user, shop) = (mk("factory.sandbox"), mk("user.sandbox"), mk("shop.sandbox"));
-    for id in [&factory, &user, &shop] {
+    let (factory, user, shop, reg) = (mk("factory.sandbox"), mk("user.sandbox"), mk("shop.sandbox"), mk("registry.sandbox"));
+    for id in [&factory, &user, &shop, &reg] {
         sandbox.create_account(id.clone()).initial_balance(NearToken::from_near(100)).send().await?;
     }
 
@@ -60,16 +67,27 @@ async fn setup() -> testresult::TestResult<Env> {
         .assert_success();
     let code_hash = near_api::types::CryptoHash::hash(&vault_wasm).to_string();
 
+    if registry == Some(true) {
+        near_api::Contract::deploy(reg.clone())
+            .use_code(build(&format!("{root}/../registry/Cargo.toml"))?)
+            .with_init_call("new", json!({}))?
+            .with_signer(genesis.clone())
+            .send_to(&net)
+            .await?
+            .assert_success();
+    }
+    let registry_arg = if registry.is_some() { json!(reg) } else { json!(null) };
+
     // 2. Deploy the factory, pointing at that hash.
     near_api::Contract::deploy(factory.clone())
         .use_code(factory_wasm)
-        .with_init_call("new", json!({ "vault_code_hash": code_hash }))?
+        .with_init_call("new", json!({ "vault_code_hash": code_hash, "registry": registry_arg }))?
         .with_signer(genesis.clone())
         .send_to(&net)
         .await?
         .assert_success();
 
-    Ok(Env { net, genesis, factory, user, shop, code_hash, _sandbox: sandbox })
+    Ok(Env { net, genesis, factory, user, shop, code_hash, registry: reg, _sandbox: sandbox })
 }
 
 async fn create_vault(env: &Env, name: &str, approval_near: u128) -> near_api::types::transaction::result::TransactionResult {
@@ -202,5 +220,115 @@ async fn duplicate_vault_name_is_rejected() -> testresult::TestResult<()> {
     create_vault(&env, "sentinel", 1).await.assert_success();
     let second = create_vault(&env, "sentinel", 1).await;
     assert!(second.into_result().is_err(), "second vault with the same name must fail");
+    Ok(())
+}
+
+async fn add_agent(env: &Env, vault: &AccountId) -> testresult::TestResult<Arc<Signer>> {
+    let sk = near_api::signer::generate_secret_key()?;
+    owner_call(env, vault, "add_agent", json!({ "public_key": sk.public_key().to_string(), "label": "sentinel" })).await?.assert_success();
+    Ok(Signer::from_secret_key(sk)?)
+}
+
+async fn owner_call(env: &Env, vault: &AccountId, method: &str, args: Value) -> testresult::TestResult<near_api::types::transaction::result::TransactionResult> {
+    Ok(near_api::Contract(vault.clone())
+        .call_function(method, args)
+        .transaction()
+        .deposit(NearToken::from_yoctonear(1))
+        .with_signer(env.user.clone(), env.genesis.clone())
+        .send_to(&env.net)
+        .await?)
+}
+
+async fn agent_pay(env: &Env, vault: &AccountId, agent: &Arc<Signer>, to: &AccountId, milli: u128) -> Value {
+    near_api::Contract(vault.clone())
+        .call_function("request_payment", json!({ "recipient": to, "amount": NearToken::from_millinear(milli).as_yoctonear().to_string() }))
+        .transaction()
+        .gas(near_api::types::NearGas::from_tgas(100))
+        .with_signer(vault.clone(), agent.clone())
+        .send_to(&env.net)
+        .await
+        .unwrap()
+        .assert_success()
+        .json()
+        .unwrap()
+}
+
+async fn report(env: &Env, reporter: &AccountId, who: &AccountId) -> Value {
+    near_api::Contract(env.registry.clone())
+        .call_function("report", json!({ "account": who, "reason": "prompt injection tried to make an agent pay it", "evidence": "sandbox" }))
+        .transaction()
+        .deposit(NearToken::from_millinear(10))
+        .with_signer(reporter.clone(), env.genesis.clone())
+        .send_to(&env.net)
+        .await
+        .unwrap()
+        .assert_success()
+        .json()
+        .unwrap()
+}
+
+#[tokio::test]
+async fn shared_registry_blocks_flagged_accounts_onchain() -> testresult::TestResult<()> {
+    let env = setup_with(Some(true)).await?;
+    create_vault(&env, "sentinel", 1).await.assert_success();
+    let vault: AccountId = format!("sentinel.{}", env.factory).parse()?;
+    let reg: Option<String> = near_api::Contract(vault.clone()).call_function("get_registry", ()).read_only().fetch_from(&env.net).await?.data;
+    assert_eq!(reg.as_deref(), Some(env.registry.as_str()), "factory should give new vaults the registry");
+    let agent = add_agent(&env, &vault).await?;
+
+    // Clear recipient: paid after the registry lookup.
+    let r = agent_pay(&env, &vault, &agent, &env.shop, 100).await;
+    assert_eq!(r["status"], "paid", "{r}");
+
+    // One report: payments to it now wait for the owner (even though it's allowlisted).
+    let r1 = report(&env, &env.user, &env.shop).await;
+    assert_eq!(r1["status"], "reported");
+    let r = agent_pay(&env, &vault, &agent, &env.shop, 120).await;
+    assert_eq!((r["status"].as_str(), r["reason"].as_str()), (Some("pending"), Some("recipient_reported")), "{r}");
+
+    // A second, different reporter flags it: blocked on-chain.
+    let r2 = report(&env, &env.factory, &env.shop).await;
+    assert_eq!(r2["status"], "flagged");
+    let r = agent_pay(&env, &vault, &agent, &env.shop, 130).await;
+    assert_eq!((r["status"].as_str(), r["reason"].as_str()), (Some("blocked"), Some("recipient_flagged")), "{r}");
+    Ok(())
+}
+
+#[tokio::test]
+async fn missing_registry_fails_closed() -> testresult::TestResult<()> {
+    // Vaults point at registry.sandbox, which has no contract code.
+    let env = setup_with(Some(false)).await?;
+    create_vault(&env, "sentinel", 1).await.assert_success();
+    let vault: AccountId = format!("sentinel.{}", env.factory).parse()?;
+    let agent = add_agent(&env, &vault).await?;
+    let shop_before = balance(&env, &env.shop).await;
+    let r = agent_pay(&env, &vault, &agent, &env.shop, 100).await;
+    assert_eq!((r["status"].as_str(), r["reason"].as_str()), (Some("blocked"), Some("registry_unavailable")), "{r}");
+    assert_eq!(balance(&env, &env.shop).await, shop_before);
+    Ok(())
+}
+
+#[tokio::test]
+async fn locked_vault_cannot_be_loosened_or_drained_by_owner() -> testresult::TestResult<()> {
+    let env = setup().await?;
+    create_vault(&env, "sentinel", 1).await.assert_success();
+    let vault: AccountId = format!("sentinel.{}", env.factory).parse()?;
+    let agent = add_agent(&env, &vault).await?;
+    owner_call(&env, &vault, "lock_rules", json!({})).await?.assert_success();
+    let locked: bool = near_api::Contract(vault.clone()).call_function("is_locked", ()).read_only().fetch_from(&env.net).await?.data;
+    assert!(locked);
+
+    for (method, args) in [
+        ("withdraw", json!({ "amount": NearToken::from_millinear(500).as_yoctonear().to_string() })),
+        ("set_policy", json!({ "policy": policy(2) })),
+        ("add_to_allowlist", json!({ "accounts": [env.user] })),
+        ("set_registry", json!({ "registry": null })),
+    ] {
+        let res = owner_call(&env, &vault, method, args).await?;
+        assert!(res.into_result().is_err(), "{method} must fail on a locked vault");
+    }
+    // Still pays inside the locked rules.
+    let r = agent_pay(&env, &vault, &agent, &env.shop, 100).await;
+    assert_eq!(r["status"], "paid", "{r}");
     Ok(())
 }

@@ -44,7 +44,7 @@ fn callback_ctx(result: PromiseResult) {
 
 fn setup() -> Factory {
     ctx(admin(), NearToken::from_yoctonear(0));
-    Factory::new(hash())
+    Factory::new(hash(), Some("registry.agentguard.testnet".parse().unwrap()))
 }
 
 #[test]
@@ -151,4 +151,21 @@ fn admin_can_point_new_vaults_at_new_code() {
     let h2: Base58CryptoHash = "5mjCHp8mt5XjHqLEYDGz7Y5nJwL2CSNVwDiPXo1H1dRY".parse().unwrap();
     f.set_vault_code_hash(h2);
     assert_eq!(String::from(&f.get_vault_code_hash()), String::from(&h2));
+}
+
+#[test]
+fn registry_default_is_stored_and_changeable_by_admin() {
+    let mut f = setup();
+    assert_eq!(f.get_registry().unwrap().as_str(), "registry.agentguard.testnet");
+    ctx(admin(), NearToken::from_yoctonear(0));
+    f.set_registry(None);
+    assert!(f.get_registry().is_none());
+}
+
+#[test]
+#[should_panic(expected = "Only the factory admin")]
+fn only_admin_sets_registry() {
+    let mut f = setup();
+    ctx(user(), NearToken::from_yoctonear(0));
+    f.set_registry(None);
 }

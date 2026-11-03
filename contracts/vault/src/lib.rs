@@ -8,7 +8,8 @@
 //!
 //! Outcomes of `request_payment`:
 //! - `paid`    — within policy, transferred immediately
-//! - `pending` — needs the owner's approval (`approve` / `deny`)
+//! - `pending` — needs the owner's approval (`approve` / `deny`), e.g. unknown
+//!   recipient, over the approval threshold, or a repeat of a recent payment
 //! - `blocked` — violates policy; recorded onchain (not a panic) so blocked
 //!   attempts stay visible in history and stats
 
@@ -21,6 +22,10 @@ use near_sdk::{
 
 /// Rolling spend window for the daily limit.
 const DAY_NS: u64 = 24 * 60 * 60 * 1_000_000_000;
+/// A second payment with the same recipient and amount inside this window waits
+/// for the owner. "The payment failed, please retry" is a classic way to trick
+/// an agent into paying twice.
+const REPEAT_WINDOW_NS: u64 = 10 * 60 * 1_000_000_000;
 /// How many payment records we keep onchain (older ones are pruned).
 const MAX_HISTORY: u64 = 300;
 /// Max open approvals at once (stops an attacker from spamming the owner).
@@ -478,6 +483,8 @@ impl Vault {
             }
         } else if amount > p.approval_threshold {
             Some("over_approval_threshold")
+        } else if self.is_repeat(recipient, amount) {
+            Some("repeat_payment")
         } else if force_review {
             Some("flagged_for_review")
         } else {
@@ -488,6 +495,20 @@ impl Vault {
             Some(_) if self.pending.len() >= MAX_PENDING => Verdict::Block("too_many_pending".into()),
             Some(r) => Verdict::Review(r.into()),
         }
+    }
+
+    /// Same recipient and amount as a payment that was sent (or is waiting for
+    /// approval) in the last `REPEAT_WINDOW_NS`. Failed transfers are removed
+    /// from `spends` by the callback, so a real failure can be retried at once.
+    fn is_repeat(&self, recipient: &AccountId, amount: NearToken) -> bool {
+        let cutoff = env::block_timestamp().saturating_sub(REPEAT_WINDOW_NS);
+        let same = |id: &u64| {
+            self.history
+                .get(id)
+                .is_some_and(|p| p.created_at.0 > cutoff && p.recipient == *recipient && p.amount == amount)
+        };
+        self.spends.iter().any(|(t, id, a)| *t > cutoff && *a == amount && same(id))
+            || self.pending.iter().any(same)
     }
 
     fn send(&mut self, id: u64, recipient: AccountId, amount: NearToken) {

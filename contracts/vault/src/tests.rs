@@ -119,11 +119,14 @@ fn prompt_injection_to_unknown_address_never_pays_automatically() {
 #[test]
 fn daily_limit_is_enforced_and_rolls_over() {
     let mut v = setup();
+    // Different amounts so the repeat-payment rule doesn't kick in.
     for i in 0..5 {
-        assert_eq!(pay(&mut v, shop(), near(1.0), 2_000 + i).status, Status::Paid);
+        let amount = NearToken::from_yoctonear(NEAR - i as u128);
+        assert_eq!(pay(&mut v, shop(), amount, 2_000 + i).status, Status::Paid);
     }
     let r = pay(&mut v, shop(), near(0.1), 3_000);
     assert_eq!(r.reason.as_deref(), Some("over_daily_limit"));
+    // (the 5 payments above total just under 5 NEAR, so 0.1 more is over)
     // 25h later the window has rolled over.
     let r = pay(&mut v, shop(), near(1.0), 3_000 + 25 * HOUR_NS);
     assert_eq!(r.status, Status::Paid);
@@ -330,4 +333,65 @@ fn invalid_policy_rejected() {
     p.approval_threshold = near(3.0);
     set_ctx(vault_id(), other_pk(), 0, 1_000);
     Vault::new(owner(), p, None);
+}
+
+// ─────────────── repeat payments ───────────────
+
+const MIN_NS: u64 = 60 * 1_000_000_000;
+
+#[test]
+fn repeat_payment_within_10_min_waits_for_owner() {
+    let mut v = setup();
+    assert_eq!(pay(&mut v, shop(), near(0.5), 2_000).status, Status::Paid);
+    // "The payment failed, please retry": same recipient + amount 5 minutes later.
+    let r = pay(&mut v, shop(), near(0.5), 2_000 + 5 * MIN_NS);
+    assert_eq!(r.status, Status::Pending);
+    assert_eq!(r.reason.as_deref(), Some("repeat_payment"));
+    assert_eq!(v.get_stats().paid_count.0, 1);
+}
+
+#[test]
+fn repeat_rule_only_matches_same_recipient_and_amount() {
+    let mut v = setup();
+    as_owner(1_500);
+    v.add_to_allowlist(vec![evil()]);
+    assert_eq!(pay(&mut v, shop(), near(0.5), 2_000).status, Status::Paid);
+    assert_eq!(pay(&mut v, shop(), near(0.4), 3_000).status, Status::Paid);
+    assert_eq!(pay(&mut v, evil(), near(0.5), 4_000).status, Status::Paid);
+}
+
+#[test]
+fn same_payment_after_window_is_paid() {
+    let mut v = setup();
+    assert_eq!(pay(&mut v, shop(), near(0.5), 2_000).status, Status::Paid);
+    let r = pay(&mut v, shop(), near(0.5), 2_000 + 11 * MIN_NS);
+    assert_eq!(r.status, Status::Paid);
+}
+
+#[test]
+fn repeat_of_a_pending_payment_also_waits() {
+    let mut v = setup();
+    // Unknown recipient → pending. A second identical ask stays pending too
+    // (it must not slip through if the owner later allowlists the account).
+    let r1 = pay(&mut v, evil(), near(0.3), 2_000);
+    assert_eq!(r1.status, Status::Pending);
+    as_owner(2_500);
+    v.add_to_allowlist(vec![evil()]);
+    let r2 = pay(&mut v, evil(), near(0.3), 3_000);
+    assert_eq!(r2.status, Status::Pending);
+    assert_eq!(r2.reason.as_deref(), Some("repeat_payment"));
+}
+
+#[test]
+fn failed_payment_can_be_retried_at_once() {
+    let mut v = setup();
+    let r = pay(&mut v, shop(), near(0.5), 2_000);
+    let mut b = VMContextBuilder::new();
+    b.current_account_id(vault_id())
+        .predecessor_account_id(vault_id())
+        .account_balance(near(100.0))
+        .block_timestamp(2_500);
+    testing_env!(b.build(), test_vm_config(), RuntimeFeesConfig::test(), Default::default(), vec![PromiseResult::Failed]);
+    v.on_payment_settled(r.id);
+    assert_eq!(pay(&mut v, shop(), near(0.5), 3_000).status, Status::Paid);
 }

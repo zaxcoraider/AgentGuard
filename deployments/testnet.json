@@ -1,0 +1,31 @@
+{
+  "network": "testnet",
+  "updated": "2026-11-03",
+  "vault_code": {
+    "global_contract_hash": "AFhugPmntEUbiDTWsC1RKAJ1T686RV9DpMzWFMRxQQjv",
+    "published_by": "agentguard.testnet",
+    "mode": "by hash (immutable)",
+    "wasm_bytes": 219246,
+    "publish_tx": "6apkVZAwkuz2gQp9QNx6S7EvVKxPXZQhrRfrwYGJQJHo"
+  },
+  "factory": {
+    "account": "agentguard.testnet",
+    "code_sha256_base58": "8pmeGYcvWG58rGfskiLAdJKMjuMEBE93eFqnUNGfxqYV",
+    "deploy_tx": "99TQhpBuaTtcT9GVRAeDxNauUfpfSnJ1X2i39DJ4qAtF"
+  },
+  "vaults": {
+    "demo.agentguard.testnet": {
+      "owner": "agentguard-user.testnet",
+      "create_tx": "AB358ZxZAZ3kWKJ26rhmZ9aSxQCTTxwDfMm58LmVibCV",
+      "agent_public_key": "ed25519:TbhDorExjY7934FFsRZ5WmyUHdhwkCrWfvQF3ktkXre",
+      "add_agent_tx": "Eq5QgBkNw4ZpTNRWgupqjLWrH9awAU53updkesWs2U48",
+      "policy": { "max_per_payment": "1 NEAR", "daily_limit": "3 NEAR", "approval_threshold": "0.5 NEAR", "unknown_recipient": "require_approval", "pending_ttl": "24h" },
+      "allowlist": ["agentguard-shop.testnet"]
+    }
+  },
+  "demo_accounts": {
+    "owner": "agentguard-user.testnet",
+    "shop": "agentguard-shop.testnet",
+    "attacker": "agentguard-evil.testnet"
+  }
+}

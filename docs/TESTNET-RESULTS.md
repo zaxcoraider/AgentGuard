@@ -168,7 +168,22 @@ Deployed on Render from `render.yaml`: **https://sentinel-47ip.onrender.com** (p
 
 The model answered from NEAR AI Cloud (DeepSeek V4.1 Flash, TEE). The page doesn't verify the attestation yet.
 
+## 11. Sentinel's vault is locked
+
+Before locking: 5 testnet NEAR deposited so Sentinel can live well past judging ([3zs6…](https://testnet.nearblocks.io/txns/3zs6TPwZkXFxu1vcFH5Gib4iDgruqYFoM7SLk46bB5Vq)), and two idle heartbeats in a row paid with the repeat-safe amounts (`0.0020941…` [4EKJ…](https://testnet.nearblocks.io/txns/4EKJU6iowTihJpQKdbnWGUzMBjJ4We31U2KnMZMYkjwK), `0.0020000033…` [FpjgL…](https://testnet.nearblocks.io/txns/FpjgL7ZeSphtBjDcx6k6iYn2zzqiXJ7KjfcryyyC553Z)).
+
+`bash scripts/lock-sentinel.sh`, run by the owner `agentguard.testnet`:
+
+| Step | Result |
+|---|---|
+| `lock_rules()` | done, [9QFB…](https://testnet.nearblocks.io/txns/9QFBjv7AzAqcaCjJdm8z1kq9pV47rt9Adz2XjfqaJf7h). `is_locked` → `true` |
+| Owner: `add_to_allowlist ["agentguard-evil.testnet"]` | **refused**: "Rules are locked: this vault can no longer be loosened" |
+| Owner: `withdraw 1 NEAR` | **refused**: same |
+| Allowlist after | `["compute.agentguard.testnet"]` |
+
+From now on nobody, including the owner, can change what Sentinel's vault pays, add a key, approve a held payment or take the money out. Anyone can still `deposit`.
+
 ## What this does not prove yet
-- The owner (`agentguard-user.testnet`) can still change the policy, approve payments and withdraw on these demo vaults. That is intended: it is their money. Vault v2 adds `lock_rules()`, after which nobody, including the owner, can loosen it (tested on a local node; used for Sentinel's vault).
+- The owner (`agentguard-user.testnet`) can still change the policy, approve payments and withdraw on these demo vaults. That is intended: it is their money. Vault v2 adds `lock_rules()`, after which nobody, including the owner, can loosen it. Sentinel's vault is locked on testnet (§11).
 - Sybil reports: two throwaway accounts can flag an account. Curators can dismiss, and a flag only blocks payments to that account (it can't move funds).
 - The 0.25 NEAR gas allowance limits how many requests one agent key can make. When it runs out, the owner adds a new key.

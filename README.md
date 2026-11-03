@@ -74,7 +74,7 @@ Without the demo agent key, the read-only tools work and `agentguard_pay` return
 | MCP server (stdio) | ✅ tested live on testnet |
 | Sentinel: chat, pays for its thinking, prompt-injected payment blocked on-chain | ✅ live at https://sentinel-47ip.onrender.com (testnet) |
 | Sentinel earns: paid checks over HTTP 402 in native NEAR, verified on-chain by Sentinel | ✅ live (testnet). x402-shaped, but our own NEAR scheme, not an official x402 network |
-| `lock_rules()` on Sentinel's vault | ⏳ tested on a local node; on testnet at public launch |
+| `lock_rules()` on Sentinel's vault | ✅ locked on testnet; the owner's attempts to allowlist an attacker and withdraw were refused (`docs/TESTNET-RESULTS.md` §11) |
 | Public Sentinel page + hosted server | ✅ https://sentinel-47ip.onrender.com (Render) |
 | TEE attestation verified in code | ✅ Sentinel checks NEAR AI Cloud's Intel TDX quotes (dcap-qvl), the nonce + signer binding, the config measurement and NVIDIA GPU attestation (NRAS), then the signature on each reply over the exact bytes. Not done: RTMR3 event-log replay, image provenance, NRAS JWT signature, TLS binding |
 | Mainnet | ❌ testnet only |

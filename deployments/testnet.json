@@ -58,6 +58,13 @@
       "locked": true,
       "lock_tx": "9QFBjv7AzAqcaCjJdm8z1kq9pV47rt9Adz2XjfqaJf7h",
       "topup_tx": "3zs6TPwZkXFxu1vcFH5Gib4iDgruqYFoM7SLk46bB5Vq"
+    },
+    "my-agent.agentguard.testnet": {
+      "code": "v2",
+      "owner": "zaxtest.testnet",
+      "created_via": "Console (browser wallet)",
+      "agent_public_key": "ed25519:6NarBxKftHfS1ayjyWD2PxhqoGUKqx8qsKN5UxCosP6G",
+      "note": "TESTNET-RESULTS \u00a712"
     }
   },
   "demo_accounts": {

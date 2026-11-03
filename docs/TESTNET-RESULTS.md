@@ -183,6 +183,18 @@ Before locking: 5 testnet NEAR deposited so Sentinel can live well past judging 
 
 From now on nobody, including the owner, can change what Sentinel's vault pays, add a key, approve a held payment or take the money out. Anyone can still `deposit`.
 
+## 12. A new user, start to finish in the browser (Console)
+
+A fresh testnet account (`zaxtest.testnet`) used only the [Console](https://sentinel-47ip.onrender.com/console) and a browser wallet (NEAR Connect):
+
+| Step | Result |
+|---|---|
+| Connect wallet → **Create a vault** `my-agent` (1 NEAR, max 0.5/payment, 1/day, ask above 0.2, strangers held, allowlist `agentguard-shop.testnet`) | `my-agent.agentguard.testnet` created by the factory. On-chain key list: **no full-access key** |
+| **Create an agent key** (made in the browser, file downloaded first) → **Add this key to the vault** | One key: function-call, `request_payment` only, 0.25 NEAR gas allowance |
+| The downloaded key file signs as the agent: 0.05 NEAR → `agentguard-shop.testnet` | **paid** ([5zmP…](https://testnet.nearblocks.io/txns/5zmP2RqSznXMX6GYvexQEFRDq5bpZuEhWsBsEpwKvFZ7)) |
+| Same key: 0.05 NEAR → `agentguard-user.testnet` (not allowlisted) | **pending**, `unknown_recipient` ([GjXP…](https://testnet.nearblocks.io/txns/GjXPyxav36icGw4Y3j7ypL9DseijbFqnai2BbwSM3p2P)). Shown in the Console under "Held payments" |
+| Owner clicks **Approve** in the Console | payment #1 → **approved**, sent. Vault: 2 paid, 0.1 NEAR total, nothing pending |
+
 ## What this does not prove yet
 - The owner (`agentguard-user.testnet`) can still change the policy, approve payments and withdraw on these demo vaults. That is intended: it is their money. Vault v2 adds `lock_rules()`, after which nobody, including the owner, can loosen it. Sentinel's vault is locked on testnet (§11).
 - Sybil reports: two throwaway accounts can flag an account. Curators can dismiss, and a flag only blocks payments to that account (it can't move funds).

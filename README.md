@@ -99,6 +99,7 @@ Everything is deployed on NEAR testnet (ids in [`deployments/testnet.json`](depl
 | A fooled AI's payment is blocked on-chain | Live page and local runs (§7, §10) |
 | Agents pay agents: another agent bought Sentinel's paid check through its own vault | HTTP 402 → vault payment → check, replay refused (§8, §10) |
 | A new user can follow the guide from nothing to a working vault | Guide run as written (§9) |
+| A new user can do it all in the browser: wallet → vault → agent key → agent payment → approve | Console run with a fresh account (§12) |
 | Sentinel's vault is locked; the owner can't loosen it | Lock + refused owner calls (§11) |
 | No sequence of actions breaks the rules | Fuzz test: 60,000 random steps, every invariant checked after each one; deliberately broken contracts are caught ([vault README](contracts/vault#fuzzing-srcfuzz_testsrs)) |
 

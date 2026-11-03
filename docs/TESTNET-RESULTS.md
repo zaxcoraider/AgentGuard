@@ -98,6 +98,18 @@ If the registry can't answer, the vault blocks the payment (`registry_unavailabl
 
 How flagging works: any account can report (0.01 NEAR storage deposit, one report per reporter). 1 report → `reported` (payments wait for the owner). 2 distinct reporters or a curator → `flagged` (blocked). A curator can `dismiss`, and new reports don't override that. Reports can only make a vault stricter, so a false report at worst makes a payment wait.
 
+## 6. Any agent can use it: MCP server
+
+`packages/mcp` is an MCP server (stdio) with 6 tools. `packages/mcp/scripts/live-demo.ts` starts it the way Claude Code does and calls every tool against `demo2.agentguard.testnet`:
+
+| Tool call | Result | Tx |
+|---|---|---|
+| `agentguard_check_address agentguard-evil.testnet` | **block**: flagged in the shared registry (both report reasons shown) | read-only |
+| `agentguard_check_address agentguard-sh0p.testnet` | **block**: does not exist; looks like `agentguard-shop.testnet` | read-only |
+| `agentguard_pay agentguard-shop.testnet 0.05` | **paid** | [BxVU…](https://testnet.nearblocks.io/txns/BxVUW5aKSZu23Yap2s1jpeevmiCsk8KYTX3viLEgeyVW) |
+| `agentguard_pay agentguard-evil.testnet 0.2` | **blocked**, `recipient_flagged` | [Fdr4…](https://testnet.nearblocks.io/txns/Fdr4mYpRioQbvokskc1A7Ee9477Kux7ma8iaKksgdDPu) |
+| `agentguard_pay agentguard-shop.testnet 5` | **blocked**, `over_per_payment_limit` | [2zkc…](https://testnet.nearblocks.io/txns/2zkcTmxR9eeNBAJA2PQ24ebUrpYJAPyNsDxPXdoY6rg1) |
+
 ## What this does not prove yet
 - The owner (`agentguard-user.testnet`) can still change the policy, approve payments and withdraw on these demo vaults. That is intended: it is their money. Vault v2 adds `lock_rules()`, after which nobody, including the owner, can loosen it (tested on a local node; used for Sentinel's vault).
 - Sybil reports: two throwaway accounts can flag an account. Curators can dismiss, and a flag only blocks payments to that account (it can't move funds).

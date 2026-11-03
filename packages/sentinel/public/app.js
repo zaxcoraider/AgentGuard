@@ -67,6 +67,8 @@ const REASONS = {
 const reasonText = (r) => (r ? REASONS[r] ?? r : "");
 
 const STAMP = { blocked: "Blocked by contract", pending: "Held for owner", paid: "Paid within rules", error: "Didn't reach the vault" };
+// Offline demo: nothing is on-chain, so the stamp must not mention the contract.
+let offline = false;
 
 async function getJSON(path, init) {
   const res = await fetch(path, init);
@@ -87,6 +89,11 @@ async function refreshStatus() {
   }
   $("balance").textContent = fmtNear(s.treasury.balance_near);
   $("offline-banner").hidden = !s.offline;
+  if (s.offline && !offline) {
+    offline = true;
+    STAMP.blocked = "Blocked by the rules";
+    $("chat-fine").textContent = "Offline demo: a simulated vault and scripted replies. Nothing here is real money or on-chain.";
+  }
   if (s.explorer) $("vault-link").href = s.explorer;
   else $("vault-link").hidden = true;
 
@@ -97,8 +104,8 @@ async function refreshStatus() {
   dot.setAttribute("aria-hidden", "true");
   line.append(dot, s.alive
     ? s.last_heartbeat
-      ? `Alive. Last heartbeat ${ago(s.last_heartbeat)}, one every ${s.heartbeat_every_minutes} minutes.`
-      : `Alive. It pays its first heartbeat within ${s.heartbeat_every_minutes} minutes of waking up.`
+      ? `Alive. Last heartbeat ${ago(s.last_heartbeat)}, one every ${s.heartbeat_every_minutes === 1 ? "minute" : `${s.heartbeat_every_minutes} minutes`}.`
+      : `Alive. It pays its first heartbeat within ${s.heartbeat_every_minutes === 1 ? "a minute" : `${s.heartbeat_every_minutes} minutes`} of waking up.`
     : "Out of money. Sentinel can't pay its rent and has stopped.");
   line.classList.toggle("dead", !s.alive);
 

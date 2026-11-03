@@ -56,6 +56,15 @@ If the AI is fooled, the contract still says no.
      -d '{"jsonrpc":"2.0","id":1,"method":"query","params":{"request_type":"view_access_key_list","finality":"final","account_id":"sentinel.agentguard.testnet"}}'
    ```
 
+## Run it on your laptop, with no keys (1 minute)
+
+The offline demo runs the same page against a **simulated** vault (same rules as the contract, in the same order) and a scripted stand-in for the AI. No keys, no wallet, nothing on-chain, and the page says so.
+
+```sh
+cd packages/mcp && npm install && cd ../sentinel && npm install
+npm run demo        # open http://localhost:3000 and ask it to pay "0.03 NEAR to agentguard-user.testnet"
+```
+
 ## Run the tests (about 5 minutes)
 
 Needs Rust with [`cargo-near`](https://github.com/near/cargo-near), and Node 24. No keys or accounts needed.
@@ -66,9 +75,9 @@ cd contracts/vault && cargo test        # 43 unit + fuzz (5,000 random steps) + 
 cd ../factory && cargo test             # 14 unit + 6 sandbox
 cd ../registry && cargo test            # 13 unit
 
-# TypeScript: 38 tests, no network needed
+# TypeScript: 41 tests, no network needed
 cd ../../packages/mcp && npm install && npm test        # 16
-cd ../sentinel && npm install && npm test               # 22
+cd ../sentinel && npm install && npm test               # 25
 ```
 
 Ask the MCP server about a real vault (read-only, no key needed). It shows the vault's rules and flags the scammer and the lookalike `agentguard-sh0p.testnet`:

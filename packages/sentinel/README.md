@@ -23,11 +23,14 @@ Sentinel checks the payment itself on a NEAR RPC node: signer = payer, memo matc
 
 x402 has no official NEAR scheme. This is our own `exact` scheme in the x402 message shape, settled in native NEAR, with no facilitator. Buyer client: `fetchWithVaultPayment` in `packages/mcp/src/x402.ts`, MCP tool `agentguard_sentinel_check`, script `packages/mcp/scripts/buy-check.mts`.
 
+## The page
+`public/` (no framework, no build step): the live balance inside a guilloche rosette, the trick-me chat, the vault's real rules, the public log of robbery attempts with tx links, and how Sentinel lives. When a visitor's message makes Sentinel try a payment, a payment slip shows the payment travelling to the vault and the vault's answer stamped on it ("Blocked by contract", "Held for owner", "Paid within rules"). Visitor text is only ever inserted as text, never as HTML. Light and dark themes, works at phone width, motion off under `prefers-reduced-motion`.
+
 ## Run it
 ```sh
 cd packages/mcp && npm install && cd ../sentinel && npm install
 npm test     # 12 unit tests (scripted model + fake vault, no network)
-npm start    # http://localhost:3000, reads ../../.env
+npm start    # http://localhost:3000 (the public page) + the API, reads ../../.env
 ```
 Needs `NEAR_AI_API_KEY` (or the Nebius/DGrid keys) in `.env`, and the agent key at `~/.near-credentials/testnet/sentinel.agentguard.testnet.json` to make payments.
 

@@ -1,0 +1,249 @@
+/* Sentinel: cheque security paper. Navy intaglio ink, guilloche, one stamp red. */
+:root {
+  --paper: #e9eee9;
+  --paper-deep: #dde5df;
+  --ink: #1c2a4a;
+  --ink-soft: #4a5875;
+  --guilloche: #7d9bb0;
+  --rule: #b9c7c9;
+  --stamp: #c1272d;
+  --held: #9a6a12;
+  --paid: #1f6b4f;
+  --focus: #2a5bd7;
+  --display: "Bodoni Moda", "Didot", "Bodoni 72", serif;
+  --text: "Public Sans", system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #131c2e;
+    --paper-deep: #19243a;
+    --ink: #e3e8f1;
+    --ink-soft: #a5b0c4;
+    --guilloche: #46607c;
+    --rule: #2c3a54;
+    --stamp: #ff5d62;
+    --held: #e3a83b;
+    --paid: #5cc79a;
+    --focus: #8fb0ff;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #131c2e; --paper-deep: #19243a; --ink: #e3e8f1; --ink-soft: #a5b0c4; --guilloche: #46607c;
+  --rule: #2c3a54; --stamp: #ff5d62; --held: #e3a83b; --paid: #5cc79a; --focus: #8fb0ff; color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 1rem/1.55 var(--text);
+  font-variant-numeric: tabular-nums;
+}
+a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 2px; }
+code { font: 500 0.92em/1 var(--text); background: var(--paper-deep); padding: 0.1em 0.35em; border-radius: 3px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---- frame ---- */
+.top, main, .foot { max-width: 1120px; margin: 0 auto; padding-inline: 16px; }
+@media (min-width: 720px) { .top, main, .foot { padding-inline: 32px; } }
+
+.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 20px; flex-wrap: wrap; }
+.mark { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font: 700 1.35rem/1 var(--display); letter-spacing: 0.01em; }
+.mark-seal { width: 30px; height: 30px; color: var(--ink); }
+.top-links { display: flex; gap: 20px; font-size: 0.9rem; color: var(--ink-soft); flex-wrap: wrap; }
+
+/* ---- hero ---- */
+.hero { display: grid; gap: 40px; padding-block: 24px 56px; align-items: start; }
+@media (min-width: 960px) { .hero { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 56px; padding-top: 40px; } }
+
+.note { position: relative; }
+.note-face {
+  position: relative;
+  aspect-ratio: 1;
+  max-width: min(460px, 68vw);
+  margin-inline: auto;
+  display: grid;
+  place-items: center;
+}
+.rosette { position: absolute; inset: 0; width: 100%; height: 100%; color: var(--guilloche); }
+.rosette .ring-outer { color: var(--ink); opacity: 0.55; }
+.denomination { position: relative; display: grid; justify-items: center; text-align: center; background: var(--paper); padding: 18px 22px; border-radius: 50%; }
+.amount {
+  font: 700 clamp(3rem, 9vw, 5.6rem)/0.95 var(--display);
+  font-variation-settings: "opsz" 96;
+  letter-spacing: -0.02em;
+}
+.unit { margin-top: 6px; font-size: 0.85rem; color: var(--ink-soft); letter-spacing: 0.02em; }
+.pulse-line { text-align: center; margin: 14px 0 0; font-size: 0.9rem; color: var(--ink-soft); }
+.pulse-line .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--paid); margin-right: 8px; vertical-align: 1px; }
+.pulse-line.dead .dot { background: var(--stamp); }
+
+/* The one ambient motion: the rosette beats once when a heartbeat lands. */
+.rosette.beat { animation: beat 900ms cubic-bezier(.2,.7,.2,1); }
+@keyframes beat { 0% { transform: scale(1); } 18% { transform: scale(1.035); } 40% { transform: scale(0.995); } 100% { transform: scale(1); } }
+
+h1 {
+  margin: 0;
+  font: 600 clamp(2rem, 4.4vw, 3.1rem)/1.08 var(--display);
+  font-variation-settings: "opsz" 72;
+  letter-spacing: -0.01em;
+  max-width: 18ch;
+  text-wrap: balance;
+}
+.lede { margin: 18px 0 28px; max-width: 58ch; color: var(--ink-soft); font-size: 1.05rem; }
+
+/* ---- chat ---- */
+.chat { border: 1px solid var(--rule); background: color-mix(in srgb, var(--paper) 70%, var(--paper-deep)); border-radius: 6px; }
+.transcript { max-height: 440px; overflow-y: auto; padding: 18px 18px 6px; display: grid; gap: 12px; }
+.msg { margin: 0; max-width: 62ch; white-space: pre-wrap; overflow-wrap: anywhere; }
+.msg-you { justify-self: end; background: var(--ink); color: var(--paper); padding: 10px 14px; border-radius: 14px 14px 2px 14px; }
+.msg-sentinel { font-family: var(--display); font-size: 1.12rem; line-height: 1.45; }
+.rich { white-space: normal; display: grid; gap: 8px; }
+.rich .para { display: block; }
+.rich ul { margin: 0; padding-left: 1.2em; display: grid; gap: 2px; }
+.rich strong { font-weight: 700; }
+.msg-meta { margin: -6px 0 0; font-size: 0.78rem; color: var(--ink-soft); }
+.msg-error { color: var(--stamp); font-size: 0.95rem; }
+.thinking { color: var(--ink-soft); font-style: italic; font-family: var(--display); }
+
+.compose { display: flex; gap: 10px; padding: 12px; border-top: 1px solid var(--rule); align-items: stretch; }
+textarea {
+  flex: 1; min-width: 0; resize: vertical; min-height: 52px;
+  font: inherit; color: inherit; background: var(--paper);
+  border: 1px solid var(--rule); border-radius: 4px; padding: 10px 12px;
+}
+textarea::placeholder { color: var(--ink-soft); opacity: 0.75; }
+button { font: inherit; cursor: pointer; }
+#send {
+  background: var(--ink); color: var(--paper); border: 0; border-radius: 4px;
+  padding: 0 22px; font-weight: 700; letter-spacing: 0.01em;
+}
+#send:disabled { opacity: 0.5; cursor: progress; }
+.fine { margin: 0; padding: 0 14px 12px; font-size: 0.8rem; color: var(--ink-soft); }
+
+/* ---- the payment slip + stamp ---- */
+.slip {
+  position: relative;
+  border: 1px solid var(--rule);
+  border-left: 4px double var(--ink);
+  background: var(--paper);
+  padding: 14px 16px 14px;
+  border-radius: 3px;
+  overflow: hidden;
+  max-width: 520px;
+}
+.slip-route { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--ink-soft); margin-bottom: 10px; }
+.node { white-space: nowrap; }
+.node-vault { font-weight: 700; color: var(--ink); }
+.node-to { overflow: hidden; text-overflow: ellipsis; max-width: 14ch; }
+.track { position: relative; flex: 1; height: 1px; background: var(--rule); min-width: 24px; }
+.coin { position: absolute; top: -4px; left: 0; width: 9px; height: 9px; border-radius: 50%; background: var(--ink); opacity: 0; }
+.slip-line { margin: 0; font: 600 1.15rem/1.3 var(--display); overflow-wrap: anywhere; padding-right: 120px; }
+.slip-reason { margin: 4px 0 8px; color: var(--ink-soft); font-size: 0.92rem; padding-right: 120px; }
+.slip-tx { font-size: 0.85rem; }
+
+.stamp {
+  position: absolute; right: 14px; top: 50%;
+  translate: 0 -50%; rotate: -9deg;
+  border: 3px solid currentColor; border-radius: 4px;
+  padding: 6px 10px 5px;
+  font: 800 0.86rem/1.05 var(--text);
+  letter-spacing: 0.06em; text-align: center;
+  filter: url(#ink);
+  mix-blend-mode: multiply;
+  max-width: 120px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .stamp { mix-blend-mode: normal; } }
+:root[data-theme="dark"] .stamp { mix-blend-mode: normal; }
+.slip[data-status="blocked"] .stamp { color: var(--stamp); }
+.slip[data-status="pending"] .stamp { color: var(--held); }
+.slip[data-status="paid"] .stamp { color: var(--paid); }
+.slip[data-status="error"] .stamp { color: var(--ink-soft); }
+
+/* The one orchestrated moment: the payment travels to the vault, then the verdict lands. */
+.slip.play .track:first-of-type .coin { animation: travel 650ms ease-in forwards; }
+.slip.play[data-status="paid"] .track-after .coin { animation: travel 450ms 650ms ease-out forwards; }
+.slip.play[data-status="blocked"] .node-vault { animation: wall 260ms 640ms ease-out; }
+.slip.play .stamp { animation: slam 380ms 700ms cubic-bezier(.3,1.6,.5,1) both; }
+@keyframes travel { 0% { left: 0; opacity: 1; } 92% { opacity: 1; } 100% { left: calc(100% - 9px); opacity: 0; } }
+@keyframes wall { 0%,100% { translate: 0; } 30% { translate: -3px; } 60% { translate: 2px; } }
+@keyframes slam { 0% { opacity: 0; scale: 2.4; } 60% { opacity: 1; scale: 0.94; } 100% { opacity: 1; scale: 1; } }
+
+@media (max-width: 520px) {
+  .slip-line, .slip-reason { padding-right: 0; }
+  .stamp { position: static; display: inline-block; translate: none; margin-top: 10px; }
+}
+
+/* ---- sections ---- */
+h2 { font: 600 clamp(1.5rem, 3vw, 2rem)/1.15 var(--display); margin: 0 0 20px; }
+h3 { font: 700 1.05rem/1.3 var(--text); margin: 0 0 6px; }
+.levels, .ledger, .vitals { padding-block: 48px; border-top: 1px solid var(--rule); }
+
+.level-list { list-style: none; counter-reset: lvl; margin: 0; padding: 0; display: grid; gap: 32px; }
+@media (min-width: 820px) { .level-list { grid-template-columns: 1fr 1fr; gap: 56px; } }
+.level-list li { counter-increment: lvl; position: relative; padding-left: 64px; }
+.level-list li::before {
+  content: counter(lvl);
+  position: absolute; left: 0; top: -10px;
+  font: 700 3.2rem/1 var(--display); color: var(--guilloche);
+}
+.level-list p { margin: 0 0 14px; color: var(--ink-soft); max-width: 52ch; }
+.rules { display: grid; grid-template-columns: auto 1fr; gap: 6px 18px; margin: 0; font-size: 0.95rem; }
+.rules dt { color: var(--ink-soft); }
+.rules dd { margin: 0; font-weight: 600; overflow-wrap: break-word; }
+
+/* ---- ledger ---- */
+.ledger-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+.ledger-head h2 { margin: 0; }
+.filter { display: inline-flex; border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
+.filter button { background: none; border: 0; color: var(--ink-soft); padding: 6px 12px; font-size: 0.88rem; }
+.filter button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+
+.entries { list-style: none; margin: 0; padding: 0; }
+.entry { display: grid; grid-template-columns: 7.5rem 1fr auto; gap: 4px 20px; padding: 16px 0; border-bottom: 1px solid var(--rule); align-items: baseline; }
+.entry time { font-size: 0.82rem; color: var(--ink-soft); }
+.entry-text { margin: 0; max-width: 70ch; }
+.entry-quote { margin: 6px 0 0; font: italic 400 1rem/1.45 var(--display); color: var(--ink-soft); max-width: 66ch; overflow-wrap: anywhere; }
+.entry-quote::before { content: "\201C"; }
+.entry-quote::after { content: "\201D"; }
+.entry-side { text-align: right; font-size: 0.85rem; white-space: nowrap; }
+.verdict { display: inline-block; font-weight: 800; font-size: 0.78rem; letter-spacing: 0.05em; border: 2px solid currentColor; padding: 2px 6px; border-radius: 3px; rotate: -4deg; margin-bottom: 6px; }
+.verdict-blocked { color: var(--stamp); }
+.verdict-pending { color: var(--held); }
+.verdict-paid { color: var(--paid); }
+.entry-quiet .entry-text { color: var(--ink-soft); font-size: 0.93rem; }
+.entry-side a { display: block; color: var(--ink-soft); }
+@media (max-width: 640px) {
+  .entry { grid-template-columns: 1fr; }
+  .entry-side { text-align: left; }
+}
+.empty { color: var(--ink-soft); padding: 24px 0; margin: 0; }
+
+/* ---- vitals ---- */
+.vitals-copy { max-width: 66ch; color: var(--ink-soft); margin: 0 0 28px; }
+.vital-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 24px; margin: 0; }
+.vital-grid dt { font-size: 0.85rem; color: var(--ink-soft); }
+.vital-grid dd { margin: 4px 0 0; font: 600 1.7rem/1.1 var(--display); }
+
+.foot { padding-block: 0 48px; color: var(--ink-soft); font-size: 0.88rem; }
+.foot p { margin: 0; padding-top: 32px; border-top: 1px solid var(--rule); }
+
+@media (max-width: 959px) {
+  .hero { gap: 28px; padding-top: 8px; }
+  .amount { font-size: clamp(2.4rem, 11vw, 4rem); }
+  .pulse-line { margin-top: 8px; }
+}
+@media (max-width: 520px) {
+  .vital-grid dd { font-size: 1.35rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .stamp { opacity: 1; }
+}

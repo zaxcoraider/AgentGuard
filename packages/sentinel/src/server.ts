@@ -46,8 +46,19 @@ const PUBLIC_DIR = join(here, "../public");
 
 if (!store.state.feed.length) store.push({ kind: "born", text: `I was born. My treasury is the AgentGuard vault ${guard.cfg.vault}.` });
 
-async function status() {
-  const stats = await guard.stats();
+let cached: { at: number; value: Promise<Awaited<ReturnType<typeof buildStatus>>> } | null = null;
+/** Many page viewers poll this; hit the RPC at most every 10 s. */
+function status() {
+  const now = Date.now();
+  if (!cached || now - cached.at > 10_000) {
+    cached = { at: now, value: buildStatus() };
+    cached.value.catch(() => (cached = null));
+  }
+  return cached.value;
+}
+
+async function buildStatus() {
+  const [stats, rules] = await Promise.all([guard.stats(), guard.policy()]);
   const s = store.state;
   const ticksPerDay = (24 * 60) / TICK_MINUTES;
   const rentPerDay = BigInt(nearToYocto(metabolism.rentNearPerTick)) * BigInt(Math.round(ticksPerDay));
@@ -64,6 +75,7 @@ async function status() {
     heartbeat_every_minutes: TICK_MINUTES,
     days_left_at_rest: daysLeft,
     treasury: stats,
+    rules,
     thinking: { thoughts: s.thoughts, tokens_total: s.tokens_total, tokens_unpaid: s.tokens_unpaid, paid_for_living_near: yoctoToNear(s.metabolism_paid_yocto) },
     business: {
       sells: "is this address safe to pay? (GET /api/check, HTTP 402)",

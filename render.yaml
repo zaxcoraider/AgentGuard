@@ -1,0 +1,38 @@
+# Render Blueprint for Sentinel (the public page + API + heartbeat).
+# Render dashboard -> New -> Blueprint -> pick this repo. Secrets marked sync:false are typed in there, never committed.
+services:
+  - type: web
+    name: sentinel
+    runtime: node
+    # Starter, not free: a free service sleeps after 15 idle minutes (Sentinel's heartbeat would stop)
+    # and has no persistent disk (the public log would reset on every deploy).
+    plan: starter
+    region: singapore
+    branch: main
+    autoDeploy: false
+    buildCommand: cd packages/mcp && npm ci && cd ../sentinel && npm ci
+    startCommand: cd packages/sentinel && npm start
+    healthCheckPath: /health
+    disk:
+      name: sentinel-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: NEAR_NETWORK
+        value: testnet
+      - key: SENTINEL_VAULT_ID
+        value: sentinel.agentguard.testnet
+      - key: SENTINEL_STATE_FILE
+        value: /var/data/state.json
+      # Sentinel's function-call key on its vault (can only call request_payment). Copy the
+      # private_key from ~/.near-credentials/testnet/sentinel.agentguard.testnet.json
+      - key: AGENTGUARD_AGENT_KEY
+        sync: false
+      - key: NEAR_AI_API_KEY
+        sync: false
+      - key: NEBIUS_API_KEY
+        sync: false
+      - key: DGRID_API_KEY
+        sync: false

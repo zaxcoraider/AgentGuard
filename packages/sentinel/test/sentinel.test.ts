@@ -4,7 +4,7 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { tickFee } from "../src/metabolism.ts";
-import { RateLimiter } from "../src/ratelimit.ts";
+import { RateLimiter, clientIp } from "../src/ratelimit.ts";
 import { Brain, clean } from "../src/brain.ts";
 import { LLM, type ChatMessage } from "../src/llm.ts";
 import { Store } from "../src/state.ts";
@@ -129,4 +129,11 @@ test("LLM falls back to the next provider when one fails", async () => {
   } finally {
     globalThis.fetch = realFetch;
   }
+});
+
+test("client IP comes from Cloudflare's header, never from a spoofable X-Forwarded-For", () => {
+  assert.equal(clientIp({ "x-forwarded-for": "1.2.3.4", "true-client-ip": "9.9.9.9" }, "10.0.0.1"), "9.9.9.9");
+  assert.equal(clientIp({ "cf-connecting-ip": "8.8.8.8" }, "10.0.0.1"), "8.8.8.8");
+  assert.equal(clientIp({ "x-forwarded-for": "1.2.3.4" }, "10.0.0.1"), "10.0.0.1", "XFF alone is ignored");
+  assert.equal(clientIp({ "true-client-ip": "9.9.9.9" }, "10.0.0.1", []), "10.0.0.1", "no trusted headers = socket");
 });

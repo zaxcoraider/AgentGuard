@@ -14,7 +14,7 @@ import { Brain } from "./brain.ts";
 import { LLM, providersFromEnv } from "./llm.ts";
 import { tick, type MetabolismConfig } from "./metabolism.ts";
 import { Store } from "./state.ts";
-import { RateLimiter } from "./ratelimit.ts";
+import { RateLimiter, clientIp } from "./ratelimit.ts";
 import { Market, isAccountId } from "./market.ts";
 import { encodeHeader } from "../../mcp/src/x402.ts";
 
@@ -111,9 +111,9 @@ async function readBody(req: IncomingMessage, max = 4096): Promise<string> {
   return Buffer.concat(chunks).toString("utf8");
 }
 
-function clientIp(req: IncomingMessage): string {
-  const fwd = String(req.headers["x-forwarded-for"] ?? "").split(",")[0].trim();
-  return fwd || req.socket.remoteAddress || "unknown";
+const IP_HEADERS = (env.CLIENT_IP_HEADERS ?? "true-client-ip,cf-connecting-ip").split(",").map((h) => h.trim().toLowerCase()).filter(Boolean);
+function visitor(req: IncomingMessage): string {
+  return clientIp(req.headers, req.socket.remoteAddress, IP_HEADERS);
 }
 
 const TYPES: Record<string, string> = { ".html": "text/html; charset=utf-8", ".css": "text/css", ".js": "text/javascript", ".svg": "image/svg+xml", ".png": "image/png" };
@@ -137,7 +137,7 @@ const server = createServer(async (req, res) => {
       return send(res, 200, store.state.feed.slice(0, limit));
     }
     if (url.pathname === "/api/chat" && req.method === "POST") {
-      const ip = clientIp(req);
+      const ip = visitor(req);
       if (!perIp.allow(ip)) return send(res, 429, { error: "Easy there: 10 tries per hour per visitor. Come back soon." });
       if (!global.allow("all")) return send(res, 429, { error: "Sentinel has talked enough for today. Try again tomorrow." });
       const body = JSON.parse((await readBody(req)) || "{}") as { message?: string };
@@ -164,7 +164,7 @@ async function paidCheck(req: IncomingMessage, res: ServerResponse, url: URL) {
     if (!r.ok) return send(res, r.code, { x402Version: 1, error: r.error });
     return send(res, 200, await market.check(account, vault), { "x-payment-response": encodeHeader(r.settle) });
   }
-  if (!checkLimit.allow(clientIp(req))) return send(res, 429, { error: "Too many payment requests from you, slow down" });
+  if (!checkLimit.allow(visitor(req))) return send(res, 429, { error: "Too many payment requests from you, slow down" });
   if (vault) {
     // Don't take money for a vault we can't read.
     const ok = await guard.view(vault, "get_policy").then(() => true, () => false);

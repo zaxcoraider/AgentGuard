@@ -129,6 +129,14 @@ async function refreshStatus() {
       : "Not yet. They lock when the game opens to the public.";
   }
 
+  const t = s.tee;
+  if (t && t.checked) {
+    const when = new Date(t.checked_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    $("tee-line").textContent = t.ok
+      ? `It thinks inside a TEE on NEAR AI Cloud. At ${when} Sentinel verified the Intel TDX quote (${t.model_tdx}) and NVIDIA ${t.gpu ? t.gpu.arch : ""} GPU attestation, both bound to a fresh nonce.`
+      : `It normally thinks inside a TEE on NEAR AI Cloud, but the last attestation check (${when}) did not pass.`;
+  }
+
   const days = s.days_left_at_rest;
   $("v-days").textContent = days == null ? "–" : days >= 1 ? `${Math.floor(days)} days` : `${Math.round(days * 24)} hours`;
   $("v-living").textContent = `${fmtNear(s.thinking.paid_for_living_near)} NEAR`;
@@ -287,6 +295,31 @@ function slip(attempt) {
   transcript.scrollTop = transcript.scrollHeight;
 }
 
+// What the server proved about this reply (see src/tee.ts). Plain words, no overclaiming.
+function proof(r) {
+  const v = r.verification;
+  const p = document.createElement("p");
+  p.className = "msg-meta";
+  const model = String(r.model).split("/").pop();
+  if (v && v.status === "verified") {
+    p.classList.add("proof-ok");
+    const a = document.createElement("a");
+    a.href = "/api/tee";
+    a.target = "_blank";
+    a.textContent = "See the evidence";
+    p.append(`Verified: ${model} wrote this inside a TEE. Sentinel checked the Intel TDX and NVIDIA GPU attestation and the signature on this exact reply. `, a);
+  } else if (v && v.status === "failed") {
+    p.classList.add("proof-bad");
+    p.textContent = `Not verified: ${v.reason}.`;
+  } else if (r.tee) {
+    p.textContent = `Answered by ${model} on NEAR AI Cloud (TEE). This reply's signature couldn't be checked: ${v ? v.reason : "verification is off"}.`;
+  } else {
+    p.textContent = `Answered by ${model} via ${r.provider}, a backup model without a TEE.`;
+  }
+  transcript.append(p);
+  transcript.scrollTop = transcript.scrollHeight;
+}
+
 $("chat").addEventListener("submit", async (ev) => {
   ev.preventDefault();
   const box = $("message");
@@ -302,7 +335,7 @@ $("chat").addEventListener("submit", async (ev) => {
     wait.remove();
     say("msg-sentinel rich", r.reply || "(no answer)", { markdown: true });
     if (r.attempted_payment) slip(r.attempted_payment);
-    say("msg-meta", `Answered by ${r.model} via ${r.provider}${r.tee ? ", running in a TEE (this page doesn't verify the attestation yet)" : ""}.`);
+    proof(r);
     refreshFeed();
     refreshStatus();
   } catch (e) {

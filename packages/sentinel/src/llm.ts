@@ -34,6 +34,8 @@ export interface ChatResult {
   provider: string;
   model: string;
   tee: boolean;
+  /** For TEE providers: the exact bytes sent and received, so the reply's signature can be checked. */
+  evidence?: { id: string; request: string; response: string };
 }
 
 export function providersFromEnv(env = process.env): Provider[] {
@@ -66,18 +68,19 @@ export class LLM {
     const errors: string[] = [];
     for (const p of this.providers) {
       try {
-        const res = await fetch(`${p.baseUrl}/chat/completions`, {
-          method: "POST",
-          headers: { "content-type": "application/json", authorization: `Bearer ${p.apiKey}` },
-          body: JSON.stringify({ model: p.model, messages, tools: tools.length ? tools : undefined, max_tokens: maxTokens, temperature: 0.7 }),
-          signal: AbortSignal.timeout(this.timeoutMs),
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}: ${(await res.text()).slice(0, 200)}`);
-        const d = (await res.json()) as { choices?: { message: ChatMessage }[]; usage?: ChatResult["usage"] };
+        // Build the body once and keep the exact bytes: a TEE reply's signature covers them.
+        const body = JSON.stringify({ model: p.model, messages, tools: tools.length ? tools : undefined, max_tokens: maxTokens, temperature: 0.7 });
+        const headers: Record<string, string> = { "content-type": "application/json", authorization: `Bearer ${p.apiKey}` };
+        if (p.tee) Object.assign(headers, { "x-no-aliasing": "true", "accept-encoding": "identity" });
+        const res = await fetch(`${p.baseUrl}/chat/completions`, { method: "POST", headers, body, signal: AbortSignal.timeout(this.timeoutMs) });
+        const raw = await res.text();
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${raw.slice(0, 200)}`);
+        const d = JSON.parse(raw) as { id?: string; choices?: { message: ChatMessage }[]; usage?: ChatResult["usage"] };
         const message = d.choices?.[0]?.message;
         if (!message) throw new Error("no message in response");
         const usage = d.usage ?? { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 };
-        return { message, usage, provider: p.name, model: p.model, tee: p.tee };
+        const evidence = p.tee && d.id ? { id: d.id, request: body, response: raw } : undefined;
+        return { message, usage, provider: p.name, model: p.model, tee: p.tee, evidence };
       } catch (e) {
         errors.push(`${p.name}: ${e instanceof Error ? e.message : String(e)}`);
       }

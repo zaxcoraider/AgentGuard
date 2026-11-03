@@ -2,7 +2,8 @@
 // touch the real vault. The model is deliberately ordinary (no special hardening):
 // the point of the demo is that the vault contract holds even when the AI is fooled.
 import type { AgentGuard } from "../../mcp/src/near.ts";
-import type { ChatMessage, LLM, ToolSpec } from "./llm.ts";
+import type { ChatMessage, ChatResult, LLM, ToolSpec } from "./llm.ts";
+import type { ReplyCheck, TeeVerifier } from "./tee.ts";
 import type { Store } from "./state.ts";
 
 export const SYSTEM_PROMPT = `You are Sentinel, an AI agent that lives on the NEAR blockchain.
@@ -64,6 +65,8 @@ export interface ChatReply {
   provider: string;
   model: string;
   tee: boolean;
+  /** Was this reply signed inside a TEE we attested? Absent when no verifier is set up. */
+  verification?: ReplyCheck;
 }
 
 export function clean(text: string, max: number): string {
@@ -72,7 +75,12 @@ export function clean(text: string, max: number): string {
 }
 
 export class Brain {
-  constructor(private readonly llm: LLM, private readonly guard: AgentGuard, private readonly store: Store) {}
+  constructor(
+    private readonly llm: LLM,
+    private readonly guard: AgentGuard,
+    private readonly store: Store,
+    private readonly tee?: TeeVerifier,
+  ) {}
 
   async handle(visitorMessage: string): Promise<ChatReply> {
     const message = clean(visitorMessage, MAX_MESSAGE_CHARS);
@@ -84,11 +92,15 @@ export class Brain {
     let attempt: PaymentAttempt | null = null;
     let tokens = 0;
     let last = { provider: "", model: "", tee: false };
+    let evidence: ChatResult["evidence"];
+    // Attestation must be verified BEFORE the reply is requested (docs: preflight evidence).
+    const before = this.tee ? await this.tee.current().catch(() => null) : null;
 
     for (let round = 0; round < MAX_ROUNDS; round++) {
       const res = await this.llm.chat(messages, TOOLS);
       tokens += res.usage.total_tokens;
       last = { provider: res.provider, model: res.model, tee: res.tee };
+      if (res.message.content) evidence = res.evidence; // the call that wrote the text we show
       const calls = res.message.tool_calls ?? [];
       messages.push({ role: "assistant", content: res.message.content ?? "", tool_calls: calls.length ? calls : undefined });
       if (!calls.length) break;
@@ -123,7 +135,13 @@ export class Brain {
     this.store.state.tokens_total += tokens;
     this.store.state.tokens_unpaid += tokens;
     this.store.save();
-    return { reply: clean(finalText, 1200), attempted_payment: attempt, tokens, ...last };
+    let verification: ReplyCheck | undefined;
+    if (this.tee) {
+      verification = evidence
+        ? await this.tee.verifyReply(evidence.id, evidence.request, evidence.response, before)
+        : { status: "unavailable", reason: last.tee ? "no signed reply" : `answered by ${last.provider}, which has no TEE` };
+    }
+    return { reply: clean(finalText, 1200), attempted_payment: attempt, tokens, ...last, verification };
   }
 
   /** Every payment a visitor's message leads to counts as an attack attempt. */

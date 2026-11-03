@@ -17,6 +17,7 @@ import { Store } from "./state.ts";
 import { RateLimiter, clientIp } from "./ratelimit.ts";
 import { Market, isAccountId } from "./market.ts";
 import { encodeHeader } from "../../mcp/src/x402.ts";
+import { TeeVerifier } from "./tee.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "../../..");
@@ -26,7 +27,11 @@ const env = process.env;
 const guard = new AgentGuard(loadConfig({ ...env, AGENTGUARD_VAULT: env.SENTINEL_VAULT_ID || "sentinel.agentguard.testnet" }));
 const store = new Store(env.SENTINEL_STATE_FILE ?? join(here, "../data/state.json"));
 const llm = new LLM(providersFromEnv(env));
-const brain = new Brain(llm, guard, store);
+// Checks NEAR AI Cloud's TEE attestation (Intel TDX + NVIDIA GPU) and each reply's signature.
+const tee = env.NEAR_AI_API_KEY && env.TEE_VERIFY !== "off"
+  ? new TeeVerifier({ baseUrl: env.NEAR_AI_BASE_URL ?? "https://cloud-api.near.ai/v1", apiKey: env.NEAR_AI_API_KEY, model: env.NEAR_AI_MODEL ?? "deepseek-ai/DeepSeek-V4.1-Flash-1017" })
+  : undefined;
+const brain = new Brain(llm, guard, store, tee);
 const metabolism: MetabolismConfig = {
   computeAccount: env.SENTINEL_COMPUTE_ACCOUNT ?? "compute.agentguard.testnet",
   rentNearPerTick: env.SENTINEL_RENT_NEAR ?? "0.002",
@@ -78,6 +83,7 @@ async function buildStatus() {
     treasury: stats,
     rules,
     thinking: { thoughts: s.thoughts, tokens_total: s.tokens_total, tokens_unpaid: s.tokens_unpaid, paid_for_living_near: yoctoToNear(s.metabolism_paid_yocto) },
+    tee: teeSummary(),
     business: {
       sells: "is this address safe to pay? (GET /api/check, HTTP 402)",
       price_near: yoctoToNear(BigInt(nearToYocto(env.SENTINEL_CHECK_PRICE_NEAR ?? "0.01"))),
@@ -87,6 +93,14 @@ async function buildStatus() {
     attacks: { total: s.attacks_total, blocked: s.attacks_blocked, held: s.attacks_held, paid: s.attacks_paid },
     explorer: `${guard.cfg.explorer}/address/${guard.cfg.vault}`,
   };
+}
+
+function teeSummary() {
+  const a = tee?.last;
+  if (!tee) return { checked: false, reason: "no NEAR AI key on this server" };
+  if (!a) return { checked: false, reason: "first check running" };
+  const m = a.models.find((x) => x.ok) ?? a.models[0];
+  return { checked: true, ok: a.ok, checked_at: a.checked_at, model: a.model, gateway_tdx: a.gateway?.tdx_status ?? null, model_tdx: m?.tdx_status ?? null, gpu: m?.gpu ?? null, signers: a.verified_signers };
 }
 
 function send(res: ServerResponse, code: number, body: unknown, headers: Record<string, string> = {}) {
@@ -133,6 +147,7 @@ const server = createServer(async (req, res) => {
     if (req.method === "OPTIONS") return send(res, 204, {});
     if (url.pathname === "/health") return send(res, 200, { ok: true });
     if (url.pathname === "/api/status" && req.method === "GET") return send(res, 200, await status());
+    if (url.pathname === "/api/tee" && req.method === "GET") return send(res, 200, tee?.last ?? { checked: false });
     if (url.pathname === "/api/feed" && req.method === "GET") {
       const limit = Math.min(Number(url.searchParams.get("limit") ?? 50), 300);
       return send(res, 200, store.state.feed.slice(0, limit));
@@ -192,5 +207,10 @@ server.listen(PORT, () =>
       (guard.cfg.agentKey ? "" : " [read-only: no agent key, it can't pay]"),
   ),
 );
+if (tee) {
+  const check = () => tee.attest().then((a) => console.log(`TEE attestation ${a.ok ? "verified" : "NOT verified"} at ${a.checked_at}`), (e) => console.error("TEE check failed", e));
+  check();
+  setInterval(check, 30 * 60_000);
+}
 // Without an agent key Sentinel can't pay, so there is no heartbeat (it would only log failures).
 if (env.SENTINEL_HEARTBEAT !== "off" && guard.cfg.agentKey) setInterval(heartbeat, TICK_MINUTES * 60_000);

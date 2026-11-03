@@ -109,6 +109,9 @@ h1 {
 .rich ul { margin: 0; padding-left: 1.2em; display: grid; gap: 2px; }
 .rich strong { font-weight: 700; }
 .msg-meta { margin: -6px 0 0; font-size: 0.78rem; color: var(--ink-soft); }
+.proof-ok { color: var(--paid); }
+.proof-ok a { color: inherit; }
+.proof-bad { color: var(--stamp); }
 .msg-error { color: var(--stamp); font-size: 0.95rem; }
 .thinking { color: var(--ink-soft); font-style: italic; font-family: var(--display); }
 

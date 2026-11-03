@@ -41,7 +41,7 @@ curl -s https://rpc.testnet.fastnear.com -H 'content-type: application/json' \
   | node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>console.log(Buffer.from(JSON.parse(d).result.result).toString()))'
 ```
 
-**4. Run the TypeScript tests** → MCP server 16, Sentinel 12 (no network: scripted model, fake vault, recorded tx shapes):
+**4. Run the TypeScript tests** → MCP server 16, Sentinel 22 (no network: scripted model, fake vault, recorded tx shapes, a real recorded NEAR AI attestation):
 ```sh
 cd packages/mcp && npm install && npm test
 cd ../sentinel && npm install && npm test
@@ -76,7 +76,7 @@ Without the demo agent key, the read-only tools work and `agentguard_pay` return
 | Sentinel earns: paid checks over HTTP 402 in native NEAR, verified on-chain by Sentinel | ✅ live (testnet). x402-shaped, but our own NEAR scheme, not an official x402 network |
 | `lock_rules()` on Sentinel's vault | ⏳ tested on a local node; on testnet at public launch |
 | Public Sentinel page + hosted server | ✅ https://sentinel-47ip.onrender.com (Render) |
-| TEE attestation verified in code | ⏳ planned. Sentinel uses NEAR AI Cloud (TEE) but doesn't verify the attestation yet |
+| TEE attestation verified in code | ✅ Sentinel checks NEAR AI Cloud's Intel TDX quotes (dcap-qvl), the nonce + signer binding, the config measurement and NVIDIA GPU attestation (NRAS), then the signature on each reply over the exact bytes. Not done: RTMR3 event-log replay, image provenance, NRAS JWT signature, TLS binding |
 | Mainnet | ❌ testnet only |
 
 ## License

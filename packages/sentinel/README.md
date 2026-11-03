@@ -28,13 +28,23 @@ x402 has no official NEAR scheme. This is our own `exact` scheme in the x402 mes
 ## The page
 `public/` (no framework, no build step): the live balance inside a guilloche rosette, the trick-me chat, the vault's real rules, the public log of robbery attempts with tx links, and how Sentinel lives. When a visitor's message makes Sentinel try a payment, a payment slip shows the payment travelling to the vault and the vault's answer stamped on it ("Blocked by contract", "Held for owner", "Paid within rules"). Visitor text is only ever inserted as text, never as HTML. Light and dark themes, works at phone width, motion off under `prefers-reduced-motion`.
 
+## Proving its brain runs in a TEE (`src/tee.ts`)
+Every 30 minutes, and before each reply, Sentinel fetches NEAR AI Cloud's attestation report with its **own fresh nonce** and checks it, following [docs.near.ai/cloud/verification](https://docs.near.ai/cloud/verification) and NEAR's reference verifier:
+1. The Intel TDX quotes of the gateway and the model machine verify with Intel's collateral (`@phala/dcap-qvl-node`); status `UpToDate` (or `OutOfDate`, as in the reference verifier).
+2. Inside the verified quote, `report_data` = the signing address + our nonce.
+3. Inside the verified quote, `MRCONFIGID` = `01 || sha256(app_compose) || 0…`.
+4. The NVIDIA GPU evidence carries our nonce, and NVIDIA's attestation service (NRAS) says `true`.
+5. After each reply: NEAR AI's `provider_tee` signature over `model:sha256(request):sha256(response)` of the **exact bytes** recovers to an address that passed 1–4 *before* the reply was requested.
+
+The page shows "Verified" only when all of that passed. Otherwise it says why not (for example, the signature lookup can miss because NEAR AI keeps signatures in one instance's memory). `GET /api/tee` returns the full evidence. Not checked: RTMR3 event-log replay, image provenance, the NRAS JWT's own signature, TLS binding to the gateway. Tests use a real NEAR AI attestation as a fixture (`test/fixtures/near-ai-attestation.json`, public data).
+
 ## Deploy
 `render.yaml` at the repo root (Render Blueprint): Starter plan (a free service sleeps and would stop the heartbeat), 1 GB disk for the log. Secrets typed in Render: `AGENTGUARD_AGENT_KEY`, `NEAR_AI_API_KEY`, `NEBIUS_API_KEY`, `DGRID_API_KEY`. Visitor IPs for the rate limit come from Cloudflare's `True-Client-IP`, never from `X-Forwarded-For` (Render passes a client's own value through).
 
 ## Run it
 ```sh
 cd packages/mcp && npm install && cd ../sentinel && npm install
-npm test     # 12 unit tests (scripted model + fake vault, no network)
+npm test     # 22 unit tests (scripted model + fake vault, no network)
 npm start    # http://localhost:3000 (the public page) + the API, reads ../../.env
 ```
 Needs `NEAR_AI_API_KEY` (or the Nebius/DGrid keys) in `.env`, and the agent key at `~/.near-credentials/testnet/sentinel.agentguard.testnet.json` to make payments.

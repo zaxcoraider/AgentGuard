@@ -11,10 +11,24 @@ import { Store } from "../src/state.ts";
 
 const cfg = { computeAccount: "compute.testnet", rentNearPerTick: "0.002", nearPer1kTokens: "0.0005", maxPerPaymentNear: "0.05" };
 
-test("tick fee = rent + tokens, capped at the vault limit", () => {
-  assert.equal(tickFee(cfg, 0), 2_000_000_000_000_000_000_000n);
-  assert.equal(tickFee(cfg, 9644), 6_822_000_000_000_000_000_000n);
-  assert.equal(tickFee(cfg, 10_000_000), 50_000_000_000_000_000_000_000n);
+test("tick fee = rent for time lived + tokens, capped at the vault limit", () => {
+  const tick = 600_000;
+  assert.equal(tickFee(cfg, 0, tick).amount, 2_000_000_000_000_000_000_000n);
+  assert.equal(tickFee(cfg, 9644, tick).amount, 6_822_000_000_000_000_000_000n);
+  assert.equal(tickFee(cfg, 0, tick / 2).amount, 1_000_000_000_000_000_000_000n, "half the time, half the rent");
+  assert.equal(tickFee(cfg, 0, 100 * tick).amount, 6_000_000_000_000_000_000_000n, "downtime charged for 3 ticks at most");
+  const capped = tickFee(cfg, 10_000_000, tick);
+  assert.equal(capped.amount, 50_000_000_000_000_000_000_000n);
+  assert.equal(capped.tokensCovered, 96_000, "(0.05 - 0.002) / 0.0005 per 1k = 96k tokens; the rest carry over");
+});
+
+test("a heartbeat never repeats the previous amount (the vault would hold it, and a locked vault can't approve)", () => {
+  const tick = 600_000;
+  const idle = tickFee(cfg, 0, tick).amount;
+  assert.notEqual(tickFee(cfg, 0, tick, idle).amount, idle);
+  const cap = 50_000_000_000_000_000_000_000n;
+  assert.notEqual(tickFee(cfg, 10_000_000, tick, cap).amount, cap);
+  assert.notEqual(tickFee(cfg, 0, tick + 1).amount, idle, "1 ms more life = a different amount");
 });
 
 test("rate limiter allows N per window per key", () => {

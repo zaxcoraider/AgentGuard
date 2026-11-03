@@ -32,8 +32,9 @@ const metabolism: MetabolismConfig = {
   rentNearPerTick: env.SENTINEL_RENT_NEAR ?? "0.002",
   nearPer1kTokens: env.SENTINEL_NEAR_PER_1K_TOKENS ?? "0.0005",
   maxPerPaymentNear: "0.05",
+  tickMinutes: Number(env.SENTINEL_TICK_MINUTES ?? 10),
 };
-const TICK_MINUTES = Number(env.SENTINEL_TICK_MINUTES ?? 10);
+const TICK_MINUTES = metabolism.tickMinutes!;
 const perIp = new RateLimiter(Number(env.TRICK_ME_MAX_PER_HOUR ?? 10), 60 * 60_000);
 const global = new RateLimiter(Number(env.TRICK_ME_MAX_PER_DAY ?? 500), 24 * 60 * 60_000);
 const checkLimit = new RateLimiter(Number(env.CHECK_MAX_PER_HOUR ?? 120), 60 * 60_000);

@@ -30,6 +30,8 @@ export interface State {
   /** Should stay 0: a payment that went out because of a visitor's message. */
   attacks_paid: number;
   last_heartbeat: string | null;
+  /** Amount of the last heartbeat payment (the next one must differ: the vault holds repeats). */
+  last_fee_yocto?: string;
   /** How often each account was named as the payee in a trick-me attempt. Anyone can name anyone, so this is a hint only. */
   attack_payees: Record<string, number>;
   /** Paid "safe to pay?" checks (x402). */

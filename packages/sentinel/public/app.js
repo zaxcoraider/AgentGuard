@@ -150,9 +150,21 @@ async function refreshStatus() {
 
   const days = s.days_left_at_rest;
   $("v-days").textContent = days == null ? "–" : days >= 1 ? `${Math.floor(days)} days` : `${Math.round(days * 24)} hours`;
-  $("v-living").textContent = `${fmtNear(s.thinking.paid_for_living_near)} NEAR`;
   $("v-thoughts").textContent = s.thinking.thoughts.toLocaleString("en-US");
-  $("v-checks").textContent = s.business ? `${s.business.checks_sold} (${fmtNear(s.business.earned_near)} NEAR)` : "–";
+  const bk = s.business && s.business.books;
+  if (bk) {
+    const sold = s.business.checks_sold;
+    $("b-rev-what").textContent = `${sold.toLocaleString("en-US")} check${sold === 1 ? "" : "s"} sold at ${fmtNear(s.business.price_near)} NEAR`;
+    $("b-rev").textContent = `${fmtNear(bk.revenue_near)} NEAR`;
+    const cost = Number(bk.costs_near);
+    $("b-cost").textContent = `${cost > 0 ? "−" : ""}${fmtNear(cost)} NEAR`;
+    const net = Number(bk.net_near);
+    $("b-net").textContent = `${net > 0 ? "+" : net < 0 ? "−" : ""}${fmtNear(Math.abs(net))} NEAR`;
+    $("b-net").classList.toggle("neg", net < 0);
+    $("b-net-what").textContent = net > 0 ? "in profit" : net < 0 ? "spending more than it earns" : "even, so far";
+    $("b-breakeven").textContent = bk.break_even_checks_per_day == null ? "" :
+      `To pay for itself it needs to sell about ${bk.break_even_checks_per_day} checks a day. Living costs about ${fmtNear(bk.cost_per_day_near)} NEAR a day (${bk.cost_per_day_basis}).`;
+  }
   $("v-blocked").textContent = s.treasury.blocked_count.toLocaleString("en-US");
 }
 

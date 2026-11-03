@@ -167,3 +167,22 @@ test("every message is tallied by outcome, and payouts are recorded by recipient
   assert.deepEqual(s.state.attempts, { total: 3, ai_refused: 1, vault_blocked: 1, vault_held: 0, paid: 1 });
   assert.deepEqual(s.state.attack_paid_to, { "compute.testnet": "10000000000000000000000" });
 });
+
+test("books: revenue, costs, net, and the break-even point", async () => {
+  const { books } = await import("../src/books.ts");
+  const N = 10n ** 24n;
+  const base = { bornAt: "2026-11-01T00:00:00Z", priceYocto: N / 100n, rentPerTickYocto: (2n * N) / 1000n, tickMinutes: 10 };
+  // Two days old: costs are measured. 0.6 NEAR spent over 2 days = 0.3/day = 30 checks/day to break even.
+  const b = books({ ...base, earnedYocto: N / 10n, costYocto: (6n * N) / 10n, now: Date.parse("2026-11-03T00:00:00Z") });
+  assert.equal(b.net_near, "-0.5");
+  assert.equal(b.profitable, false);
+  assert.equal(b.cost_per_day_near, "0.3");
+  assert.equal(b.cost_per_day_basis, "measured");
+  assert.equal(b.break_even_checks_per_day, 30);
+  // An hour old: only the rent is known (144 ticks x 0.002 = 0.288/day), and it says so.
+  const young = books({ ...base, earnedYocto: N, costYocto: 0n, now: Date.parse("2026-11-01T01:00:00Z") });
+  assert.equal(young.cost_per_day_near, "0.288");
+  assert.match(young.cost_per_day_basis, /rent only/);
+  assert.equal(books({ ...base, earnedYocto: 0n, costYocto: 0n, now: Date.parse("2026-11-01T01:00:00Z") }).profitable, false, "zero is not a profit");
+  assert.equal(young.net_near, "1");
+});

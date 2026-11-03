@@ -41,13 +41,16 @@ The page shows "Verified" only when all of that passed. Otherwise it says why no
 ## Deploy
 `render.yaml` at the repo root (Render Blueprint): Starter plan (a free service sleeps and would stop the heartbeat), 1 GB disk for the log. Secrets typed in Render: `AGENTGUARD_AGENT_KEY`, `NEAR_AI_API_KEY`, `NEBIUS_API_KEY`, `DGRID_API_KEY`. Visitor IPs for the rate limit come from Cloudflare's `True-Client-IP`, never from `X-Forwarded-For` (Render passes a client's own value through).
 
+## Its books
+`/api/status` → `business.books` (from `src/books.ts`): revenue from paid checks, the cost of living actually paid on-chain, net, cost per day (measured after a day; before that, rent only, and it says so) and how many checks a day it needs to sell to break even. The page shows them as a small ledger. Sentinel can't share revenue with anyone: its locked vault pays only its compute account, so `can_pay_out_profit` is `false`.
+
 ## Offline demo
 `npm run demo` (no keys, no model, no blockchain): `src/offline.ts` has a simulated vault that applies the contract's checks in the contract's order, set up like Sentinel's locked vault, and a scripted, deliberately gullible stand-in for the model. The page shows an "Offline demo" banner, no tx links, and "Blocked by the rules" instead of "by contract". Paid checks and TEE verification are off. Heartbeat every minute. Each run starts with a clean log.
 
 ## Run it
 ```sh
 cd packages/mcp && npm install && cd ../sentinel && npm install
-npm test     # 25 unit tests (scripted model + fake vault, no network)
+npm test     # 26 unit tests (scripted model + fake vault, no network)
 npm start    # http://localhost:3000 (the public page) + the API, reads ../../.env
 ```
 Needs `NEAR_AI_API_KEY` (or the Nebius/DGrid keys) in `.env`, and the agent key at `~/.near-credentials/testnet/sentinel.agentguard.testnet.json` to make payments.

@@ -19,6 +19,7 @@ import { Market, isAccountId } from "./market.ts";
 import { encodeHeader } from "../../mcp/src/x402.ts";
 import { TeeVerifier } from "./tee.ts";
 import { ScriptedLLM, SimVault } from "./offline.ts";
+import { books } from "./books.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "../../..");
@@ -97,6 +98,17 @@ async function buildStatus() {
       price_near: yoctoToNear(BigInt(nearToYocto(env.SENTINEL_CHECK_PRICE_NEAR ?? "0.01"))),
       checks_sold: s.market.checks_sold,
       earned_near: yoctoToNear(s.market.earned_yocto),
+      books: books({
+        earnedYocto: BigInt(s.market.earned_yocto),
+        costYocto: BigInt(s.metabolism_paid_yocto),
+        bornAt: s.born_at,
+        now: Date.now(),
+        priceYocto: BigInt(nearToYocto(env.SENTINEL_CHECK_PRICE_NEAR ?? "0.01")),
+        rentPerTickYocto: BigInt(nearToYocto(metabolism.rentNearPerTick)),
+        tickMinutes: TICK_MINUTES,
+      }),
+      // Its vault is locked and pays only its compute account, so it can't share revenue with anyone.
+      can_pay_out_profit: false,
     },
     attempts: {
       ...s.attempts,

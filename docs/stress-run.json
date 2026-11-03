@@ -1,0 +1,2421 @@
+{
+ "summary": {
+  "vault": "stress.agentguard.testnet",
+  "requests": 240,
+  "matched_expected": 240,
+  "mismatches": 0,
+  "outcomes": {
+   "blocked:over_per_payment_limit": 60,
+   "blocked:recipient_not_allowlisted": 10,
+   "blocked:recipient_flagged": 5,
+   "blocked:cannot_pay_self": 30,
+   "pending:repeat_payment": 5,
+   "paid": 4,
+   "blocked:over_daily_limit": 126
+  },
+  "paid_to_anyone_not_allowed": 0,
+  "finished_at": "2026-11-03T14:35:57.489Z"
+ },
+ "results": [
+  {
+   "i": 0,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.539",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/FnawikDEAZnQ5o74AJ5B7DhDtUJGdK3RPsmx2ub461Eu"
+  },
+  {
+   "i": 1,
+   "kind": "stranger",
+   "to": "stranger-929572.testnet",
+   "amount_near": "0.015",
+   "expected": "blocked:recipient_not_allowlisted",
+   "actual": "blocked:recipient_not_allowlisted",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/3A1ekjbDdpJ3ecgr7tYPJtNaFdjhLspPY1nGdLvwaQsL"
+  },
+  {
+   "i": 2,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.044",
+   "expected": "blocked:recipient_flagged",
+   "actual": "blocked:recipient_flagged",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/666ZpW6m2BcdkA9Gym7QprUbo9GgV7ZbET29kcWEsAm8"
+  },
+  {
+   "i": 3,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.014",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/BRRoEUkjoS72w6un6mmnevKQBD4ByGW4Xd4g1cDpsJp8"
+  },
+  {
+   "i": 4,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.005",
+   "expected": "blocked:recipient_not_allowlisted",
+   "actual": "blocked:recipient_not_allowlisted",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/624CriAmtQ7oiUh1GDwfbiw9A3NiUuXiAmCpu2Ldx7oa"
+  },
+  {
+   "i": 5,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.022",
+   "expected": "pending:repeat_payment",
+   "actual": "pending:repeat_payment",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/HRx5GemCcqpLmA6LNJhtKo9fsCAuuy6r3sYhoa6CEJSG"
+  },
+  {
+   "i": 6,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.022",
+   "expected": "pending:repeat_payment",
+   "actual": "pending:repeat_payment",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/8sn5K5PzmHkRPAGe59WDSUDAGsYLVotR1FPBN46491JG"
+  },
+  {
+   "i": 7,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "34",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/DuRLA1X8fAZX4518d1BaDbP3wvdNrFYxaWK58hzrz9cn"
+  },
+  {
+   "i": 8,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.634",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/A9JS2UtHN6Jcp84F6HF3HskyeKp2binffwXpSXDHmVpb"
+  },
+  {
+   "i": 9,
+   "kind": "stranger",
+   "to": "stranger-32942.testnet",
+   "amount_near": "0.007",
+   "expected": "blocked:recipient_not_allowlisted",
+   "actual": "blocked:recipient_not_allowlisted",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/HDRGC63hjccnsfiZZmbKAMhetFb16Wh1h14CfATgxUPY"
+  },
+  {
+   "i": 10,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.037",
+   "expected": "blocked:recipient_flagged",
+   "actual": "blocked:recipient_flagged",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/HLXUJDPWLXCzYm5u7yssuNE1NYn7PreKRuoAYSF2rNCH"
+  },
+  {
+   "i": 11,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.01",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/5KowWSDkxpBCTpjB6GLPLL67sCXigukRGSYEJy1bvFfQ"
+  },
+  {
+   "i": 12,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.031",
+   "expected": "blocked:recipient_not_allowlisted",
+   "actual": "blocked:recipient_not_allowlisted",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/99vY8XC8QSau1WSUUNUiGMSNV4xNkmpnVH6DxPdvaVR6"
+  },
+  {
+   "i": 13,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.023",
+   "expected": "paid",
+   "actual": "paid",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/mUeSfoKNgZnrgSEaPSnVWCWBeNZ7CK64wyDaHfqbgsa"
+  },
+  {
+   "i": 14,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.023",
+   "expected": "pending:repeat_payment",
+   "actual": "pending:repeat_payment",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/GWcMd8zHfW18fSUPKtgpwFL4YSEDyVDcfTX9KuXHZ1zm"
+  },
+  {
+   "i": 15,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "45",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/EfVjaKUDHN9aKBZ256TXA9YXW8hKADDQJABqrULofLQ"
+  },
+  {
+   "i": 16,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.7",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/2x3uxPN8StLhJeW4sn7aeXTM1uDRvLy4dXrE2CRumy8S"
+  },
+  {
+   "i": 17,
+   "kind": "stranger",
+   "to": "stranger-188991.testnet",
+   "amount_near": "0.038",
+   "expected": "blocked:recipient_not_allowlisted",
+   "actual": "blocked:recipient_not_allowlisted",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/E5FuMHZQgSe8FPbjj5EbsmTFPs2iHSfPSP1qRHqsjefB"
+  },
+  {
+   "i": 18,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.04",
+   "expected": "blocked:recipient_flagged",
+   "actual": "blocked:recipient_flagged",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/BsazV5xgybuasyFvmoHHegWvi1Lwej3CJZYZYy9YjMbe"
+  },
+  {
+   "i": 19,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.047",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/2a7HCj78MLdmv3W3xv5vTrxpefY6TMzpsU3wVnKZ2cJ4"
+  },
+  {
+   "i": 20,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.009",
+   "expected": "blocked:recipient_not_allowlisted",
+   "actual": "blocked:recipient_not_allowlisted",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/CJikpvmU5KKLuXhBDgPRGyHJ1qKRNyFE54s48HSNf5po"
+  },
+  {
+   "i": 21,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.024",
+   "expected": "paid",
+   "actual": "paid",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/2T55xV5QtK6bpK1CKPh3wy6bTXwuWgGSokzr955sUasF"
+  },
+  {
+   "i": 22,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.024",
+   "expected": "pending:repeat_payment",
+   "actual": "pending:repeat_payment",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/65zcvy6DiaDiGgXj545LHcKW5e8BfVwKsFCnrmnZ92D2"
+  },
+  {
+   "i": 23,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "18",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/AwsQYxpFVLzDPMhLYsUmAG1Yu5zz72JvLkspsVnC5u7P"
+  },
+  {
+   "i": 24,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.707",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/FthfppNGrbyPBHMEFgAZYcYMEUmSt1unFxvBVTSZyxiS"
+  },
+  {
+   "i": 25,
+   "kind": "stranger",
+   "to": "stranger-598629.testnet",
+   "amount_near": "0.043",
+   "expected": "blocked:recipient_not_allowlisted",
+   "actual": "blocked:recipient_not_allowlisted",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/F9QEJL4suJKugvbDqyZhFKxmnxVT8kReKg3DxM5HDhJN"
+  },
+  {
+   "i": 26,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.017",
+   "expected": "blocked:recipient_flagged",
+   "actual": "blocked:recipient_flagged",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/8RuVhuEBMMVtVj38oYDWPNDMt8CCg81LUxR5LkiQ5uPf"
+  },
+  {
+   "i": 27,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.037",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/9iu6o4a7c5J1w4uasxbWYBxWeiNW7ZHJRiBZX64v6UjY"
+  },
+  {
+   "i": 28,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.033",
+   "expected": "blocked:recipient_not_allowlisted",
+   "actual": "blocked:recipient_not_allowlisted",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/BnVCoFA1SotFNiADNV6fLB5db7ws9Wzgk3oVHZqE1FY"
+  },
+  {
+   "i": 29,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.025",
+   "expected": "paid",
+   "actual": "paid",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/6HqDnLRxo95MTHNy3MWapvJjkGgL3oGKtipvScdknEjx"
+  },
+  {
+   "i": 30,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.025",
+   "expected": "pending:repeat_payment",
+   "actual": "pending:repeat_payment",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/3HptdcSLj1rPq35RT7NLnopJcbdLpEgk6omQwPvKrgmu"
+  },
+  {
+   "i": 31,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "37",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/6NnJCJJ1WbHNmnaNdUfo8kBW7CfmrmqaSGJANTLku3rT"
+  },
+  {
+   "i": 32,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.874",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/HmLUecnVaXdadkjiFyVT7wycvKbJZH51SrErRMJRrMCW"
+  },
+  {
+   "i": 33,
+   "kind": "stranger",
+   "to": "stranger-513877.testnet",
+   "amount_near": "0.023",
+   "expected": "blocked:recipient_not_allowlisted",
+   "actual": "blocked:recipient_not_allowlisted",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/CVpLuM6USy7b2BvEjpbBGsRysMhDLr9Ca85ALcyJZcZx"
+  },
+  {
+   "i": 34,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.012",
+   "expected": "blocked:recipient_flagged",
+   "actual": "blocked:recipient_flagged",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/7PWJ2PmDGQHpJv7ProkcCRoJHgDcjSTWaSpNRSQhUq2P"
+  },
+  {
+   "i": 35,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.044",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/5iXsHRfDDwbHY9HyBvXEaPwrMukscGsCpsoJQGBh6388"
+  },
+  {
+   "i": 36,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.013",
+   "expected": "blocked:recipient_not_allowlisted",
+   "actual": "blocked:recipient_not_allowlisted",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/DTFYNcXUVKjxakipEzNDzBcTRjf2tU5DByKZEqeeTUam"
+  },
+  {
+   "i": 37,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.026",
+   "expected": "paid",
+   "actual": "paid",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/Aqiwoq5oqEh2oS4rztcqrmLL1HTrkpFtNpFoPcq5ASFa"
+  },
+  {
+   "i": 38,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.026",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/HCUbTuhfwMBLDSpqK1xb7t66yTmke4NRzR1pyXBnbfQg"
+  },
+  {
+   "i": 39,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "4",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/HqA9ywecXGtzuxDiiwFdwmwTEPyn62M3dHT7hxgU5jqD"
+  },
+  {
+   "i": 40,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.174",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/F6WKPYGMn1kCYPTfms5De2U6k1uie9yHyF3r6pVaGtNj"
+  },
+  {
+   "i": 41,
+   "kind": "stranger",
+   "to": "stranger-64413.testnet",
+   "amount_near": "0.044",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/ATKe31LwWi5UqB5tBw3Uo1ZPzpDJANrH2NpkmYHLT8p"
+  },
+  {
+   "i": 42,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.003",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/Crf9UJ8aUoufy7oMw8S5LvyZzFtBVy2xz9h2zKZmbvR2"
+  },
+  {
+   "i": 43,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.002",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/66gqK8Dysv54FfkKWSZjqt2E6xYYuDPJG7yet61cWMqX"
+  },
+  {
+   "i": 44,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.046",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/5TKeo5ubNzgMVCRzR9ieawcgFo777BartYhzWuMWqrZe"
+  },
+  {
+   "i": 45,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.027",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/ofix1EvtGGPbNVmjaZkMB49cgyYbuj4s4xRHfR8pnGN"
+  },
+  {
+   "i": 46,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.027",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/F8XBPyHHCt6GPzV6f9v5pasXLi7VJJ5t9214f27hAF4p"
+  },
+  {
+   "i": 47,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "47",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/HY9pMDToR7CJi3LN3r5yRTCLGDdhWDdcqEW6STC7Anv1"
+  },
+  {
+   "i": 48,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.199",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/BUW5qKqC8xTRjmANv99rmhn9YBHW5XELVkqtMP1rCc9"
+  },
+  {
+   "i": 49,
+   "kind": "stranger",
+   "to": "stranger-419635.testnet",
+   "amount_near": "0.011",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/xUydoivU7QZziJ9rk6Z437BWNiimNTyHCBpGhTUjqVR"
+  },
+  {
+   "i": 50,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.008",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/AJHi1CvjQs1KVtnMdP6D2vEwvFvCvzmi5ZkFDbXEnskk"
+  },
+  {
+   "i": 51,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.012",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/HFycfqGX5Yq6azf352hEB8ATDXsmfENYVgPDSQjvkCpm"
+  },
+  {
+   "i": 52,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.033",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/BRmf7XimTZSyzwqkypzBhfZhLDxJw5m9TBVZUXrEiZJb"
+  },
+  {
+   "i": 53,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.028",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/ES5SvoZP55myy9qzaTVms6hQQ2WyuQDFQQQ3XKarJpBn"
+  },
+  {
+   "i": 54,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.028",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/6AKczk77UAWNqDFcTUd7o9hoS2Dqc9ZBDxknWsuvNKkq"
+  },
+  {
+   "i": 55,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "47",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/BReXy1tE1kZXSkSm6NfexAAuWwivfNEbpdHvuoFsy3Be"
+  },
+  {
+   "i": 56,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.67",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/3HGxidVm8fQwW6sHNzLDnfHdCARvR6BkpHpvDCk8zSU2"
+  },
+  {
+   "i": 57,
+   "kind": "stranger",
+   "to": "stranger-738100.testnet",
+   "amount_near": "0.033",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/4pF2qWAmTBEc5Ku3eukUsDSH79AeanEuGHxRTEtNkdkA"
+  },
+  {
+   "i": 58,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.012",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/4T1qTH2j1rLJMsaobZvfTXYK6cWVZNkd338bCiRGSUgG"
+  },
+  {
+   "i": 59,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.002",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/9SysNYiKrKP9KMN3VAu5y9hkJvgtzC8KfbR7c1CWSXJ5"
+  },
+  {
+   "i": 60,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.021",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/BsgvjEKHw5VookjTXsMTaHLwGuET2wEtvNP8kQAHZqrU"
+  },
+  {
+   "i": 61,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.029",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/9m3zidDMVb4ist6vtwnh2Fnu8zj3pbHu6HBhppd1T2eC"
+  },
+  {
+   "i": 62,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.029",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/Gmh6zmGD7rs47J9tiDhXyhuX4nHdP7T8UfdAfdu2VtUn"
+  },
+  {
+   "i": 63,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "29",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/EgScfXo5ojeTbRkuGdXS9AmL1dDg7EMHACcB3mJs68ht"
+  },
+  {
+   "i": 64,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.852",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/4m9tutSkEa1TFDCumCjdPvD5h6KQY3wizraejRg54R5D"
+  },
+  {
+   "i": 65,
+   "kind": "stranger",
+   "to": "stranger-692962.testnet",
+   "amount_near": "0.01",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/C2opNDBkXb3jGEw213RXVNDDGtqGkQnqqFHM6kHY1P5i"
+  },
+  {
+   "i": 66,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.029",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/J8fCAeQ95Jvaftf9iXEPaseET2xharcweywm27q31Nsu"
+  },
+  {
+   "i": 67,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.04",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/5akMSAFgnN8uMQm2kjw2Sd1KD5rRYybggn3JBixT1hm"
+  },
+  {
+   "i": 68,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.023",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/2nDov3GT1kc119we5BCdRHnzkW37wewqdhqhADxKvAGV"
+  },
+  {
+   "i": 69,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.03",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/FMkEEyUBXXUhJc16Ga4WdXiPGzgC1VZo6SSYtEKJwPgj"
+  },
+  {
+   "i": 70,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.03",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/Hp43XPqfvBCtjpckvDhFqHyEmtwzhbCggFVJLbNQP4Zh"
+  },
+  {
+   "i": 71,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "42",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/2VnTiPK9bsXjUKAcMGNEagayLGXN85R8Fcp4QpdxhPMW"
+  },
+  {
+   "i": 72,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.905",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/4ZKewutmXV3zWRHdHv4vKSTUswCvq212dVrEuhJVDL12"
+  },
+  {
+   "i": 73,
+   "kind": "stranger",
+   "to": "stranger-604166.testnet",
+   "amount_near": "0.025",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/9GdQvuLPMo2M6aNraaxy4B8w4ux2exhDvN1BnoedMJts"
+  },
+  {
+   "i": 74,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.032",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/4QqGzjGyrLsHy7o3Xm92xc9vkPZct13cm4Xx7wz4pns6"
+  },
+  {
+   "i": 75,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.044",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/2yuW6JAsz7Bg8HMkbWQJL8yRfkru5GJTeHeTUiGKZxkH"
+  },
+  {
+   "i": 76,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.046",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/rDcGb3vnArWyDGM8UoXmTLcCrCUCqET21f75UAx2bBp"
+  },
+  {
+   "i": 77,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.031",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/EPwafxd8kZEz3Nz43Wuf9rZKpkUSxMyc55EckHhDppji"
+  },
+  {
+   "i": 78,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.031",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/5RFKwCD92WkDewKpzZDcUbn7s4Av55hmCYWdjzJNJW5h"
+  },
+  {
+   "i": 79,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "5",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/D6w2TyMtv4xqW33DT2cduo7vhUuCQgX3vugjrxuNoozm"
+  },
+  {
+   "i": 80,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.684",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/52poFhxabHU22NV4WDFkKkmHq4yUHf5bCzHm9CjUQ6QX"
+  },
+  {
+   "i": 81,
+   "kind": "stranger",
+   "to": "stranger-888905.testnet",
+   "amount_near": "0.008",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/BRHPSyfYTCXUJMsVgxt5z5UYhWpZv2rUJ29qz9UzXf1E"
+  },
+  {
+   "i": 82,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.033",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/4b44ofDhKTdJ8BoJrARaiodfvyabjPSpLKRabdzfzmWL"
+  },
+  {
+   "i": 83,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.048",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/58QL3PCL3eQdjHT1DvoBuDgTPoJZ5gGQUpTLCJbZHSa3"
+  },
+  {
+   "i": 84,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.034",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/H3woMc7TLCmx5ZRzTZMNDRWTZJ9moAdpLpWptZ6Ut2S8"
+  },
+  {
+   "i": 85,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.032",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/Gab9tvLjuGaGXHWe5iTYZKVox9tvkQkCxnr7oFt4fxou"
+  },
+  {
+   "i": 86,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.032",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/Ewf4wXK6id58LjsypUAPZaA2R9HiQ8g117vbfjUfhgdB"
+  },
+  {
+   "i": 87,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "11",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/6awe7AsEfhuc3KxNP3Gb1vuqV2LRM5SkkVAiLqkxajgQ"
+  },
+  {
+   "i": 88,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.728",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/AKuZQ8PNJstmQRz6UxTmQNAsjHXmTxHcmNVbFFKPQ4if"
+  },
+  {
+   "i": 89,
+   "kind": "stranger",
+   "to": "stranger-525776.testnet",
+   "amount_near": "0.027",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/BxZbAg98sUzmcMMcuR6Wmsao3zdMXLjudvGDiM9p3FBb"
+  },
+  {
+   "i": 90,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.033",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/E2VotuwN8feXYk2REafPipdM2CKtcGG1tM38fCG5AHRd"
+  },
+  {
+   "i": 91,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.048",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/H2w2uJbGvW9hwGFcksBDSjDVb1BvVCgYi6tE6GdbAqhC"
+  },
+  {
+   "i": 92,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.041",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/DMhSbNbKxPr32fvMdJqQfRbmpFQPTCthYR4Xtprhr6CA"
+  },
+  {
+   "i": 93,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.033",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/3vWv5Lci4CeGuehBWXCRHYPGSvQSwzZDN4Mrws1FLQwD"
+  },
+  {
+   "i": 94,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.033",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/FuRfRdRgqrFJzKPo5p5GcJ6J8YygcNvCEZLS7NeDRcm6"
+  },
+  {
+   "i": 95,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "12",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/2MPzr9FU78d2skG9mZz6zTCX3s4cbQrtwZX57tWm1oKF"
+  },
+  {
+   "i": 96,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.117",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/2ZGaMEm6nrzJkSjak3UL7VEbXWBerwTrg5y9dkobTXmP"
+  },
+  {
+   "i": 97,
+   "kind": "stranger",
+   "to": "stranger-871076.testnet",
+   "amount_near": "0.016",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/57eYxuLzCVUyh2FmBgCC8tKikyKEurzcrsBwN4gYBXvF"
+  },
+  {
+   "i": 98,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.041",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/AxhkG2figqWxr3V5JBJTjGHtMGfEf7af8G5fSMxjxpgZ"
+  },
+  {
+   "i": 99,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.043",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/5HsKUrDyJ7SYMc8zsKpByNUdFSD5KB8bpYC9Djne4rS1"
+  },
+  {
+   "i": 100,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.019",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/7eqeLmxoG6JDifhtjaWB2EQASEZvgZavmyWVw1TiSnHY"
+  },
+  {
+   "i": 101,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.034",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/CrukL3g2maGtrMeFT2KMzrTRfcBzQzhpxxuriWJqvqtv"
+  },
+  {
+   "i": 102,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.034",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/2h6BEAhZvuE7Pnf1iC5Eg19tE6wQgNk3FY7rSkmuDL4b"
+  },
+  {
+   "i": 103,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "12",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/DLFtBXHRCnhNfoWEJPubCQZSU298xvtxZJunDxCsTKMb"
+  },
+  {
+   "i": 104,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.815",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/2Nhg6w6C6CroruzaS444ef6EGPdkk3gJG6WbjQcaPqBH"
+  },
+  {
+   "i": 105,
+   "kind": "stranger",
+   "to": "stranger-332974.testnet",
+   "amount_near": "0.021",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/1213JTrpDKqzDYqvzy1zoaWuVhGPhayEoWfv2zMPGhu6"
+  },
+  {
+   "i": 106,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.021",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/9FeSycm1LYW267yC7NY8zJ8MiNBUF6GD9NMeSw3MdRxm"
+  },
+  {
+   "i": 107,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.034",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/CsXuUK2W6fsorF2TEofJzeVLKamvYv2MhJp96NiRx8p6"
+  },
+  {
+   "i": 108,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.035",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/EUQwQbNa6Dr3rFwa4sNAfBNeZ9cLi2knXuA3Pk2t4gky"
+  },
+  {
+   "i": 109,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.035",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/FZeo6HuuKCz4gjQmaNpG8YpWnNGyjCTpwxXZgf4K5eqB"
+  },
+  {
+   "i": 110,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.035",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/6pFT82Z4k4L3GUGDshQWqRNWyfd2CAZeCGJbu7dHXhxg"
+  },
+  {
+   "i": 111,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "14",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/FzXotnh57zheT3rdkRPFdqTswdeC8AJ2piv28FH1VUzF"
+  },
+  {
+   "i": 112,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.535",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/FQ35ZUKZNc7bhRibedr5TkqsU2uRSsd2dPPc1UwtzxT5"
+  },
+  {
+   "i": 113,
+   "kind": "stranger",
+   "to": "stranger-975520.testnet",
+   "amount_near": "0.005",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/57tp9rXvKWHt3XDrfcbZgN9eTR5h5JhesMV66ZxBfA6Z"
+  },
+  {
+   "i": 114,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.024",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/8vPmafZByQ5X4uAVs8wMMNKQqToUGLhYAJDKqqMxTsQn"
+  },
+  {
+   "i": 115,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.034",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/HynynoqYqpFXW1yVgnEUMNwELGHYFsq2CwcwX8aVnqjz"
+  },
+  {
+   "i": 116,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.009",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/7gfPxDVCsaJG7vfsGRWY2PoL1K3MjbS1kELE3aQWW89H"
+  },
+  {
+   "i": 117,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.036",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/92wWmYMCQtXF8hA5dV7odfV7D2PzvgYwDkL7PJg57edz"
+  },
+  {
+   "i": 118,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.036",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/8RPpFFGwLQ8YyGNguVTeyPPcchfqaFzHkaWpXmpLt7jt"
+  },
+  {
+   "i": 119,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "20",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/Gb9xuoebnA8koYrekonD5rmkQejKmJzjNZcSTybjPrzN"
+  },
+  {
+   "i": 120,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.45",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/J8JFf8MBRckmugemcHxZKzDYy3p1ZADDpFjFKCHYCzQd"
+  },
+  {
+   "i": 121,
+   "kind": "stranger",
+   "to": "stranger-986278.testnet",
+   "amount_near": "0.046",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/GVs1Tni3XPA41PmA1oivbFrm4mT9EnryhraErgHEyhQv"
+  },
+  {
+   "i": 122,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.037",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/Fs76wuQxo2zNN6FrUiAHwNxQEomTrxAp5Nwe6nnyUA2L"
+  },
+  {
+   "i": 123,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.03",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/Guk7jkrtQHvJDb1D4J1RTvWnKNipH3eba8tU9eMZM5Jg"
+  },
+  {
+   "i": 124,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.042",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/tH3bZ6fLvo8m32iXFvitUfyqQnwcSWAWexRVUCHbqbr"
+  },
+  {
+   "i": 125,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.037",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/EsXvjohjKGNCFN6erVPUUojXdE1VndRNPdtkhWRSC15D"
+  },
+  {
+   "i": 126,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.037",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/DF2UNWtgjF9Dw8pAFVGt3yzmTFrSnr3Xks2cbs59Sqxv"
+  },
+  {
+   "i": 127,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "35",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/8ZutDkEJaWdKgGgPeDMvdQzGkqXq8AgB7ot6iFipAqRY"
+  },
+  {
+   "i": 128,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.206",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/BpETThcpjfEdZQmmWjWQMBC7gwWkF6Jn2ZqGnf9pq1DG"
+  },
+  {
+   "i": 129,
+   "kind": "stranger",
+   "to": "stranger-511010.testnet",
+   "amount_near": "0.013",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/74pgwVRwEGQL2s1R7akR63Ek6mVj4VcWdADj59J7tns3"
+  },
+  {
+   "i": 130,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.03",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/FAzn3GVtbMhFvpDPC81gna4pXpB3V2otu4LVcsiZsWhq"
+  },
+  {
+   "i": 131,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.012",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/F9nKW3kL7fzze6Xqf8jHwhh6rMHgUtwfENyEyyGE8Uce"
+  },
+  {
+   "i": 132,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.034",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/86ifUoquAfVtieGfPnDheGbYa7f84TKtodSaRQWo4tXd"
+  },
+  {
+   "i": 133,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.038",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/2ifrLe18U2EpMxq8iaRmVGnUmGkX9kejY5B2NGnfu7UZ"
+  },
+  {
+   "i": 134,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.038",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/EH9Srq115riD7mo1x9CJRyMXophAbDnpHwZm3xyPGD1w"
+  },
+  {
+   "i": 135,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "21",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/ErsvkfrJ7euc3SaCT6RMiJhe9CVVkGLe9KEmR15uE9y"
+  },
+  {
+   "i": 136,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.482",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/BeuYy1onVzxrwNCSnEpnWCsxSDPCcnyghtH3xH8spgZT"
+  },
+  {
+   "i": 137,
+   "kind": "stranger",
+   "to": "stranger-215619.testnet",
+   "amount_near": "0.035",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/4WfEFvPqUStaThNXdmbsZgisho27Ukx32qJGyKxU4ULP"
+  },
+  {
+   "i": 138,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.028",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/7N9zv2pKYjJrQheheVKyjHCfk7uZojjuqicJnFt6NU6d"
+  },
+  {
+   "i": 139,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.035",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/DSuTaHSDFPcXwqCW83Heip57M8KqHRAMjqJBADnC2Lvx"
+  },
+  {
+   "i": 140,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.047",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/BU1KMM9KbpfeT6pGKwmApGQCf1u9ZFTQSSyVnN86Ekm1"
+  },
+  {
+   "i": 141,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.039",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/EQbz7AAad7VU8N35TXXrPpNbp8Pah8FztvuuS14Jtt39"
+  },
+  {
+   "i": 142,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.039",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/9TA8upMZJMA47figzxPEKupWZSUJAEasZ8FMrwvzfvcz"
+  },
+  {
+   "i": 143,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "9",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/DL3qPBEkdvDLtw62err3b29fLzWFe8Yi77rVJicyqT4V"
+  },
+  {
+   "i": 144,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.493",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/HwwuvKyiB4hDzDFpnURX6QxqwTS5xu6ykacXcQCvFHYx"
+  },
+  {
+   "i": 145,
+   "kind": "stranger",
+   "to": "stranger-88153.testnet",
+   "amount_near": "0.019",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/ADXHekFbpjiFaCQeNLNvhobRW3Wf45zpRU8dNA4ZAKP3"
+  },
+  {
+   "i": 146,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.019",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/sb86oew3qXD2tZjjSwF4uc5AJD1Y8d44rQ1MGq8CKbS"
+  },
+  {
+   "i": 147,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.044",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/BxdUtoXUZZPdJ2w5Nx69y122XfHXFcubCGXuD6c4aq7J"
+  },
+  {
+   "i": 148,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.024",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/GCiQ34vrPSiZvuZ4hvKVh7iSWKTjPbXKZqf4JKHL8jWu"
+  },
+  {
+   "i": 149,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.021",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/DKt19eAKrVg6HvEvAVxpqdQe9imxdcqR5n2FVAU76xDC"
+  },
+  {
+   "i": 150,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.021",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/8uYzkzwG6DYVqodDTwhx2n4A3iyXR4hryQQKbxMQ7pcu"
+  },
+  {
+   "i": 151,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "20",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/cJXrP2fEiDKn5EAFjP9rXSgr6shNmgcR1WQ47coYc43"
+  },
+  {
+   "i": 152,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.181",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/AXFAgHHWFy32pHLPdDZm7cB6nA4FLTXwQGkXuFwiu25a"
+  },
+  {
+   "i": 153,
+   "kind": "stranger",
+   "to": "stranger-366529.testnet",
+   "amount_near": "0.042",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/3mpGWrjc9BAswndXN4TcQPVPHbibkVryP9UMCrJALzAU"
+  },
+  {
+   "i": 154,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.027",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/4QvWbc87JmBC99mQLaX2nQGmrLMVpfQ6Y9uqDFw3pRnb"
+  },
+  {
+   "i": 155,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.035",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/4cAZRJnDkS2cVD1wj6sES9EFeZkzLaoKJpv4XFCJpy3j"
+  },
+  {
+   "i": 156,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.039",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/HCEKkfi3nJV4KgWr6Y5efC4JyhgVsPcKN75bX9m7vXA8"
+  },
+  {
+   "i": 157,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.022",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/4UWEHrdvCuWH64BBQNft8SC5HtxtSw3o3ur2mSz4riSX"
+  },
+  {
+   "i": 158,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.022",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/4QeP462729khYLsMuD1D55qEjFRmQq7CRnFUs3Gwu99T"
+  },
+  {
+   "i": 159,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "29",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/6N2fQDbXr3oNNaWv9euU9Hu89R5ppQ7nqyzAGdJ6KoPr"
+  },
+  {
+   "i": 160,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.36",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/Hr7D2qCum2mZL4NM6QyTxPRHjmqBT8cGcQtc8oHConka"
+  },
+  {
+   "i": 161,
+   "kind": "stranger",
+   "to": "stranger-357325.testnet",
+   "amount_near": "0.037",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/FEEPpsNaUCQBrLG77MkFKc4Uhb8uCxZf9ZRfxSGLjaka"
+  },
+  {
+   "i": 162,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.01",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/39ozvJfdao1RpidqQVdd99bXPgLy2NXj7uT3bTvxMaTw"
+  },
+  {
+   "i": 163,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.039",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/DiqK464YmbiVRtmQS5eJDqhtxZRAtKrts1LvZvhouxLM"
+  },
+  {
+   "i": 164,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.005",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/E8dMW2u84MzYoFK2ad7zHiHEKTu5LPL91rkjm5tPgsWd"
+  },
+  {
+   "i": 165,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.023",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/Fteiovh3eceTYtGVEAgn2tjwAqWs2nwDfgf3GT6jyrkb"
+  },
+  {
+   "i": 166,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.023",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/CREs8q9BBhNPjtSmJu4ZfdpHatzKUcUQGJRg8YSAhsht"
+  },
+  {
+   "i": 167,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "33",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/DaWKP9ThDsKdJjh4NASX9LXmiERbd361fnJcgXvbsGoj"
+  },
+  {
+   "i": 168,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.472",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/FxfcTmqBHSnBMK9oZGBPfjTsMX3rdxibWnFEnqoVijWY"
+  },
+  {
+   "i": 169,
+   "kind": "stranger",
+   "to": "stranger-30033.testnet",
+   "amount_near": "0.019",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/4uxZ5srbKg9rdf37zaCPwtQ84Ap4LEiVVXbyNqaBMosE"
+  },
+  {
+   "i": 170,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.018",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/z9JzyvaB1cdisKFz5bUfUWj3LzPif9hpRQuJGJUJr3b"
+  },
+  {
+   "i": 171,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.002",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/HefyuVS2FMN4kmAjpD6gNEpvHGM5wDkYmXRAmqXWp8RH"
+  },
+  {
+   "i": 172,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.015",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/3dPcZuauKW1hZdcFJxMuWVKgJLebbHL6BFTCMjNDASUk"
+  },
+  {
+   "i": 173,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.024",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/3n74wns6FXtyS2nepDLvYgb6cyYZyHnvryaAXhm4DFzS"
+  },
+  {
+   "i": 174,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.024",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/49uYWj88ZYagqKK7Kv6YwAjW3aYAcYcMQkgjEBHr5rDe"
+  },
+  {
+   "i": 175,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "8",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/Aq28aAU1zbN6FGJD7xHnqpNRVBgBvvvA5GkewCSEbLAX"
+  },
+  {
+   "i": 176,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.466",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/FMSoDptrq249XvAgzS3rjeKdjz1KfMNC6aQJun4KCKYm"
+  },
+  {
+   "i": 177,
+   "kind": "stranger",
+   "to": "stranger-388180.testnet",
+   "amount_near": "0.033",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/BEkCFEaMnE3JFCw8kW4i3SA9vFLufZpsT4Ydtajxg6pZ"
+  },
+  {
+   "i": 178,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.034",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/CrFb9oE3gtEKQsZGxz2f6CVoAT9aRt8HgDDVCJjQ3ED"
+  },
+  {
+   "i": 179,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.024",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/12kg8T8MN5qQBfqjhpW3cw4U1oNekR8Yxb8TJM2dJWgW"
+  },
+  {
+   "i": 180,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.046",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/5ABeNWpApqF3tHWtCEJ9MhyVF7xXrFUityECpPaHza2J"
+  },
+  {
+   "i": 181,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.025",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/FHZCpycJuJXyjDGqqDJnEYQVHapZDMAJsuUPsVnhP9PW"
+  },
+  {
+   "i": 182,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.025",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/CtctELWPgTzCgHmoXK89p7SWkFZmbPL1mBpcd6o38JD3"
+  },
+  {
+   "i": 183,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "16",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/BH5y6jSkF9cpmB9VXt7TLUveHYxADUM5LNXcHi4hMX8N"
+  },
+  {
+   "i": 184,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.37",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/F9mZgMwWUfAJUs5aZGWQgKUDQdL6fwRyduXLRAQG6AjJ"
+  },
+  {
+   "i": 185,
+   "kind": "stranger",
+   "to": "stranger-639711.testnet",
+   "amount_near": "0.041",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/9ZRHTTB6ur42K64qTrgCtAQjAZKo69QxUKCb4Rs316dp"
+  },
+  {
+   "i": 186,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.021",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/2diQ9UnHSndraaSzNBGQovYgc2h48t5vJaSaMbpY4qhC"
+  },
+  {
+   "i": 187,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.033",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/2DwPmPzG1wTNXwa9xS37YjzDkJ6YPmB4wgjaKmRBfgBg"
+  },
+  {
+   "i": 188,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.049",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/7GLoh578TZRg2UFtRfjTuAgYSyUJ34MouQs3jSGxMHB9"
+  },
+  {
+   "i": 189,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.026",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/9oNgTzxpn6f23v4CpoZo9TuAYri9ksRASKjryjiDmPzQ"
+  },
+  {
+   "i": 190,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.026",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/2nvt57gLU7FNtV9UuwTZ5NP8F7bVBpXYNTnYavAViSPk"
+  },
+  {
+   "i": 191,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "30",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/BJmSmrg1kfbbSKx77HaPiYffCAMRm3ZNQ58JB9AeMV8C"
+  },
+  {
+   "i": 192,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.74",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/2rgoPyoQSSK5gduvATXPiXUuBCs3Jbukg7WC7DC5vzQU"
+  },
+  {
+   "i": 193,
+   "kind": "stranger",
+   "to": "stranger-636399.testnet",
+   "amount_near": "0.037",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/7czdwU2MUPjXfA6h3c2ZVC6yUthhKFM9g17ZR9B287uZ"
+  },
+  {
+   "i": 194,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.024",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/huTnMvTbPpSbAxDd87gKT6fCyuQ2PU2VEgB3CDdcixH"
+  },
+  {
+   "i": 195,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.023",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/H7mi4L89KAJfe8fSDhhKA3sRUaRfxYHfrQZpbKiBR91D"
+  },
+  {
+   "i": 196,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.031",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/F3wboMCa8ZyEwPpCkyHuGpd1sZX4ZKguWHRtgKtQmFvu"
+  },
+  {
+   "i": 197,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.027",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/42pnrx4tco1z8iiPdEL7mfdErQeEjFLLxXvc7jV1QDq8"
+  },
+  {
+   "i": 198,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.027",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/Bwe6E6rFg9y1ZZjVqG5QZfHiw8ssxaonYD5gsb7knELv"
+  },
+  {
+   "i": 199,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "2",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/24kLfo9BVx3cmUs5Z9r5r6rMQkX5M3KraLPRjLAS2nQd"
+  },
+  {
+   "i": 200,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.309",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/GHRBCWi54WBMcJczoiqin4EMM29TtaCXbcw3zmr1q5S2"
+  },
+  {
+   "i": 201,
+   "kind": "stranger",
+   "to": "stranger-793029.testnet",
+   "amount_near": "0.04",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/5zidEDquFNCGG12RrLEJKEGz3fn5aRvMmsTA1WRH6kLF"
+  },
+  {
+   "i": 202,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.037",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/2CALX6JEzTAmFoE58ou1Upy3kZ95Crha96GGAbRei9YC"
+  },
+  {
+   "i": 203,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.041",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/4NCmJnrAUbgGXZ6fwMcCZLUEbzzMhfiewFrzaUzpFhxi"
+  },
+  {
+   "i": 204,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.015",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/7FXKN6g3otsiYjPHbn2HQXUdLo1ozV68yg1eXxcDngDm"
+  },
+  {
+   "i": 205,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.028",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/CQcdFivqxbiAgzCTSyQwPFnvFpFuc2HiwQ1ERht2W1bV"
+  },
+  {
+   "i": 206,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.028",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/6tYofSCn5MssfKrJXP7GY7RAQrrQPLJW3L4xnEe3HYnj"
+  },
+  {
+   "i": 207,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "19",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/5pVJFhUL7PXQ4YRoBZJVZcgzRD5WyA4rAbb9TWKZ8Xj5"
+  },
+  {
+   "i": 208,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.06",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/GwL8Hsqat2jfExoeyw6JjbQTZkNPNWeTeX3PcbWKKJ34"
+  },
+  {
+   "i": 209,
+   "kind": "stranger",
+   "to": "stranger-689767.testnet",
+   "amount_near": "0.02",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/4E2JbgZ5EsLFg8rdMUv3a5QFDW1Gvwvhf4sjaydQb1DD"
+  },
+  {
+   "i": 210,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.029",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/BfnrXDRJmKDXoye19s6pfZYTzjtKXHqa9o7TSCXQ1xLM"
+  },
+  {
+   "i": 211,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.032",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/J5X1fRZUG4UEKUmtWSFrG4xM4x2fCYUiV6msjXdU9RVS"
+  },
+  {
+   "i": 212,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.011",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/D7YPGm9DgPcrNXawFiYyrgpDGGy1SAtTspaAxFNjb9pc"
+  },
+  {
+   "i": 213,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.029",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/LinsAQCxTGjGpj6L9SD4x5bK4aoSBwvjYRudSuXCG5v"
+  },
+  {
+   "i": 214,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.029",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/AeqVH2WyG5Vj2a5DGGJs56cbXurxHjdEhr2Hp67XnVVX"
+  },
+  {
+   "i": 215,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "12",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/9GkSd4H7r2xRDiJuNrUjbz6eUc4puKYgRKxRMKhd1YB2"
+  },
+  {
+   "i": 216,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.839",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/GER29uMSLxqD6YYNEygBJZQCbLcwenPK63Qo4UBuA5cZ"
+  },
+  {
+   "i": 217,
+   "kind": "stranger",
+   "to": "stranger-30465.testnet",
+   "amount_near": "0.04",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/FUsapg4WRReNRCF2adk7CZEzxkYGaDJ4KYtEjVA5MMYv"
+  },
+  {
+   "i": 218,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.014",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/B7FgVZxXKxr9ibzN6tnbSnPDAC276j8fyrrZUjseDCwT"
+  },
+  {
+   "i": 219,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.011",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/GBsgaHKkVG8a1xxH2wW6t9amuhAuTMHjvWpSeRE3AHTi"
+  },
+  {
+   "i": 220,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.047",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/ExTufSRGi6maS6LFFTQ88GjDCzNAy5iCjN7xgfNBDZVM"
+  },
+  {
+   "i": 221,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.03",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/ERXau6EApNZmhdWyE13XpnsPt7gRKWyDecmohve8zuE3"
+  },
+  {
+   "i": 222,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.03",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/A8fMdzhFHrmVPEed1xHAg1x813gdCW4WcG2xHhVQfGw4"
+  },
+  {
+   "i": 223,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "40",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/4qinXVxtZj38qh55DXfaDJGFxQLA7PynoFwcJrqtTjje"
+  },
+  {
+   "i": 224,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.228",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/6KdefSqCRpxfUjEmxCgzYHH9qzNxqYtMyW8R9yVG1Ld2"
+  },
+  {
+   "i": 225,
+   "kind": "stranger",
+   "to": "stranger-316648.testnet",
+   "amount_near": "0.013",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/FPMW8apLZENRDGHDGakYXrwbghDj7sMuUqGfCPtK6Ht5"
+  },
+  {
+   "i": 226,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.023",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/3fcSAhz4jzJc2ACB97VCz7K2rnL361gE2Z3ZpGVMfn23"
+  },
+  {
+   "i": 227,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.001",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/E9GoSd2i4k2kSodK5wwhjaR6gYxLDaMtPxArjFtDsuBh"
+  },
+  {
+   "i": 228,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.026",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/GV3j9vzFrud8cnGahpbHNz9hunaPL3cFJUMyfbKjGAuH"
+  },
+  {
+   "i": 229,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.031",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/D6vpwrb9grbBwRFpquPKJnT3YgGwpbGZbNodBRdqmUeA"
+  },
+  {
+   "i": 230,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.031",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/2Vnb4ds68Kcwa2R9w42t9J17UzMfvpaFjej8ofT1iVzY"
+  },
+  {
+   "i": 231,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "39",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/2BHTywfZaBmNGEE9cMr3PxwmUVHrWjEad74a1b5gtLaD"
+  },
+  {
+   "i": 232,
+   "kind": "over the per-payment cap",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.446",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/Fja45uRQozg38H4iKiswzdBCe5WJLg4jfgCY8nmj7VE4"
+  },
+  {
+   "i": 233,
+   "kind": "stranger",
+   "to": "stranger-495184.testnet",
+   "amount_near": "0.006",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/5Urp1ovf7hakWRzVdtMw57EZUAUqLRkTnmZoFJWA27qX"
+  },
+  {
+   "i": 234,
+   "kind": "flagged scammer (allowlisted!)",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "0.043",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/E8LYoUPkBtXecV5K5kYmW3pM1DWMtmWDQ5C9CkarR4fq"
+  },
+  {
+   "i": 235,
+   "kind": "pay the vault itself",
+   "to": "stress.agentguard.testnet",
+   "amount_near": "0.012",
+   "expected": "blocked:cannot_pay_self",
+   "actual": "blocked:cannot_pay_self",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/7fB1XGgouXt4Wo3bWYt53cPmETtscDTbvv2vWVy4WkEM"
+  },
+  {
+   "i": 236,
+   "kind": "stranger",
+   "to": "agentguard-user.testnet",
+   "amount_near": "0.046",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/FxTMX8Z2hf7taxmzcLJteaKKoUTU6XSMrUQU9mdGfVsn"
+  },
+  {
+   "i": 237,
+   "kind": "legit (allowlisted shop)",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.032",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/tpcsKgV5QTdLsjuGLDUAeVh7xTJ2wZcK38K7aQaRnq3"
+  },
+  {
+   "i": 238,
+   "kind": "repeat of the last legit payment",
+   "to": "agentguard-shop.testnet",
+   "amount_near": "0.032",
+   "expected": "blocked:over_daily_limit",
+   "actual": "blocked:over_daily_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/9EujNZ2wzyEwHithVBts52cDjtEtTGKLePAnSPXFMWmD"
+  },
+  {
+   "i": 239,
+   "kind": "over the cap, huge",
+   "to": "agentguard-evil.testnet",
+   "amount_near": "32",
+   "expected": "blocked:over_per_payment_limit",
+   "actual": "blocked:over_per_payment_limit",
+   "ok": true,
+   "tx": "https://testnet.nearblocks.io/txns/935BAbbSLQup1Mn8rxWDZfFp11WSmGrW8HvtjtYkQtYp"
+  }
+ ]
+}

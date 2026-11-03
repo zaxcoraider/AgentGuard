@@ -65,6 +65,13 @@
       "created_via": "Console (browser wallet)",
       "agent_public_key": "ed25519:6NarBxKftHfS1ayjyWD2PxhqoGUKqx8qsKN5UxCosP6G",
       "note": "TESTNET-RESULTS \u00a712"
+    },
+    "stress.agentguard.testnet": {
+      "code": "v2",
+      "owner": "agentguard-user.testnet",
+      "create_tx": "GK9z6rEXdar2U22sC3Ym5wdEtiyexn2ZSDzgVxh5hdtR",
+      "add_agent_tx": "4ZH3i2wUfVVgcjTsNgkEFSPtTtbxRft765uQ4zauCiLY",
+      "note": "stress test vault, TESTNET-RESULTS \u00a713"
     }
   },
   "demo_accounts": {

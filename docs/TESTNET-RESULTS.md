@@ -195,6 +195,24 @@ A fresh testnet account (`zaxtest.testnet`) used only the [Console](https://sent
 | Same key: 0.05 NEAR → `agentguard-user.testnet` (not allowlisted) | **pending**, `unknown_recipient` ([GjXP…](https://testnet.nearblocks.io/txns/GjXPyxav36icGw4Y3j7ypL9DseijbFqnai2BbwSM3p2P)). Shown in the Console under "Held payments" |
 | Owner clicks **Approve** in the Console | payment #1 → **approved**, sent. Vault: 2 paid, 0.1 NEAR total, nothing pending |
 
+## 13. Stress test: 240 rule-breaking requests on-chain
+
+`packages/mcp/scripts/stress-vault.mts` fired 240 payment requests with the agent key of a dedicated vault, `stress.agentguard.testnet` (max 0.05 NEAR per payment, 0.12 NEAR a day, strangers blocked; allowlist `agentguard-shop.testnet` and, on purpose, the **flagged** `agentguard-evil.testnet`; create [GK9z…](https://testnet.nearblocks.io/txns/GK9z6rEXdar2U22sC3Ym5wdEtiyexn2ZSDzgVxh5hdtR), agent key [4ZH3…](https://testnet.nearblocks.io/txns/4ZH3i2wUfVVgcjTsNgkEFSPtTtbxRft765uQ4zauCiLY)). For each request the script works out what the contract's rules must answer, in the contract's order, and compares that with what the vault actually answered.
+
+**240 / 240 matched, 0 mismatches, 0 payments to an account that wasn't allowed.** Every request and its tx is in [`docs/stress-run.json`](stress-run.json).
+
+| Vault's answer | Count | Example |
+|---|---|---|
+| blocked `over_daily_limit` | 126 | [HCUb…](https://testnet.nearblocks.io/txns/HCUbTuhfwMBLDSpqK1xb7t66yTmke4NRzR1pyXBnbfQg) |
+| blocked `over_per_payment_limit` | 60 | [Fnaw…](https://testnet.nearblocks.io/txns/FnawikDEAZnQ5o74AJ5B7DhDtUJGdK3RPsmx2ub461Eu) (0.539 NEAR) |
+| blocked `cannot_pay_self` | 30 | [BRRo…](https://testnet.nearblocks.io/txns/BRRoEUkjoS72w6un6mmnevKQBD4ByGW4Xd4g1cDpsJp8) |
+| blocked `recipient_not_allowlisted` | 10 | [3A1e…](https://testnet.nearblocks.io/txns/3A1ekjbDdpJ3ecgr7tYPJtNaFdjhLspPY1nGdLvwaQsL) |
+| blocked `recipient_flagged` (allowlisted, but flagged in the registry) | 5 | [666Z…](https://testnet.nearblocks.io/txns/666ZpW6m2BcdkA9Gym7QprUbo9GgV7ZbET29kcWEsAm8) |
+| held `repeat_payment` | 5 | [HRx5…](https://testnet.nearblocks.io/txns/HRx5GemCcqpLmA6LNJhtKo9fsCAuuy6r3sYhoa6CEJSG) |
+| **paid** (small payments to the allowlisted shop) | 4 | [mUeS…](https://testnet.nearblocks.io/txns/mUeSfoKNgZnrgSEaPSnVWCWBeNZ7CK64wyDaHfqbgsa), [2T55…](https://testnet.nearblocks.io/txns/2T55xV5QtK6bpK1CKPh3wy6bTXwuWgGSokzr955sUasF), [6Hqd…](https://testnet.nearblocks.io/txns/6HqDnLRxo95MTHNy3MWapvJjkGgL3oGKtipvScdknEjx), [Aqiw…](https://testnet.nearblocks.io/txns/Aqiwoq5oqEh2oS4rztcqrmLL1HTrkpFtNpFoPcq5ASFa) |
+
+The four payouts plus one from the smoke test add up to exactly the 0.12 NEAR daily limit. After that, every request that passed the per-payment cap was stopped by the daily limit. That check comes before the registry and allowlist checks, which is why it has the biggest count.
+
 ## What this does not prove yet
 - The owner (`agentguard-user.testnet`) can still change the policy, approve payments and withdraw on these demo vaults. That is intended: it is their money. Vault v2 adds `lock_rules()`, after which nobody, including the owner, can loosen it. Sentinel's vault is locked on testnet (§11).
 - Sybil reports: two throwaway accounts can flag an account. Curators can dismiss, and a flag only blocks payments to that account (it can't move funds).

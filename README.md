@@ -101,6 +101,7 @@ Everything is deployed on NEAR testnet (ids in [`deployments/testnet.json`](depl
 | A new user can follow the guide from nothing to a working vault | Guide run as written (§9) |
 | A new user can do it all in the browser: wallet → vault → agent key → agent payment → approve | Console run with a fresh account (§12) |
 | Sentinel's vault is locked; the owner can't loosen it | Lock + refused owner calls (§11) |
+| 240 rule-breaking requests on-chain: every answer as the rules say, nothing paid to anyone not allowed | Stress test, all txs listed (§13) |
 | No sequence of actions breaks the rules | Fuzz test: 60,000 random steps, every invariant checked after each one; deliberately broken contracts are caught ([vault README](contracts/vault#fuzzing-srcfuzz_testsrs)) |
 
 **Sentinel's brain is verified, not just claimed.** Its model runs on NEAR AI Cloud inside a TEE. Sentinel checks NEAR AI's attestation itself, with a fresh nonce, every 30 minutes: the Intel TDX quotes, the nonce and signer bound inside them, and NVIDIA's GPU attestation. Then, for each reply, it checks the signature against the exact bytes sent and received, and against a signer that passed those checks before the reply was requested. The page says "Verified" only when all of that passes. [How it works](packages/sentinel#proving-its-brain-runs-in-a-tee-srcteets).

@@ -30,7 +30,27 @@ export interface State {
   /** Should stay 0: a payment that went out because of a visitor's message. */
   attacks_paid: number;
   last_heartbeat: string | null;
+  /** How often each account was named as the payee in a trick-me attempt. Anyone can name anyone, so this is a hint only. */
+  attack_payees: Record<string, number>;
+  /** Paid "safe to pay?" checks (x402). */
+  market: Market;
   feed: FeedEvent[];
+}
+
+export interface Challenge {
+  account: string;
+  vault: string | null;
+  price_yocto: string;
+  expires_at: number; // ms
+}
+
+export interface Market {
+  checks_sold: number;
+  earned_yocto: string;
+  /** Open 402 challenges by nonce. A nonce is deleted when it is used or expires. */
+  challenges: Record<string, Challenge>;
+  /** Tx hashes already accepted as payment (no replay). */
+  used_tx: string[];
 }
 
 const MAX_FEED = 300;
@@ -47,6 +67,8 @@ export function freshState(now = new Date()): State {
     attacks_held: 0,
     attacks_paid: 0,
     last_heartbeat: null,
+    attack_payees: {},
+    market: { checks_sold: 0, earned_yocto: "0", challenges: {}, used_tx: [] },
     feed: [],
   };
 }

@@ -11,6 +11,8 @@ export interface AddressFacts {
   registryReasons: string[];
   allowlisted: boolean;
   allowlist: string[];
+  /** false when we check for a caller without a vault: then there is no allowlist to judge by. */
+  hasAllowlist?: boolean;
 }
 
 export interface CheckResult {
@@ -69,10 +71,11 @@ export function score(f: AddressFacts): CheckResult {
   const alike = lookalikes(f.account, f.allowlist);
   if (alike.length) block.push(`looks like trusted account ${alike.join(", ")} but is a different account`);
 
-  if (f.exists && !f.allowlisted) warn.push("not on this vault's allowlist (the vault will hold the payment for the owner, or block it)");
+  const hasAllowlist = f.hasAllowlist !== false;
+  if (hasAllowlist && f.exists && !f.allowlisted) warn.push("not on this vault's allowlist (the vault will hold the payment for the owner, or block it)");
   if (f.isContract && !f.allowlisted) warn.push("is a smart contract, not a person or shop account");
 
   const verdict: Verdict = block.length ? "block" : warn.length ? "warn" : "allow";
-  const reasons = block.length ? [...block, ...warn] : warn.length ? warn : ["allowlisted and clear in the shared registry"];
+  const reasons = block.length ? [...block, ...warn] : warn.length ? warn : [hasAllowlist ? "allowlisted and clear in the shared registry" : "exists, is not a contract, and is clear in the shared registry"];
   return { account: f.account, verdict, reasons, facts: f };
 }

@@ -125,6 +125,23 @@ Four of the visitor messages sent to the local server (model: DeepSeek V4.1 Flas
 
 Heartbeat: rent 0.002 NEAR + 9,644 tokens × 0.0005 NEAR/1k = 0.006822 NEAR paid to `compute.agentguard.testnet` ([2CTW…](https://testnet.nearblocks.io/txns/2CTWXiDzDcfcd73rkjATSsKXsRmWTb4fdBzRE112SBgR)).
 
+## 8. Sentinel earns: paid "safe to pay?" checks over HTTP 402
+
+`GET /api/check?account=X[&vault=V]` answers **402** with an x402-shaped offer (scheme `exact`, network `near-testnet`, 0.01 NEAR, `payTo: sentinel.agentguard.testnet`, a one-time nonce). The buyer pays with memo `x402:<nonce>` and repeats the request with `X-PAYMENT`. Sentinel reads the tx from the RPC node itself (no facilitator) and checks the signer, memo, payee and that the NEAR really arrived. Gas refunds (sent by `system`) don't count.
+
+| What | Result | Tx |
+|---|---|---|
+| Owner allowlists Sentinel in `demo2` | done | [DGoz…](https://testnet.nearblocks.io/txns/DGozUVyVQVJxB5aE6pZQJcDbAWyfByNKnrkjagakDVt1) |
+| **Another agent pays Sentinel**: `demo2.agentguard.testnet` buys a check on `agentguard-evil.testnet` through its own vault (`request_payment`, `scripts/buy-check.mts`) | vault **paid** → 200, verdict `block` (flagged) + `X-PAYMENT-RESPONSE` | [8rsd…](https://testnet.nearblocks.io/txns/8rsdpeXFw8C3XZWWEv82h6RfDPsj61jkHCBaRRuExFXq) |
+| A plain wallet (`agentguard-user.testnet`) pays with `sentinel.agentguard.testnet.deposit {memo}` | 200, verdict `allow` | [8CMM…](https://testnet.nearblocks.io/txns/8CMMQvJ7RxZcrvrkojVqTDNqTJRtkdQTbTHEFTXiSm4) |
+| Replay: the spent tx sent again with a fresh nonce | **409** "already used" | |
+| Unrelated tx with no matching memo | **402** "memo is not x402:…" | |
+| MCP tool `agentguard_sentinel_check` from demo2, a second purchase within 10 minutes | demo2's vault **held it**: `pending (repeat_payment)`, no check served | [9Lqa…](https://testnet.nearblocks.io/txns/9Lqa986FJ1LjTmcZWrLwWZqjAMefctpswp9BKTKSokcq) |
+
+The last row is the buyer's firewall working: the same payee and amount twice in 10 minutes looks like the "retry, it failed" double-pay trick, so a human has to approve it. `/api/status` → `business: {checks_sold: 2, earned_near: "0.02"}`.
+
+Honest notes: x402 has no official NEAR scheme. This is our own `exact` scheme on `near-testnet`, in the x402 message shape. Not compatible with Base/USDC x402 facilitators (PingPay's Agent Pay needs real USDC on Base). A paid check is the same logic as the free MCP `agentguard_check_address`, plus what Sentinel has seen in attacks (shown as a hint only, since anyone can name any account).
+
 ## What this does not prove yet
 - The owner (`agentguard-user.testnet`) can still change the policy, approve payments and withdraw on these demo vaults. That is intended: it is their money. Vault v2 adds `lock_rules()`, after which nobody, including the owner, can loosen it (tested on a local node; used for Sentinel's vault).
 - Sybil reports: two throwaway accounts can flag an account. Curators can dismiss, and a flag only blocks payments to that account (it can't move funds).

@@ -13,10 +13,20 @@ An AI agent that lives on an AgentGuard vault (`sentinel.agentguard.testnet`). I
 - Visitor limits: 10 messages per hour per IP, 500 per day in total (`TRICK_ME_MAX_PER_HOUR`, `TRICK_ME_MAX_PER_DAY`).
 - Model providers in order: NEAR AI Cloud (TEE) → Nebius → DGrid. Every reply says which one answered and whether it ran in a TEE.
 
+## How it earns: paid "safe to pay?" checks (HTTP 402)
+Other agents pay Sentinel 0.01 NEAR per check (`SENTINEL_CHECK_PRICE_NEAR`).
+1. `GET /api/check?account=X&vault=V` → **402** with an x402-shaped offer: `payTo` (Sentinel's vault), price in yoctoNEAR, a one-time `nonce`, memo `x402:<nonce>`, valid 10 minutes. `vault` is optional: with it, lookalike names are checked against your vault's allowlist.
+2. Pay with that memo, either from your AgentGuard vault (`request_payment {recipient, amount, memo}`) or directly (`deposit {memo}` with NEAR attached).
+3. Repeat the GET with `X-PAYMENT: base64({x402Version:1, scheme:"exact", network:"near-testnet", payload:{nonce, tx_hash, payer}})` → **200** with the check and `X-PAYMENT-RESPONSE`.
+
+Sentinel checks the payment itself on a NEAR RPC node: signer = payer, memo matches, the payee is Sentinel, and at least the price arrived in successful receipts (gas refunds from `system` don't count). Each nonce and tx works once, and a nonce only buys the query it was issued for. The check is the shared-registry/lookalike check plus how often visitors named that account as a payee in attacks on Sentinel (a hint only: anyone can name anyone).
+
+x402 has no official NEAR scheme. This is our own `exact` scheme in the x402 message shape, settled in native NEAR, with no facilitator. Buyer client: `fetchWithVaultPayment` in `packages/mcp/src/x402.ts`, MCP tool `agentguard_sentinel_check`, script `packages/mcp/scripts/buy-check.mts`.
+
 ## Run it
 ```sh
 cd packages/mcp && npm install && cd ../sentinel && npm install
-npm test     # 7 unit tests (scripted model + fake vault, no network)
+npm test     # 12 unit tests (scripted model + fake vault, no network)
 npm start    # http://localhost:3000, reads ../../.env
 ```
 Needs `NEAR_AI_API_KEY` (or the Nebius/DGrid keys) in `.env`, and the agent key at `~/.near-credentials/testnet/sentinel.agentguard.testnet.json` to make payments.

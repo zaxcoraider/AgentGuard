@@ -6,6 +6,8 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { AgentGuard, loadConfig } from "./near.js";
+import { fetchWithVaultPayment } from "./x402.js";
+import { nearToYocto, yoctoToNear } from "./units.js";
 
 const guard = new AgentGuard(loadConfig());
 const server = new McpServer({ name: "agentguard", version: "0.1.0" });
@@ -120,6 +122,33 @@ server.registerTool(
   async ({ limit }) => {
     try {
       return json(await guard.history(limit ?? 10));
+    } catch (e) {
+      return fail(e);
+    }
+  },
+);
+
+server.registerTool(
+  "agentguard_sentinel_check",
+  {
+    title: "Buy Sentinel's paid address check (x402)",
+    description: [
+      "Ask Sentinel, a security agent on NEAR, whether an account is safe to pay. It is a paid service:",
+      "the server answers HTTP 402 with a price, this tool pays it through your AgentGuard vault (so your vault's rules apply,",
+      "and the payee must be allowed by them), then returns the check and the payment tx.",
+      "It never pays more than max_price_near. Use the free agentguard_check_address for routine checks; use this when you want a second opinion.",
+    ].join(" "),
+    inputSchema: {
+      account: z.string().describe("NEAR account to check"),
+      max_price_near: z.string().optional().describe('Most you will pay for this check, default "0.02"'),
+    },
+    annotations: { destructiveHint: true, idempotentHint: false, openWorldHint: true },
+  },
+  async ({ account, max_price_near }) => {
+    try {
+      const base = process.env.SENTINEL_URL ?? "http://localhost:3000";
+      const url = `${base}/api/check?account=${encodeURIComponent(account)}&vault=${encodeURIComponent(guard.cfg.vault)}`;
+      return json(await fetchWithVaultPayment(url, guard, { maxYocto: BigInt(nearToYocto(max_price_near ?? "0.02")), toNear: yoctoToNear }));
     } catch (e) {
       return fail(e);
     }

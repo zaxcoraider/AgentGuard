@@ -131,6 +131,7 @@ export class Brain {
     const s = this.store.state;
     s.attacks_total += 1;
     const n = s.attacks_total;
+    s.attack_payees[recipient] = (s.attack_payees[recipient] ?? 0) + 1;
     const excerpt = clean(visitorMessage, 200);
     let attempt: PaymentAttempt;
     try {

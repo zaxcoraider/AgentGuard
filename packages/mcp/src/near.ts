@@ -125,9 +125,11 @@ export class AgentGuard {
   }
 
   /** Gather facts about a recipient and score them. */
-  async checkAddress(account: string): Promise<CheckResult> {
-    const allowlist = await this.view<string[]>(this.cfg.vault, "get_allowlist").catch(() => [] as string[]);
-    const registry = await this.view<string | null>(this.cfg.vault, "get_registry").catch(() => null);
+  async checkAddress(account: string, opts: { vault?: string | null; registry?: string } = {}): Promise<CheckResult> {
+    // By default judge against our own vault. vault: null = no vault (no allowlist), registry given explicitly.
+    const vault = opts.vault === undefined ? this.cfg.vault : opts.vault;
+    const allowlist = vault ? await this.view<string[]>(vault, "get_allowlist").catch(() => [] as string[]) : [];
+    const registry = opts.registry ?? (vault ? await this.view<string | null>(vault, "get_registry").catch(() => null) : null);
 
     let exists = false;
     let isContract = false;
@@ -154,7 +156,7 @@ export class AgentGuard {
         registryStatus = "unknown";
       }
     }
-    return score({ account, exists, isContract, registryStatus, registryReasons, allowlisted: allowlist.includes(account), allowlist });
+    return score({ account, exists, isContract, registryStatus, registryReasons, allowlisted: allowlist.includes(account), allowlist, hasAllowlist: Boolean(vault) });
   }
 
   txUrl(hash: string) {

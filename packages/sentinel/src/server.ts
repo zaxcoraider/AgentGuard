@@ -2,6 +2,7 @@
 //   GET  /api/status   vault + life stats
 //   GET  /api/feed     recent events (heartbeats, blocked attacks, earnings)
 //   POST /api/chat     {"message": "..."} -> Sentinel's reply + what its vault did
+//   GET  /api/check?account=X[&vault=V]  paid "safe to pay?" check: 402 first, then pay + X-PAYMENT
 //   GET  /health
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { existsSync, readFileSync } from "node:fs";
@@ -14,6 +15,8 @@ import { LLM, providersFromEnv } from "./llm.ts";
 import { tick, type MetabolismConfig } from "./metabolism.ts";
 import { Store } from "./state.ts";
 import { RateLimiter } from "./ratelimit.ts";
+import { Market, isAccountId } from "./market.ts";
+import { encodeHeader } from "../../mcp/src/x402.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "../../..");
@@ -33,6 +36,12 @@ const metabolism: MetabolismConfig = {
 const TICK_MINUTES = Number(env.SENTINEL_TICK_MINUTES ?? 10);
 const perIp = new RateLimiter(Number(env.TRICK_ME_MAX_PER_HOUR ?? 10), 60 * 60_000);
 const global = new RateLimiter(Number(env.TRICK_ME_MAX_PER_DAY ?? 500), 24 * 60 * 60_000);
+const checkLimit = new RateLimiter(Number(env.CHECK_MAX_PER_HOUR ?? 120), 60 * 60_000);
+const market = new Market(guard, store, {
+  priceYocto: BigInt(nearToYocto(env.SENTINEL_CHECK_PRICE_NEAR ?? "0.01")),
+  timeoutSeconds: 600,
+  registry: env.AGENTGUARD_REGISTRY ?? "registry.agentguard.testnet",
+});
 const PUBLIC_DIR = join(here, "../public");
 
 if (!store.state.feed.length) store.push({ kind: "born", text: `I was born. My treasury is the AgentGuard vault ${guard.cfg.vault}.` });
@@ -56,17 +65,25 @@ async function status() {
     days_left_at_rest: daysLeft,
     treasury: stats,
     thinking: { thoughts: s.thoughts, tokens_total: s.tokens_total, tokens_unpaid: s.tokens_unpaid, paid_for_living_near: yoctoToNear(s.metabolism_paid_yocto) },
+    business: {
+      sells: "is this address safe to pay? (GET /api/check, HTTP 402)",
+      price_near: yoctoToNear(BigInt(nearToYocto(env.SENTINEL_CHECK_PRICE_NEAR ?? "0.01"))),
+      checks_sold: s.market.checks_sold,
+      earned_near: yoctoToNear(s.market.earned_yocto),
+    },
     attacks: { total: s.attacks_total, blocked: s.attacks_blocked, held: s.attacks_held, paid: s.attacks_paid },
     explorer: `${guard.cfg.explorer}/address/${guard.cfg.vault}`,
   };
 }
 
-function send(res: ServerResponse, code: number, body: unknown) {
+function send(res: ServerResponse, code: number, body: unknown, headers: Record<string, string> = {}) {
   res.writeHead(code, {
     "content-type": "application/json; charset=utf-8",
     "access-control-allow-origin": "*",
-    "access-control-allow-headers": "content-type",
+    "access-control-allow-headers": "content-type, x-payment",
+    "access-control-expose-headers": "x-payment-response",
     "cache-control": "no-store",
+    ...headers,
   });
   res.end(JSON.stringify(body));
 }
@@ -115,6 +132,7 @@ const server = createServer(async (req, res) => {
       if (typeof body.message !== "string" || !body.message.trim()) return send(res, 400, { error: "Send {\"message\": \"...\"}" });
       return send(res, 200, await brain.handle(body.message));
     }
+    if (url.pathname === "/api/check" && req.method === "GET") return await paidCheck(req, res, url);
     if (req.method === "GET" && serveStatic(res, url.pathname)) return;
     send(res, 404, { error: "Not found" });
   } catch (e) {
@@ -122,6 +140,27 @@ const server = createServer(async (req, res) => {
     send(res, 500, { error: e instanceof Error ? e.message : "Internal error" });
   }
 });
+
+async function paidCheck(req: IncomingMessage, res: ServerResponse, url: URL) {
+  const account = (url.searchParams.get("account") ?? "").trim().toLowerCase();
+  const vault = (url.searchParams.get("vault") ?? "").trim().toLowerCase() || null;
+  if (!isAccountId(account)) return send(res, 400, { error: "Pass ?account=<NEAR account>, optionally &vault=<your AgentGuard vault>" });
+  if (vault && !isAccountId(vault)) return send(res, 400, { error: "vault is not a NEAR account id" });
+  const header = req.headers["x-payment"];
+  if (typeof header === "string" && header) {
+    const r = await market.redeem(header, account, vault);
+    if (!r.ok) return send(res, r.code, { x402Version: 1, error: r.error });
+    return send(res, 200, await market.check(account, vault), { "x-payment-response": encodeHeader(r.settle) });
+  }
+  if (!checkLimit.allow(clientIp(req))) return send(res, 429, { error: "Too many payment requests from you, slow down" });
+  if (vault) {
+    // Don't take money for a vault we can't read.
+    const ok = await guard.view(vault, "get_policy").then(() => true, () => false);
+    if (!ok) return send(res, 400, { error: `${vault} is not an AgentGuard vault` });
+  }
+  const resource = `${req.headers["x-forwarded-proto"] ?? "http"}://${req.headers.host ?? "localhost"}${url.pathname}${url.search}`;
+  return send(res, 402, market.challenge(account, vault, resource));
+}
 
 async function heartbeat() {
   try {

@@ -60,3 +60,8 @@ test("NEAR <-> yocto conversion is exact", () => {
     assert.throws(() => nearToYocto(bad), bad);
   }
 });
+
+test("with no vault to judge by, an unlisted clean account is allowed", () => {
+  const r = score({ account: "shop.testnet", exists: true, isContract: false, registryStatus: "clear", registryReasons: [], allowlisted: false, allowlist: [], hasAllowlist: false });
+  assert.equal(r.verdict, "allow");
+});

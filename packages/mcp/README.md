@@ -12,6 +12,7 @@ Lets any MCP agent (Claude Code, Claude Desktop, Codex, ...) pay on NEAR through
 | `agentguard_policy` | Per-payment cap, 24h limit, approval threshold, allowlist, registry, locked |
 | `agentguard_payment_status` | One payment by id (e.g. did the owner approve it?) |
 | `agentguard_history` | Recent payment requests, including blocked ones |
+| `agentguard_sentinel_check` | Buys Sentinel's paid check over HTTP 402: pays the price through **your** vault (your rules apply; never above `max_price_near`, default 0.02), retries with `X-PAYMENT`, returns the check + tx. Set `SENTINEL_URL` |
 
 ## Setup
 

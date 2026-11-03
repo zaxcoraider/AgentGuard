@@ -5,7 +5,7 @@
 //   GET  /api/check?account=X[&vault=V]  paid "safe to pay?" check: 402 first, then pay + X-PAYMENT
 //   GET  /health
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { join, dirname, extname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { AgentGuard, loadConfig } from "../../mcp/src/near.ts";
@@ -147,12 +147,15 @@ function visitor(req: IncomingMessage): string {
   return clientIp(req.headers, req.socket.remoteAddress, IP_HEADERS);
 }
 
-const TYPES: Record<string, string> = { ".html": "text/html; charset=utf-8", ".css": "text/css", ".js": "text/javascript", ".svg": "image/svg+xml", ".png": "image/png" };
+const TYPES: Record<string, string> = { ".html": "text/html; charset=utf-8", ".css": "text/css", ".js": "text/javascript", ".mjs": "text/javascript", ".svg": "image/svg+xml", ".png": "image/png" };
 
+/** "/" -> index.html, "/console" -> console.html; never outside public/, never a directory. */
 function serveStatic(res: ServerResponse, path: string): boolean {
-  const file = join(PUBLIC_DIR, path === "/" ? "index.html" : path);
-  if (!file.startsWith(PUBLIC_DIR) || !existsSync(file)) return false;
-  res.writeHead(200, { "content-type": TYPES[extname(file)] ?? "application/octet-stream" });
+  let rel = path === "/" ? "index.html" : decodeURIComponent(path).replace(/^\/+/, "");
+  if (!extname(rel)) rel += ".html";
+  const file = join(PUBLIC_DIR, rel);
+  if (!file.startsWith(PUBLIC_DIR + "/") || !existsSync(file) || !statSync(file).isFile()) return false;
+  res.writeHead(200, { "content-type": TYPES[extname(file)] ?? "application/octet-stream", "cache-control": "no-cache" });
   res.end(readFileSync(file));
   return true;
 }

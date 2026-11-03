@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgentGuard Console</title>
+<meta name="description" content="Create an AgentGuard vault for your AI agent, set its spending rules, and approve or deny the payments it asks for.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..800;1,6..96,400&family=Public+Sans:wght@400;500;700;800&display=swap">
+<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/console.css">
+</head>
+<body>
+<header class="top">
+  <a class="mark" href="/console" aria-label="AgentGuard Console home">
+    <svg class="mark-seal" viewBox="-50 -50 100 100" aria-hidden="true"><g data-rosette="small"></g></svg>
+    <span>AgentGuard</span>
+  </a>
+  <nav class="top-links">
+    <a href="/">Sentinel, the live demo</a>
+    <a href="https://github.com/zaxcoraider/AgentGuard">Source</a>
+    <span class="net">Testnet</span>
+    <button type="button" class="btn btn-ink" id="connect">Connect wallet</button>
+    <span class="who" id="who" hidden><span id="who-name"></span> <button type="button" class="link" id="disconnect">Disconnect</button></span>
+  </nav>
+</header>
+
+<main id="app">
+  <!-- Home: shown when no vault is open -->
+  <section id="home" class="c-home">
+    <div class="c-intro">
+      <h1>Give your AI agent a wallet it can't empty.</h1>
+      <p class="lede">An AgentGuard vault holds your agent's money. The agent gets a key that can only <em>ask</em> to pay. The vault's contract checks every request against the rules you set here, and pays, holds it for you, or blocks it.</p>
+    </div>
+
+    <form class="lookup" id="lookup">
+      <label for="lookup-input">Look up any vault</label>
+      <div class="row">
+        <input id="lookup-input" placeholder="sentinel.agentguard.testnet" autocomplete="off" spellcheck="false" required>
+        <button class="btn" type="submit">Open</button>
+      </div>
+      <p class="hint">No wallet needed to look. Try <button type="button" class="link" data-open="sentinel.agentguard.testnet">sentinel.agentguard.testnet</button>, the locked vault of the live demo.</p>
+    </form>
+
+    <div id="signed-out-cta" class="panel">
+      <h2>Your vaults</h2>
+      <p>Connect a NEAR testnet wallet to create a vault and manage the ones you own.</p>
+      <button type="button" class="btn btn-ink" data-connect>Connect wallet</button>
+    </div>
+
+    <div id="mine" class="panel" hidden>
+      <h2>Your vaults</h2>
+      <ul class="vault-list" id="vault-list"></ul>
+      <p class="empty" id="mine-empty" hidden>You don't own a vault yet. Create one below.</p>
+    </div>
+
+    <form id="create" class="panel create" hidden>
+      <h2>Create a vault</h2>
+      <p class="hint">The factory creates <code><span id="name-preview">name</span>.agentguard.testnet</code> with no full-access key, from immutable code. Every NEAR you attach goes into the vault and stays yours.</p>
+      <div class="grid">
+        <label>Name<input name="name" required pattern="[a-z0-9_-]{1,32}" maxlength="32" placeholder="my-agent" spellcheck="false"><small>a–z, 0–9, - and _</small></label>
+        <label>Fund it with (NEAR)<input name="deposit" required inputmode="decimal" value="1"><small>At least 1. 0.5 stays as a storage reserve.</small></label>
+        <label>Most per payment (NEAR)<input name="max_per_payment" required inputmode="decimal" value="0.5"></label>
+        <label>Most per 24 hours (NEAR)<input name="daily_limit" required inputmode="decimal" value="1"></label>
+        <label>Ask me above (NEAR)<input name="approval_threshold" required inputmode="decimal" value="0.2"><small>Payments above this wait for your approval</small></label>
+        <label>Held payments expire after (hours)<input name="ttl_hours" required inputmode="numeric" value="24"></label>
+        <label class="wide">Accounts it may pay without asking<input name="allowlist" placeholder="shop.testnet, api-provider.testnet" spellcheck="false"><small>Comma-separated. Leave empty to approve everything yourself.</small></label>
+        <fieldset class="wide">
+          <legend>Anyone not on that list</legend>
+          <label class="radio"><input type="radio" name="unknown" value="require_approval" checked> Hold the payment for me</label>
+          <label class="radio"><input type="radio" name="unknown" value="block"> Block it</label>
+        </fieldset>
+      </div>
+      <button class="btn btn-ink" type="submit">Create vault</button>
+    </form>
+  </section>
+
+  <!-- Vault view -->
+  <section id="vault" class="c-vault" hidden>
+    <a class="back link" href="/console">All vaults</a>
+    <div class="v-head">
+      <div>
+        <h1 id="v-name"></h1>
+        <p class="v-meta" id="v-meta"></p>
+      </div>
+      <div class="v-balance">
+        <span class="v-amount" id="v-balance">…</span>
+        <span class="unit">NEAR · <span id="v-available"></span> spendable</span>
+      </div>
+    </div>
+    <p class="banner" id="v-banner" hidden></p>
+
+    <div class="v-grid">
+      <section class="panel" aria-labelledby="h-pending">
+        <h2 id="h-pending">Held payments</h2>
+        <ul class="pay-list" id="pending"></ul>
+        <p class="empty" id="pending-empty">Nothing is waiting.</p>
+      </section>
+
+      <section class="panel" aria-labelledby="h-rules">
+        <h2 id="h-rules">Rules</h2>
+        <dl class="rules" id="rules-view"></dl>
+        <form id="rules-form" class="owner-only" hidden>
+          <div class="grid">
+            <label>Most per payment (NEAR)<input name="max_per_payment" required inputmode="decimal"></label>
+            <label>Most per 24 hours (NEAR)<input name="daily_limit" required inputmode="decimal"></label>
+            <label>Ask me above (NEAR)<input name="approval_threshold" required inputmode="decimal"></label>
+            <label>Held payments expire after (hours)<input name="ttl_hours" required inputmode="numeric"></label>
+            <fieldset class="wide">
+              <legend>Anyone not on the allowlist</legend>
+              <label class="radio"><input type="radio" name="unknown" value="require_approval"> Hold for me</label>
+              <label class="radio"><input type="radio" name="unknown" value="block"> Block</label>
+            </fieldset>
+          </div>
+          <button class="btn" type="submit">Save rules</button>
+        </form>
+      </section>
+
+      <section class="panel" aria-labelledby="h-allow">
+        <h2 id="h-allow">May pay without asking</h2>
+        <ul class="chips" id="allowlist"></ul>
+        <p class="empty" id="allow-empty">Nobody yet: every payment waits for you or is blocked.</p>
+        <form id="allow-form" class="row owner-only" hidden>
+          <input name="account" placeholder="shop.testnet" spellcheck="false" required aria-label="Account to allow">
+          <button class="btn" type="submit">Add</button>
+        </form>
+      </section>
+
+      <section class="panel" aria-labelledby="h-agents">
+        <h2 id="h-agents">Agent keys</h2>
+        <p class="hint">Each key can only call <code>request_payment</code>. It can't move money by itself.</p>
+        <ul class="key-list" id="agents"></ul>
+        <p class="empty" id="agents-empty">No agent key yet.</p>
+        <div class="owner-only" id="agent-add" hidden>
+          <label class="inline">Name it <input id="agent-label" value="my-agent" maxlength="64"></label>
+          <button class="btn" type="button" id="agent-new">Create an agent key</button>
+        </div>
+        <div class="keybox" id="keybox" hidden>
+          <p><strong>Save this file now.</strong> It holds your agent's key, which was made in this browser and was never sent anywhere. AgentGuard can't show it again.</p>
+          <a class="btn btn-ink" id="key-download" download>Download key file</a>
+          <p class="hint">Then point your agent at the vault with the <a href="https://github.com/zaxcoraider/AgentGuard/tree/main/packages/mcp">MCP server</a>:</p>
+          <pre id="mcp-cmd"></pre>
+        </div>
+      </section>
+
+      <section class="panel wide" aria-labelledby="h-history">
+        <h2 id="h-history">Recent payments</h2>
+        <div class="table-wrap">
+          <table class="history">
+            <thead><tr><th>#</th><th>To</th><th>Amount</th><th>Result</th><th>Why</th><th>When</th></tr></thead>
+            <tbody id="history"></tbody>
+          </table>
+        </div>
+        <p class="empty" id="history-empty">No payments yet.</p>
+      </section>
+
+      <section class="panel wide danger owner-only" aria-labelledby="h-danger" id="danger" hidden>
+        <h2 id="h-danger">Controls</h2>
+        <div class="controls">
+          <div>
+            <h3 id="pause-title">Pause</h3>
+            <p class="hint" id="pause-hint">While paused, every payment request is blocked.</p>
+            <button class="btn" type="button" id="pause-btn">Pause the vault</button>
+          </div>
+          <div class="unlocked-only">
+            <h3>Withdraw</h3>
+            <p class="hint">Send NEAR from the vault back to you.</p>
+            <form class="row" id="withdraw-form"><input name="amount" inputmode="decimal" placeholder="0.5" required aria-label="Amount to withdraw in NEAR"><button class="btn" type="submit">Withdraw</button></form>
+          </div>
+          <div class="unlocked-only">
+            <h3>Lock the rules forever</h3>
+            <p class="hint">After this, nobody can loosen the vault, you included: no rule or allowlist changes, no new keys, no approvals, no withdrawals. You can still pause, deny and revoke. This can't be undone.</p>
+            <form class="row" id="lock-form"><input name="confirm" placeholder="type the vault name" spellcheck="false" required aria-label="Type the vault name to confirm"><button class="btn btn-warn" type="submit">Lock forever</button></form>
+          </div>
+        </div>
+      </section>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<footer class="foot">
+  <p>AgentGuard on NEAR testnet. Built for NEAR HACKATHON 2026. <a href="https://github.com/zaxcoraider/AgentGuard/blob/main/docs/TESTNET-RESULTS.md">Every claim, with tx links</a>.</p>
+</footer>
+
+<script type="module" src="/console.js"></script>
+</body>
+</html>

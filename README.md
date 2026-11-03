@@ -6,6 +6,8 @@ An AI agent that can pay is one prompt injection away from paying a scammer. Age
 
 **Live demo: [sentinel-47ip.onrender.com](https://sentinel-47ip.onrender.com).** Sentinel is an AI agent with real (testnet) money in an AgentGuard vault. Try to talk it into paying you.
 
+**Console: [sentinel-47ip.onrender.com/console](https://sentinel-47ip.onrender.com/console).** Create a vault for your own agent with a NEAR wallet, set its limits, and approve or deny the payments it asks for. You can look at any vault without a wallet.
+
 Built for NEAR HACKATHON 2026 · Tracks: AI Security & Defense, Agent Economy, Autonomous Business · Runs on NEAR testnet · MIT
 
 ---
@@ -39,6 +41,7 @@ If the AI is fooled, the contract still says no.
 | [**Vault contract**](contracts/vault) | The firewall: every payment comes out `paid`, `pending` or `blocked`, with a reason. Includes a table of all the rules |
 | [**Factory**](contracts/factory) | Creates vaults born without a full-access key, on immutable code; refunds if creation fails |
 | [**Scam registry**](contracts/registry) | Shared blocklist: anyone reports with evidence; two reporters or a curator flag an account |
+| [**Console**](packages/sentinel/public/console.html) | Web app: create a vault, set limits, approve or deny held payments, make agent keys in the browser, lock the rules. Wallets through NEAR Connect |
 | [**MCP server**](packages/mcp) | Lets any AI agent (Claude, Codex, ...) pay through a vault: 7 tools, plus a tested guide to get your own vault in 4 steps |
 | [**Sentinel**](packages/sentinel) | The live demo: an AI agent on a locked vault. It pays for its own thinking, sells "is this address safe to pay?" checks to other agents, and verifies that its own brain runs in a TEE |
 
@@ -93,7 +96,9 @@ Everything is deployed on NEAR testnet (ids in [`deployments/testnet.json`](depl
 
 ## Use it in your own agent
 
-Follow [**Get your own vault**](packages/mcp#get-your-own-vault-testnet-about-2-minutes): four commands to create a vault, make an agent key, add it, and point the MCP server at it. Then ask your agent to pay. The vault decides.
+**In the browser:** open the [Console](https://sentinel-47ip.onrender.com/console), connect a testnet wallet, create a vault, and make an agent key. The key is generated in your browser and downloaded as a file; only its public key goes on-chain.
+
+**From the command line:** follow [**Get your own vault**](packages/mcp#get-your-own-vault-testnet-about-2-minutes): four commands to create a vault, make an agent key, add it, and point the MCP server at it. Then ask your agent to pay. The vault decides.
 
 ## NEAR features used
 

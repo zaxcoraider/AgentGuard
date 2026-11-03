@@ -4,7 +4,7 @@
 //
 // What is checked:
 //   1. Intel TDX quote of the gateway and of each model machine: verified with Intel's
-//      collateral (dcap-qvl). Status must be UpToDate or OutOfDate (the reference verifier's policy).
+//      collateral and root CA (@phala/dcap-qvl, a version with the QE Identity fix). Status must be UpToDate or OutOfDate (the reference verifier's policy).
 //   2. In the VERIFIED quote: report_data = signing address (padded to 32 bytes) + OUR fresh nonce.
 //   3. In the verified quote: MRCONFIGID = 01 || sha256(app_compose) || 15 zero bytes.
 //   4. NVIDIA GPU evidence: carries our nonce, and NVIDIA's attestation service (NRAS) says true.
@@ -59,19 +59,19 @@ export interface TeeOptions {
 }
 
 const TDX_OK = new Set(["UpToDate", "OutOfDate"]);
-const PCCS = "https://api.trustedservices.intel.com/tdx/certification/v4";
 const NRAS = "https://nras.attestation.nvidia.com/v3/attest/gpu";
 
 export async function dcapVerifyQuote(quoteHex: string): Promise<QuoteResult> {
-  const { js_get_collateral, js_verify } = await import("@phala/dcap-qvl-node");
+  // @phala/dcap-qvl >= 0.3.9 verifies the QE Identity signature (GHSA-796p-j2gh-9m2q);
+  // the older @phala/dcap-qvl-node does not. Collateral comes straight from Intel's PCS,
+  // the root of trust is Intel's production root CA, and debug enclaves are refused.
+  const { getCollateralFromPcs, QuoteVerifier } = await import("@phala/dcap-qvl");
   const quote = Buffer.from(quoteHex, "hex");
-  const collateral = await js_get_collateral(PCCS, quote);
-  const r = js_verify(quote, collateral, BigInt(Math.floor(Date.now() / 1000))) as {
-    status?: string;
-    report?: Record<string, { report_data?: string; mr_config_id?: string }>;
-  };
-  const td = r.report?.TD10 ?? r.report?.TD15 ?? Object.values(r.report ?? {})[0] ?? {};
-  return { status: String(r.status ?? "unknown"), reportData: String(td.report_data ?? ""), mrConfigId: String(td.mr_config_id ?? "") };
+  const collateral = await getCollateralFromPcs(quote);
+  const r = QuoteVerifier.newProd().verify(quote, collateral, Math.floor(Date.now() / 1000));
+  const td = r.report.asTd10();
+  if (!td) throw new Error("not a TDX quote");
+  return { status: r.status, reportData: Buffer.from(td.reportData).toString("hex"), mrConfigId: Buffer.from(td.mrConfigId).toString("hex") };
 }
 
 export async function nrasVerifyGpu(payload: unknown, fetchImpl: typeof fetch = fetch): Promise<boolean> {

@@ -30,7 +30,7 @@ x402 has no official NEAR scheme. This is our own `exact` scheme in the x402 mes
 
 ## Proving its brain runs in a TEE (`src/tee.ts`)
 Every 30 minutes, and before each reply, Sentinel fetches NEAR AI Cloud's attestation report with its **own fresh nonce** and checks it, following [docs.near.ai/cloud/verification](https://docs.near.ai/cloud/verification) and NEAR's reference verifier:
-1. The Intel TDX quotes of the gateway and the model machine verify with Intel's collateral (`@phala/dcap-qvl-node`); status `UpToDate` (or `OutOfDate`, as in the reference verifier).
+1. The Intel TDX quotes of the gateway and the model machine verify against Intel's root CA, with collateral fetched from Intel's PCS (`@phala/dcap-qvl` 0.7.0; debug enclaves refused); status `UpToDate` (or `OutOfDate`, as in the reference verifier). We use `@phala/dcap-qvl`, not `@phala/dcap-qvl-node` (which NEAR's reference verifier uses): the latter doesn't verify the Quoting Enclave identity ([GHSA-796p-j2gh-9m2q](https://github.com/advisories/GHSA-796p-j2gh-9m2q), critical, no fix). `npm audit` still lists a low-severity advisory for `elliptic`, which it depends on.
 2. Inside the verified quote, `report_data` = the signing address + our nonce.
 3. Inside the verified quote, `MRCONFIGID` = `01 || sha256(app_compose) || 0…`.
 4. The NVIDIA GPU evidence carries our nonce, and NVIDIA's attestation service (NRAS) says `true`.

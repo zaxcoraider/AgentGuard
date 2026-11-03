@@ -14,7 +14,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@phala/dcap-qvl-node": "0.3.3",
+    "@phala/dcap-qvl": "0.7.0",
     "ethers": "6.17.0",
     "near-api-js": "7.3.1",
     "tsx": "4.23.15"

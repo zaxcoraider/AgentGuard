@@ -96,7 +96,7 @@ As the owner, with 1 yoctoNEAR attached: `approve {"id": "1"}` / `deny {"id": "1
 ## Try it without an agent
 
 ```sh
-npm test                       # 8 unit tests: scoring, lookalikes, NEAR amount math
+npm test                       # 16 unit tests: scoring, lookalikes, NEAR amount math, HTTP 402 payment checks
 npx tsx scripts/live-demo.ts   # starts the server over stdio and calls every tool on testnet
 ```
 

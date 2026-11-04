@@ -2,7 +2,7 @@
 
 Sections 1–4: vault v1. Section 5: vault v2 with the shared registry.
 
-Everything here happened on NEAR **testnet** and can be checked on the explorer. Ids: [deployments/testnet.json](../deployments/testnet.json).
+Everything here happened on NEAR **testnet** and can be checked on the explorer. Ids: [deployments/testnet.json](../deployments/testnet.json). To check every transaction and stated outcome on this page against the chain in one go: `node scripts/verify-evidence.mjs` (read-only, no keys).
 
 ## 1. Vault code is immutable
 
@@ -137,7 +137,7 @@ Heartbeat: rent 0.002 NEAR + 9,644 tokens × 0.0005 NEAR/1k = 0.006822 NEAR paid
 | Replay: the spent tx sent again with a fresh nonce | **409** "already used" | |
 | Unrelated tx with no matching memo | **402** "memo is not x402:…" | |
 | MCP tool `agentguard_sentinel_check` from demo2, a second purchase within 10 minutes | demo2's vault **held it**: `pending (repeat_payment)`, no check served | [9Lqa…](https://testnet.nearblocks.io/txns/9Lqa986FJ1LjTmcZWrLwWZqjAMefctpswp9BKTKSokcq) |
-| Same, retried ~9 minutes later | held again: a pending payment inside the window also counts | [EeJ2…](https://testnet.nearblocks.io/txns/EeJ2GdBAiKPSYsep28rAbfXB9rrYW7JTbNC7oNcU2qD3) |
+| Same, retried ~9 minutes later | held again, `repeat_payment`: a pending payment inside the window also counts | [EeJ2…](https://testnet.nearblocks.io/txns/EeJ2GdBAiKPSYsep28rAbfXB9rrYW7JTbNC7oNcU2qD3) |
 | Owner denies both held test payments | denied | [8zwN…](https://testnet.nearblocks.io/txns/8zwNSd1xj9TvmHGpaFxnMhzxjsTm4fLT6iz8L9RTjPQG), [9yDH…](https://testnet.nearblocks.io/txns/9yDHjPaXWkzjvSLuofsLhSs5zYtGFYwEPoH1656o6keB) |
 | MCP tool `agentguard_sentinel_check` from demo2 (stdio, `scripts/sentinel-check-demo.ts`) on `agentguard-sh0p.testnet` | vault **paid** → 200, verdict `block`: doesn't exist + lookalike of `agentguard-shop.testnet` | [GXEu…](https://testnet.nearblocks.io/txns/GXEumEKJhxnNgodhqvA8JYrU4ThW8LQUXw2N1qR2JHz9) |
 

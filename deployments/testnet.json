@@ -1,9 +1,10 @@
 {
   "network": "testnet",
-  "updated": "2026-11-03",
+  "updated": "2026-11-04",
   "factory": {
     "account": "agentguard.testnet",
-    "code_sha256_base58": "8pmeGYcvWG58rGfskiLAdJKMjuMEBE93eFqnUNGfxqYV",
+    "code_sha256_base58": "CAVZHEjJFgEUV78ynTFXZx68LFCNfLJZXM39x6ByrdUc",
+    "code_sha256_base58_before_upgrade": "8pmeGYcvWG58rGfskiLAdJKMjuMEBE93eFqnUNGfxqYV",
     "deploy_tx": "99TQhpBuaTtcT9GVRAeDxNauUfpfSnJ1X2i39DJ4qAtF",
     "upgrade_tx": "GP957JvBLEsfwK7C4fnKA4PDoiJrd7mhBPn53427XBur",
     "note": "upgraded with migrate(); new vaults use vault_code v2 and registry.agentguard.testnet. Existing vaults keep their own code hash forever.",

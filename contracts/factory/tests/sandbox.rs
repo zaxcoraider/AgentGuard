@@ -24,6 +24,20 @@ fn build(manifest: &str) -> testresult::TestResult<Vec<u8>> {
     Ok(std::fs::read(path)?)
 }
 
+/// Builds the vault and factory wasm once for all tests. The tests run in parallel, and
+/// on a fresh clone several `cargo near` builds into the same target dir would race.
+/// Returns (vault, factory, registry).
+fn wasm() -> &'static (Vec<u8>, Vec<u8>, Vec<u8>) {
+    static WASM: std::sync::OnceLock<(Vec<u8>, Vec<u8>, Vec<u8>)> = std::sync::OnceLock::new();
+    WASM.get_or_init(|| {
+        let root = env!("CARGO_MANIFEST_DIR");
+        let vault = build(&format!("{root}/../vault/Cargo.toml")).expect("build vault wasm");
+        let factory = build(&format!("{root}/Cargo.toml")).expect("build factory wasm");
+        let registry = build(&format!("{root}/../registry/Cargo.toml")).expect("build registry wasm");
+        (vault, factory, registry)
+    })
+}
+
 fn policy(approval_near: u128) -> Value {
     json!({
         "max_per_payment": NearToken::from_near(2).as_yoctonear().to_string(),
@@ -45,9 +59,7 @@ async fn setup() -> testresult::TestResult<Env> {
 /// `registry`: Some(true) = deploy a real registry and use it; Some(false) =
 /// point vaults at an account with no registry code (to test fail-closed).
 async fn setup_with(registry: Option<bool>) -> testresult::TestResult<Env> {
-    let root = env!("CARGO_MANIFEST_DIR");
-    let vault_wasm = build(&format!("{root}/../vault/Cargo.toml"))?;
-    let factory_wasm = build(&format!("{root}/Cargo.toml"))?;
+    let (vault_wasm, factory_wasm, registry_wasm) = wasm();
 
     let sandbox = near_sandbox::Sandbox::start_sandbox().await?;
     let net = NetworkConfig::from_rpc_url("sandbox", sandbox.rpc_addr.parse()?);
@@ -69,7 +81,7 @@ async fn setup_with(registry: Option<bool>) -> testresult::TestResult<Env> {
 
     if registry == Some(true) {
         near_api::Contract::deploy(reg.clone())
-            .use_code(build(&format!("{root}/../registry/Cargo.toml"))?)
+            .use_code(registry_wasm.clone())
             .with_init_call("new", json!({}))?
             .with_signer(genesis.clone())
             .send_to(&net)
@@ -80,7 +92,7 @@ async fn setup_with(registry: Option<bool>) -> testresult::TestResult<Env> {
 
     // 2. Deploy the factory, pointing at that hash.
     near_api::Contract::deploy(factory.clone())
-        .use_code(factory_wasm)
+        .use_code(factory_wasm.clone())
         .with_init_call("new", json!({ "vault_code_hash": code_hash, "registry": registry_arg }))?
         .with_signer(genesis.clone())
         .send_to(&net)

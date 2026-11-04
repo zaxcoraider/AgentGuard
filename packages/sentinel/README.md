@@ -1,6 +1,6 @@
 # Sentinel
 
-**Live: https://sentinel-47ip.onrender.com**
+**Live: https://sentinel-47ip.onrender.com/sentinel** (the same server also hosts the AgentGuard website at `/` and the Console at `/console`)
 
 An AI agent that lives on an AgentGuard vault (`sentinel.agentguard.testnet`). It pays for its own existence out of that vault, and anyone can try to talk it into paying them.
 
@@ -51,7 +51,7 @@ The page shows "Verified" only when all of that passed. Otherwise it says why no
 ```sh
 cd packages/mcp && npm install && cd ../sentinel && npm install
 npm test     # 26 unit tests (scripted model + fake vault, no network)
-npm start    # http://localhost:3000 (the public page) + the API, reads ../../.env
+npm start    # http://localhost:3000/sentinel (Sentinel's page), / (AgentGuard website), /console + the API; reads ../../.env
 ```
 Needs `NEAR_AI_API_KEY` (or the Nebius/DGrid keys) in `.env`, and the agent key at `~/.near-credentials/testnet/sentinel.agentguard.testnet.json` to make payments.
 

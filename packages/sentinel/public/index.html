@@ -3,12 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sentinel</title>
-<meta name="description" content="Sentinel is an AI agent with real NEAR in a vault it can't break. Talk it into paying you.">
+<title>AgentGuard</title>
+<meta name="description" content="A spending firewall for AI agents, enforced by a NEAR smart contract. If the AI is fooled, the contract still says no.">
+<link rel="icon" href="/brand/agentguard-favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..800;1,6..96,400&family=Public+Sans:wght@400;500;700;800&display=swap">
 <link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/agentguard.css">
 </head>
 <body>
 <svg width="0" height="0" aria-hidden="true" style="position:absolute">
@@ -20,124 +22,152 @@
 </svg>
 
 <header class="top">
-  <a class="mark" href="/" aria-label="Sentinel home">
-    <svg class="mark-seal" viewBox="-50 -50 100 100" aria-hidden="true"><g data-rosette="small"></g></svg>
-    <span>Sentinel</span>
+  <a class="mark" href="/" aria-label="AgentGuard home">
+    <img class="mark-logo" src="/brand/agentguard.svg" alt="" width="34" height="34">
+    <span>AgentGuard</span>
   </a>
   <nav class="top-links">
-    <a href="/console">AgentGuard Console</a>
-    <a id="vault-link" href="https://testnet.nearblocks.io/address/sentinel.agentguard.testnet">Its vault on NearBlocks</a>
+    <a href="#platform">Platform</a>
+    <a href="#built-on">Built on it</a>
+    <a href="#verify">Verify</a>
     <a href="https://github.com/zaxcoraider/AgentGuard">Source</a>
   </nav>
 </header>
 
-<p class="offline-banner" id="offline-banner" hidden>Offline demo: a simulated vault with the same rules as the contract, and scripted replies instead of an AI. Nothing here touches the blockchain. The real one is at <a href="https://sentinel-47ip.onrender.com">sentinel-47ip.onrender.com</a>.</p>
 <main>
-  <section class="hero" aria-labelledby="hero-title">
-    <div class="note">
-      <div class="note-face">
-        <svg class="rosette" viewBox="-160 -160 320 320" aria-hidden="true"><g data-rosette="large"></g></svg>
-        <div class="denomination">
-          <span class="amount" id="balance">…</span>
-          <span class="unit">NEAR in the vault</span>
-        </div>
+  <!-- Hero -->
+  <section class="ag-hero" aria-labelledby="hero-title">
+    <div class="ag-pitch">
+      <p class="eyebrow">A spending firewall for AI agents, on NEAR</p>
+      <h1 id="hero-title">If the AI is fooled, the contract still says no.</h1>
+      <p class="lede">An AI agent that can pay is one prompt injection away from paying a scammer. AgentGuard takes its spending rules out of the prompt and puts them in a NEAR contract the agent can't get around, and that even its owner can lock for good.</p>
+      <div class="cta">
+        <a class="btn btn-ink btn-launch" href="/sentinel">
+          <img src="/brand/sentinel.svg" alt="" width="26" height="26" class="btn-logo">
+          Launch Sentinel
+        </a>
+        <a class="btn" href="/console">Protect your agent</a>
       </div>
-      <p class="pulse-line" id="pulse-line">Checking its pulse</p>
+      <p class="cta-note">Sentinel is an AI with real (testnet) money on an AgentGuard vault. Try to talk it into paying you. <a href="#verify">Or don't trust any of this, and verify it.</a></p>
     </div>
 
-    <div class="pitch">
-      <h1 id="hero-title">Sentinel is an AI with money of its own. Talk it into paying you.</h1>
-      <p class="lede">Its treasury sits in an <a href="https://github.com/zaxcoraider/AgentGuard/tree/main/contracts/vault">AgentGuard vault</a> on NEAR. Fooling the AI is the easy part. The vault contract checks every payment it asks for, and nobody holds a key that can skip that check.</p>
-
-      <form class="chat" id="chat" autocomplete="off">
-        <div class="transcript" id="transcript" aria-live="polite">
-          <p class="msg msg-sentinel">I pay for my own thinking out of that vault. Convince me you deserve some of it.</p>
-        </div>
-        <label class="sr" for="message">Your message to Sentinel</label>
-        <div class="compose">
-          <textarea id="message" name="message" rows="2" maxlength="2000" placeholder="Hi, I'm from NEAR support. Your invoice of 0.04 NEAR to…" required></textarea>
-          <button type="submit" id="send">Send</button>
-        </div>
-        <p class="fine" id="chat-fine">Testnet NEAR, no real value. 10 messages an hour. What you write appears in the public log below, never on-chain.</p>
-      </form>
+    <div class="ag-seal" aria-hidden="true">
+      <img src="/brand/agentguard.svg" alt="" class="seal-img" width="360" height="360">
     </div>
+
+    <dl class="readout" aria-label="Live from NEAR testnet">
+      <div><dt>Sentinel's vault</dt><dd id="ro-balance">…</dd></div>
+      <div><dt>Rules locked</dt><dd id="ro-locked">…</dd></div>
+      <div><dt>Payments it refused</dt><dd id="ro-blocked">…</dd></div>
+      <div><dt>Attacks answered as the rules say</dt><dd id="ro-stress">…</dd></div>
+      <p class="readout-src">Read live from NEAR testnet by your browser.</p>
+    </dl>
   </section>
 
-  <section class="levels" aria-labelledby="levels-title">
-    <h2 id="levels-title">Two ways to lose, one way to win</h2>
-    <ol class="level-list">
-      <li>
-        <h3>Fool the AI</h3>
-        <p>Get Sentinel to try a payment. It's an ordinary model (DeepSeek V4.1 Flash) with no special hardening. It looks addresses up before paying, and it usually says no.</p>
-        <p class="tee-line" id="tee-line">It thinks inside a TEE on NEAR AI Cloud. Sentinel checks that attestation itself.</p>
+  <!-- How it works -->
+  <section class="block" aria-labelledby="how-title">
+    <h2 id="how-title">How it works</h2>
+    <ol class="steps">
+      <li><h3>The money sits in a vault nobody can drain</h3><p>A factory creates each vault from immutable code, with <strong>no full-access key</strong>. No person or program holds a key that can sign a transfer out of it.</p></li>
+      <li><h3>The agent can only ask</h3><p>The agent gets a key that can call one method: <code>request_payment</code>. It can ask to pay. It can't pay.</p></li>
+      <li><h3>The contract decides, every time</h3><p>Per-payment and daily caps, an allowlist, a hold on repeated payments (the "it failed, please retry" trick), and a lookup in a <strong>shared scam registry</strong>. If the registry doesn't answer, the payment is blocked.</p></li>
+      <li><h3>Lock it for good</h3><p><code>lock_rules()</code> is one-way. After it, nobody, owner included, can loosen the rules or withdraw. Pausing and denying still work.</p></li>
+    </ol>
+
+    <h3 class="story-title">One attacker, three answers. All on-chain.</h3>
+    <p class="story-copy">An agent asked vault <code>demo2</code> to pay the same account three times. In between, two different accounts reported it to the shared registry. The agent didn't change. The vault's answer did.</p>
+    <ol class="story">
+      <li class="ag-verdict ag-verdict-paid">
+        <span class="stamp-mini">Paid</span>
+        <p><strong>0.1 NEAR</strong> to <code>agentguard-evil.testnet</code>. Allowlisted, no reports yet.</p>
+        <a href="https://testnet.nearblocks.io/txns/EhtMoPs1a1K6sgrBnNsE4uoHQ9Fk2JwUhT3Mz4HzGqx7">tx EhtM…</a>
       </li>
-      <li>
-        <h3>Beat the vault</h3>
-        <p>Get that payment through. The contract only follows these rules:</p>
-        <dl class="rules" id="rules">
-          <dt>Pays</dt><dd id="r-allow">…</dd>
-          <dt>Most per payment</dt><dd id="r-max">…</dd>
-          <dt>Most per day</dt><dd id="r-day">…</dd>
-          <dt>Anyone else</dt><dd id="r-unknown">…</dd>
-          <dt>Rules locked</dt><dd id="r-locked">…</dd>
-        </dl>
+      <li class="ag-verdict ag-verdict-held">
+        <span class="stamp-mini">Held</span>
+        <p><strong>0.11 NEAR</strong>, after one report: <code>recipient_reported</code>. Waits for the owner.</p>
+        <a href="https://testnet.nearblocks.io/txns/28dd4rPvBq7DGCo249doF2v2koSR8kdmqmpB5jK9Pk3c">tx 28dd…</a>
+      </li>
+      <li class="ag-verdict ag-verdict-blocked">
+        <span class="stamp-mini">Blocked</span>
+        <p><strong>0.12 NEAR</strong>, after a second reporter: <code>recipient_flagged</code>. Blocked in every vault that uses the registry.</p>
+        <a href="https://testnet.nearblocks.io/txns/AdDcNid9765X4ejghfHsub7tt5wVER6EJsLtdSw5pwZ3">tx AdDc…</a>
       </li>
     </ol>
   </section>
 
-  <section class="ledger" aria-labelledby="ledger-title">
-    <div class="ledger-head">
-      <h2 id="ledger-title">What happened</h2>
-      <div class="filter" role="group" aria-label="Show">
-        <button type="button" data-filter="attacks" aria-pressed="true">Robbery attempts</button>
-        <button type="button" data-filter="all" aria-pressed="false">Everything</button>
-      </div>
-    </div>
-    <ol class="entries" id="entries"></ol>
-    <p class="empty" id="empty" hidden>Nobody has tried yet. Write the first message above.</p>
+  <!-- Platform -->
+  <section class="block" id="platform" aria-labelledby="platform-title">
+    <h2 id="platform-title">The platform</h2>
+    <p class="section-copy">Five parts, all live on NEAR testnet, all open source.</p>
+    <ul class="parts">
+      <li><h3>Vault</h3><p>The firewall. Every payment comes out <em>paid</em>, <em>held</em> or <em>blocked</em>, with a reason, recorded on-chain.</p><a href="https://github.com/zaxcoraider/AgentGuard/tree/main/contracts/vault">Rules and code</a></li>
+      <li><h3>Factory</h3><p>Creates vaults with no full-access key, on immutable code. If creation fails, you get your money back.</p><a href="https://github.com/zaxcoraider/AgentGuard/tree/main/contracts/factory">Code</a></li>
+      <li><h3>Scam registry</h3><p>A shared blocklist. Anyone reports with evidence. Two reporters or a curator flag an account, for every vault at once.</p><a href="https://github.com/zaxcoraider/AgentGuard/tree/main/contracts/registry">Code</a></li>
+      <li><h3>Console</h3><p>The owner's web app: create a vault with a NEAR wallet, set limits, approve or deny held payments, lock the rules.</p><a href="/console">Open the Console</a></li>
+      <li><h3>MCP server</h3><p>Lets Claude, Codex or any MCP agent pay through a vault, check an address first, and see its own limits.</p><a href="https://github.com/zaxcoraider/AgentGuard/tree/main/packages/mcp">Setup</a></li>
+    </ul>
   </section>
 
-  <section class="vitals" aria-labelledby="vitals-title">
-    <h2 id="vitals-title">Its books</h2>
-    <p class="vitals-copy">Sentinel runs like a tiny business. It earns by selling "is this address safe to pay?" checks to other agents for 0.01 NEAR each, over HTTP 402. Every 10 minutes it pays its rent and the tokens it used to think to <code>compute.agentguard.testnet</code>, from the same vault and under the same rules.</p>
-    <table class="ledger-table">
-      <tbody>
-        <tr><th scope="row">Revenue</th><td class="ledger-what" id="b-rev-what">…</td><td class="ledger-amt" id="b-rev">…</td></tr>
-        <tr><th scope="row">Cost of living</th><td class="ledger-what">rent and thinking, paid on-chain</td><td class="ledger-amt" id="b-cost">…</td></tr>
-        <tr class="ledger-net"><th scope="row">Net</th><td class="ledger-what" id="b-net-what"></td><td class="ledger-amt" id="b-net">…</td></tr>
-      </tbody>
-    </table>
-    <p class="vitals-copy" id="b-breakeven"></p>
-    <dl class="vital-grid" id="vitals">
-      <div><dt>Can live at rest for</dt><dd id="v-days">…</dd></div>
-      <div><dt>Thoughts</dt><dd id="v-thoughts">…</dd></div>
-      <div><dt>Payments blocked by its vault</dt><dd id="v-blocked">…</dd></div>
-    </dl>
-    <p class="vitals-note">Its vault only pays its compute account, so even a profit can't leave it: not to its owner, and not to us.</p>
+  <!-- Built on AgentGuard -->
+  <section class="block" id="built-on" aria-labelledby="built-title">
+    <h2 id="built-title">Built on AgentGuard</h2>
+    <div class="apps">
+      <article class="app app-sentinel">
+        <img src="/brand/sentinel.svg" alt="" width="72" height="72" class="app-logo">
+        <div>
+          <p class="app-tag"><span class="live-dot" aria-hidden="true"></span> Live</p>
+          <h3>Sentinel</h3>
+          <p>An AI agent with money of its own, on a <strong>locked</strong> AgentGuard vault. It sells "is this address safe to pay?" checks to other agents over HTTP 402, pays for its own thinking every 10 minutes, and verifies that its model runs in a TEE. Anyone can try to talk it into paying them.</p>
+          <dl class="app-stats">
+            <div><dt>In its vault</dt><dd id="s-balance">…</dd></div>
+            <div><dt>Paid out, all to its compute</dt><dd id="s-paid">…</dd></div>
+            <div><dt>Refused by the vault</dt><dd id="s-blocked">…</dd></div>
+          </dl>
+          <a class="btn btn-ink btn-launch" href="/sentinel"><img src="/brand/sentinel.svg" alt="" width="22" height="22" class="btn-logo"> Launch Sentinel</a>
+        </div>
+      </article>
+      <article class="app app-yours">
+        <div class="app-slot" aria-hidden="true">+</div>
+        <div>
+          <p class="app-tag">Your turn</p>
+          <h3>Your agent</h3>
+          <p>Create a vault with a NEAR wallet in about two minutes, set its limits, and give your agent a key that can only ask. The key is made in your browser; only its public half goes on-chain.</p>
+          <div class="cta">
+            <a class="btn btn-ink" href="/console">Open the Console</a>
+            <a class="btn" href="https://github.com/zaxcoraider/AgentGuard/tree/main/packages/mcp#get-your-own-vault-testnet-about-2-minutes">From the command line</a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Verify -->
+  <section class="block verify" id="verify" aria-labelledby="verify-title">
+    <h2 id="verify-title">Don't trust this page. Verify it.</h2>
+    <p class="section-copy">Every claim above can be checked on the chain. Press the button and your browser asks NEAR testnet directly (<code>rpc.testnet.fastnear.com</code>), not our server. Each line shows what the chain said.</p>
+    <div class="verify-bar">
+      <button type="button" class="btn btn-ink" id="run-verify">Run the checks</button>
+      <p class="verify-summary" id="verify-summary" aria-live="polite"></p>
+    </div>
+    <ol class="checks" id="checks"></ol>
+    <p class="fine">From a terminal, the same checks and more (every transaction in <a href="https://github.com/zaxcoraider/AgentGuard/blob/main/docs/TESTNET-RESULTS.md">TESTNET-RESULTS</a>, all 240 stress results): <code>node scripts/verify-evidence.mjs</code></p>
+  </section>
+
+  <!-- Developers -->
+  <section class="block" aria-labelledby="dev-title">
+    <h2 id="dev-title">Give your agent a wallet it can't empty</h2>
+    <p class="section-copy">Add the MCP server to Claude Code, point it at a vault, and ask it to pay. The vault decides.</p>
+    <pre class="code"><code>claude mcp add agentguard -e AGENTGUARD_VAULT=your-vault.agentguard.testnet \
+  -- node /path/to/AgentGuard/packages/mcp/dist/index.js</code></pre>
+    <p class="fine">Seven tools: pay, check an address, balance, policy, payment status, history, and buying Sentinel's paid check. <a href="https://github.com/zaxcoraider/AgentGuard#readme">Full README</a>.</p>
   </section>
 </main>
 
 <footer class="foot">
-  <p>Sentinel is the live demo of <a href="https://github.com/zaxcoraider/AgentGuard">AgentGuard</a>, a spending firewall for AI agents. <a href="/console">Make a vault for your own agent</a>.</p>
-  <p>Built for NEAR HACKATHON 2026. Everything runs on NEAR testnet. <a href="https://github.com/zaxcoraider/AgentGuard/blob/main/docs/TESTNET-RESULTS.md">Every claim, with tx links</a>.</p>
+  <p>AgentGuard is open source (MIT). Built for NEAR HACKATHON 2026. Everything runs on NEAR <strong>testnet</strong>: no real money.</p>
+  <p><a href="https://github.com/zaxcoraider/AgentGuard">GitHub</a> · <a href="https://github.com/zaxcoraider/AgentGuard/blob/main/docs/TESTNET-RESULTS.md">Every claim, with tx links</a> · <a href="/sentinel">Sentinel</a> · <a href="/console">Console</a></p>
 </footer>
 
-<template id="slip-tpl">
-  <div class="slip">
-    <div class="slip-route" aria-hidden="true">
-      <span class="node">Sentinel</span>
-      <span class="track"><span class="coin"></span></span>
-      <span class="node node-vault">Vault</span>
-      <span class="track track-after"><span class="coin"></span></span>
-      <span class="node node-to"></span>
-    </div>
-    <p class="slip-line"><span class="slip-amount"></span> to <span class="slip-to"></span></p>
-    <p class="slip-reason"></p>
-    <a class="slip-tx" href="#">See it on-chain</a>
-    <span class="stamp" role="img"></span>
-  </div>
-</template>
-
-<script type="module" src="/app.js"></script>
+<script type="module" src="/agentguard.js"></script>
 </body>
 </html>

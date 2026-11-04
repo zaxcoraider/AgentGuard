@@ -57,6 +57,11 @@ const market = new Market(guard, store, {
   registry: env.AGENTGUARD_REGISTRY ?? "registry.agentguard.testnet",
 });
 const PUBLIC_DIR = join(here, "../public");
+/** The repo's own proof files, served as-is so the front page checks the same data the README links to. */
+const EVIDENCE: Record<string, string> = {
+  "/evidence/stress-run.json": join(here, "../../../docs/stress-run.json"),
+  "/evidence/testnet.json": join(here, "../../../deployments/testnet.json"),
+};
 
 if (!store.state.feed.length) store.push({ kind: "born", text: `I was born. My treasury is the AgentGuard vault ${guard.cfg.vault}.` });
 
@@ -169,7 +174,7 @@ function visitor(req: IncomingMessage): string {
 
 const TYPES: Record<string, string> = { ".html": "text/html; charset=utf-8", ".css": "text/css", ".js": "text/javascript", ".mjs": "text/javascript", ".svg": "image/svg+xml", ".png": "image/png" };
 
-/** "/" -> index.html, "/console" -> console.html; never outside public/, never a directory. */
+/** "/" -> index.html (AgentGuard), "/sentinel" -> sentinel.html, "/console" -> console.html; never outside public/, never a directory. */
 function serveStatic(res: ServerResponse, path: string): boolean {
   let rel = path === "/" ? "index.html" : decodeURIComponent(path).replace(/^\/+/, "");
   if (!extname(rel)) rel += ".html";
@@ -201,6 +206,10 @@ const server = createServer(async (req, res) => {
       return send(res, 200, await brain.handle(body.message));
     }
     if (url.pathname === "/api/check" && req.method === "GET") return await paidCheck(req, res, url);
+    if (req.method === "GET" && EVIDENCE[url.pathname] && existsSync(EVIDENCE[url.pathname])) {
+      res.writeHead(200, { "content-type": "application/json", "cache-control": "no-cache" });
+      return res.end(readFileSync(EVIDENCE[url.pathname]));
+    }
     if (req.method === "GET" && serveStatic(res, url.pathname)) return;
     send(res, 404, { error: "Not found" });
   } catch (e) {

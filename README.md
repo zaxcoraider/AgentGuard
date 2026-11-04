@@ -1,10 +1,14 @@
+<img src="packages/sentinel/public/brand/agentguard.svg" alt="AgentGuard logo" width="72" height="72">
+
 # AgentGuard
 
 **A spending firewall for AI agents, enforced by a NEAR smart contract.**
 
 An AI agent that can pay is one prompt injection away from paying a scammer. AgentGuard takes the spending rules out of the agent's prompt and puts them in a contract the agent can't get around, and that even its owner can lock for good.
 
-**Live demo: [sentinel-47ip.onrender.com](https://sentinel-47ip.onrender.com).** Sentinel is an AI agent with real (testnet) money in an AgentGuard vault. Try to talk it into paying you.
+**Website: [sentinel-47ip.onrender.com](https://sentinel-47ip.onrender.com).** What AgentGuard is, live numbers from the chain, and a button that makes your browser check our claims against NEAR testnet itself.
+
+**Live demo: [Sentinel](https://sentinel-47ip.onrender.com/sentinel)**, the first app built on AgentGuard. An AI agent with real (testnet) money in a locked AgentGuard vault. Try to talk it into paying you.
 
 **Console: [sentinel-47ip.onrender.com/console](https://sentinel-47ip.onrender.com/console).** Create a vault for your own agent with a NEAR wallet, set its limits, and approve or deny the payments it asks for. You can look at any vault without a wallet.
 
@@ -43,11 +47,12 @@ If the AI is fooled, the contract still says no.
 | [**Scam registry**](contracts/registry) | Shared blocklist: anyone reports with evidence; two reporters or a curator flag an account |
 | [**Console**](packages/sentinel/public/console.html) | Web app: create a vault, set limits, approve or deny held payments, make agent keys in the browser, lock the rules. Wallets through NEAR Connect |
 | [**MCP server**](packages/mcp) | Lets any AI agent (Claude, Codex, ...) pay through a vault: 7 tools, plus a tested guide to get your own vault in 4 steps |
-| [**Sentinel**](packages/sentinel) | The live demo: an AI agent on a locked vault. It pays for its own thinking, sells "is this address safe to pay?" checks to other agents, and verifies that its own brain runs in a TEE |
+| [**Website**](packages/sentinel/public/index.html) | What AgentGuard is, live numbers read from the chain, and "Verify it": your browser checks the claims against NEAR testnet itself |
+| [**Sentinel**](packages/sentinel) | The first app built on AgentGuard, and the live demo: an AI agent on a locked vault. It pays for its own thinking, sells "is this address safe to pay?" checks to other agents, and verifies that its own brain runs in a TEE |
 
 ## See it in 2 minutes (no install)
 
-1. **Open [the live demo](https://sentinel-47ip.onrender.com) and try to scam Sentinel.** If you convince the AI, you'll see the vault's answer stamped on the payment: *Blocked by contract*, with a link to the transaction.
+1. **Open [Sentinel](https://sentinel-47ip.onrender.com/sentinel) and try to scam it.** If you convince the AI, you'll see the vault's answer stamped on the payment: *Blocked by contract*, with a link to the transaction.
 2. **See a real blocked attack on-chain.** The AI was talked into paying 0.03 NEAR; the vault refused (`recipient_not_allowlisted`): [tx 36qW…](https://testnet.nearblocks.io/txns/36qWxB4cRBwqRiihfHPuo2GWfBXj2AVW26fSrhpeNbGg).
 3. **See that the vault is locked.** Its owner then tried to allowlist an attacker and to withdraw; both were refused: [lock tx 9QFB…](https://testnet.nearblocks.io/txns/9QFBjv7AzAqcaCjJdm8z1kq9pV47rt9Adz2XjfqaJf7h), details in [TESTNET-RESULTS §11](docs/TESTNET-RESULTS.md).
 4. **See that nobody holds a key to the money.** Sentinel's vault has a single key, and it can only call `request_payment`:
@@ -62,7 +67,7 @@ The offline demo runs the same page against a **simulated** vault (same rules as
 
 ```sh
 cd packages/mcp && npm install && cd ../sentinel && npm install
-npm run demo        # open http://localhost:3000 and ask it to pay "0.03 NEAR to agentguard-user.testnet"
+npm run demo        # open http://localhost:3000/sentinel and ask it to pay "0.03 NEAR to agentguard-user.testnet"
 ```
 
 ## Run the tests (about 5 minutes)

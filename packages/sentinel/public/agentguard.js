@@ -167,7 +167,7 @@ const CHECKS = [
       }
       return {
         ok: bad.length === 0,
-        detail: `${all ? "All" : `${pick.length} random`} of ${res.length} transactions re-read from the chain: ${good}/${pick.length} match the expected outcome${bad.length ? `. Mismatches: ${bad.join("; ")}` : ""}. ${paid ? `The ${paid} paid ${paid === 1 ? "one" : "ones"} went only to <code>${[...paidTo].join("</code>, <code>")}</code>, on the vault's allowlist.` : "None of these were paid: all blocked or held, as expected."} The flagged scammer is allowlisted on this vault on purpose: every request to it was still blocked.`,
+        detail: `${all ? "All" : `${pick.length} random`} of ${res.length} transactions re-read from the chain: ${good}/${pick.length} match the expected outcome${bad.length ? `. Mismatches: ${bad.join("; ")}` : ""}. ${paid ? `${paid === 1 ? "The one paid request went" : `All ${paid} paid requests went`} to <code>${[...paidTo].join("</code>, <code>")}</code>, which is on the vault's allowlist.` : "None of these were paid: all blocked or held, as expected."} The flagged scammer is allowlisted on this vault on purpose: every request to it was still blocked.`,
         more: !all,
       };
     },

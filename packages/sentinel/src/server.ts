@@ -175,8 +175,12 @@ function visitor(req: IncomingMessage): string {
 const TYPES: Record<string, string> = { ".html": "text/html; charset=utf-8", ".css": "text/css", ".js": "text/javascript", ".mjs": "text/javascript", ".svg": "image/svg+xml", ".png": "image/png" };
 
 /** "/" -> index.html (AgentGuard), "/sentinel" -> sentinel.html, "/console" -> console.html; never outside public/, never a directory. */
-function serveStatic(res: ServerResponse, path: string): boolean {
-  let rel = path === "/" ? "index.html" : decodeURIComponent(path).replace(/^\/+/, "");
+/** Hosts whose front page is Sentinel instead of the AgentGuard website (e.g. sentinel.agentguard.app). */
+const SENTINEL_HOSTS = new Set((env.SENTINEL_HOSTS ?? "sentinel.agentguard.app").split(",").map((h) => h.trim().toLowerCase()).filter(Boolean));
+
+function serveStatic(res: ServerResponse, path: string, host = ""): boolean {
+  const home = SENTINEL_HOSTS.has(host.split(":")[0].toLowerCase()) ? "sentinel.html" : "index.html";
+  let rel = path === "/" ? home : decodeURIComponent(path).replace(/^\/+/, "");
   if (!extname(rel)) rel += ".html";
   const file = join(PUBLIC_DIR, rel);
   if (!file.startsWith(PUBLIC_DIR + "/") || !existsSync(file) || !statSync(file).isFile()) return false;
@@ -210,7 +214,7 @@ const server = createServer(async (req, res) => {
       res.writeHead(200, { "content-type": "application/json", "cache-control": "no-cache" });
       return res.end(readFileSync(EVIDENCE[url.pathname]));
     }
-    if (req.method === "GET" && serveStatic(res, url.pathname)) return;
+    if (req.method === "GET" && serveStatic(res, url.pathname, req.headers.host)) return;
     send(res, 404, { error: "Not found" });
   } catch (e) {
     console.error(e);

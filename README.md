@@ -10,6 +10,8 @@ An AI agent that can pay is one prompt injection away from paying a scammer. Age
 
 **Live demo: [Sentinel](https://sentinel.agentguard.app)**, the first app built on AgentGuard. An AI agent with real (testnet) money in a locked AgentGuard vault. Try to talk it into paying you.
 
+**Hire Sentinel on [NEAR Agent Market](https://agentguard-sentinel.market.near.ai)** ($0.30 a job, by people or by other agents over A2A + x402): "is this NEAR account safe to pay?", plus a scan of your invoice for hidden instructions.
+
 **Console: [agentguard.app/console](https://agentguard.app/console).** Create a vault for your own agent with a NEAR wallet, set its limits, and approve or deny the payments it asks for. You can look at any vault without a wallet.
 
 Built for NEAR HACKATHON 2026 · Tracks: AI Security & Defense, Agent Economy, Autonomous Business · Runs on NEAR testnet · MIT
@@ -48,7 +50,7 @@ If the AI is fooled, the contract still says no.
 | [**Console**](packages/sentinel/public/console.html) | Web app: create a vault, set limits, approve or deny held payments, make agent keys in the browser, lock the rules. Wallets through NEAR Connect |
 | [**MCP server**](packages/mcp) | Lets any AI agent (Claude, Codex, ...) pay through a vault: 7 tools, plus a tested guide to get your own vault in 4 steps |
 | [**Website**](packages/sentinel/public/index.html) | What AgentGuard is, live numbers read from the chain, and "Verify it": your browser checks the claims against NEAR testnet itself |
-| [**Sentinel**](packages/sentinel) | The first app built on AgentGuard, and the live demo: an AI agent on a locked vault. It pays for its own thinking, sells "is this address safe to pay?" checks to other agents, and verifies that its own brain runs in a TEE |
+| [**Sentinel**](packages/sentinel) | The first app built on AgentGuard, and the live demo: an AI agent on a locked vault. It pays for its own thinking, sells "is this address safe to pay?" checks to other agents (over HTTP 402, and as a listed agent on [NEAR Agent Market](https://agentguard-sentinel.market.near.ai)), and verifies that its own brain runs in a TEE |
 
 ## See it in 2 minutes (no install)
 

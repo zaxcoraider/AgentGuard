@@ -50,7 +50,7 @@ The page shows "Verified" only when all of that passed. Otherwise it says why no
 ## Run it
 ```sh
 cd packages/mcp && npm install && cd ../sentinel && npm install
-npm test     # 26 unit tests (scripted model + fake vault, no network)
+npm test     # 29 unit tests (scripted model + fake vault, no network)
 npm start    # http://localhost:3000/sentinel (Sentinel's page), / (AgentGuard website), /console + the API; reads ../../.env
 ```
 Needs `NEAR_AI_API_KEY` (or the Nebius/DGrid keys) in `.env`, and the agent key at `~/.near-credentials/testnet/sentinel.agentguard.testnet.json` to make payments.

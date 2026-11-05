@@ -53,6 +53,8 @@ Being honest here matters more than the table above.
 7. **A lookalike name that isn't on the allowlist yet.** If `unknown_recipient = require_approval`, `agentguard-sh0p.testnet` gets *held*, not paid; the owner still has to notice. The MCP `check_address` tool flags lookalikes of allowlisted names, but that's advice to the agent, not enforcement.
 8. **Anything off-chain.** The MCP server, Sentinel's server and the Console run on ordinary machines. If they are compromised, the attacker gets at most what the agent key gets (see row 1 of "Who can do what"). For Sentinel that means paying `compute.agentguard.testnet` (its own compute account) up to 0.05 NEAR per payment and 1 NEAR per day.
 
+   Web pages: the website and Sentinel's page send a strict Content-Security-Policy (only our own scripts; connections only to our API and the NEAR RPC). The Console can't, because NEAR Connect loads wallet code from many wallet sites, so it gets only `frame-ancestors 'none'` (no clickjacking of Approve / Lock), `object-src 'none'` and `base-uri 'self'`, plus `nosniff`, `X-Frame-Options: DENY` and HSTS on every response ([src/headers.ts](packages/sentinel/src/headers.ts)). The Console's agent-key generator and wallet calls run in your browser; a compromised server could serve a malicious Console, so for real funds check what your wallet asks you to sign.
+
 ## What you have to trust
 
 | Trust | Why | How to check / reduce it |

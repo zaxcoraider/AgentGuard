@@ -5,6 +5,7 @@
 //   GET  /api/check?account=X[&vault=V]  paid "safe to pay?" check: 402 first, then pay + X-PAYMENT
 //   GET  /health
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { BASE_HEADERS, staticHeaders } from "./headers.ts";
 import { existsSync, readFileSync, rmSync, statSync } from "node:fs";
 import { join, dirname, extname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -151,6 +152,7 @@ function send(res: ServerResponse, code: number, body: unknown, headers: Record<
     "access-control-allow-headers": "content-type, x-payment",
     "access-control-expose-headers": "x-payment-response",
     "cache-control": "no-store",
+    ...BASE_HEADERS,
     ...headers,
   });
   res.end(JSON.stringify(body));
@@ -184,7 +186,7 @@ function serveStatic(res: ServerResponse, path: string, host = ""): boolean {
   if (!extname(rel)) rel += ".html";
   const file = join(PUBLIC_DIR, rel);
   if (!file.startsWith(PUBLIC_DIR + "/") || !existsSync(file) || !statSync(file).isFile()) return false;
-  res.writeHead(200, { "content-type": TYPES[extname(file)] ?? "application/octet-stream", "cache-control": "no-cache" });
+  res.writeHead(200, { "content-type": TYPES[extname(file)] ?? "application/octet-stream", "cache-control": "no-cache", ...staticHeaders(file) });
   res.end(readFileSync(file));
   return true;
 }
@@ -210,11 +212,12 @@ const server = createServer(async (req, res) => {
       return send(res, 200, await brain.handle(body.message));
     }
     if (url.pathname === "/api/check" && req.method === "GET") return await paidCheck(req, res, url);
-    if (req.method === "GET" && EVIDENCE[url.pathname] && existsSync(EVIDENCE[url.pathname])) {
-      res.writeHead(200, { "content-type": "application/json", "cache-control": "no-cache" });
+    const read = req.method === "GET" || req.method === "HEAD";
+    if (read && EVIDENCE[url.pathname] && existsSync(EVIDENCE[url.pathname])) {
+      res.writeHead(200, { "content-type": "application/json", "cache-control": "no-cache", ...BASE_HEADERS });
       return res.end(readFileSync(EVIDENCE[url.pathname]));
     }
-    if (req.method === "GET" && serveStatic(res, url.pathname, req.headers.host)) return;
+    if (read && serveStatic(res, url.pathname, req.headers.host)) return;
     send(res, 404, { error: "Not found" });
   } catch (e) {
     console.error(e);

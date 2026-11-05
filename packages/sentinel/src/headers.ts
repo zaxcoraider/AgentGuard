@@ -11,14 +11,15 @@ export const BASE_HEADERS: Readonly<Record<string, string>> = {
   "permissions-policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
 };
 
-/** The website and Sentinel: only our own scripts, our own API, the NEAR RPC and Google Fonts. */
+/** The website and Sentinel: only our own scripts, our own API, NEAR RPC nodes and Google Fonts. */
 export const STRICT_CSP = [
   "default-src 'self'",
   "script-src 'self'",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src https://fonts.gstatic.com",
   "img-src 'self' data:",
-  "connect-src 'self' https://rpc.testnet.fastnear.com",
+  // The NEAR RPC, plus archival nodes for transactions older than ~2 days ("Verify it").
+  "connect-src 'self' https://rpc.testnet.fastnear.com https://archival-rpc.testnet.fastnear.com https://archival-rpc.testnet.near.org",
   "frame-ancestors 'none'",
   "base-uri 'none'",
   "form-action 'self'",

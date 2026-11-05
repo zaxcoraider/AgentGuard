@@ -1,6 +1,12 @@
 // AgentGuard front page. Every number here is read from NEAR testnet by the visitor's browser.
 // Only the list of accounts to look at (/evidence/*.json, the repo's own files) comes from our server.
 const RPC = "https://rpc.testnet.fastnear.com";
+// Regular RPC nodes forget transactions after ~2 days; transactions are read from archival nodes,
+// one at a time, each at the pace it accepts.
+const ARCHIVAL = [
+  { url: "https://archival-rpc.testnet.fastnear.com", gap: 1000, next: 0 },
+  { url: "https://archival-rpc.testnet.near.org", gap: 300, next: 0 },
+];
 const SENTINEL = "sentinel.agentguard.testnet";
 const ATTACK_TX = "36qWxB4cRBwqRiihfHPuo2GWfBXj2AVW26fSrhpeNbGg"; // a fooled AI's payment, blocked (TESTNET-RESULTS §10)
 const TX_URL = (h) => `https://testnet.nearblocks.io/txns/${h}`;
@@ -40,6 +46,38 @@ async function rpc(method, params) {
   }
   throw new Error("The public RPC is busy. Try again in a minute.");
 }
+let archivalQueue = Promise.resolve();
+function archival(method, params) {
+  const run = async () => {
+    for (let attempt = 0; attempt < 16; attempt++) {
+      const ep = ARCHIVAL.reduce((a, b) => (a.next <= b.next ? a : b));
+      const at = Math.max(Date.now(), ep.next);
+      ep.next = at + ep.gap;
+      if (at > Date.now()) await sleep(at - Date.now());
+      try {
+        const res = await fetch(ep.url, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+          signal: AbortSignal.timeout(30_000),
+        });
+        if (res.status === 429) throw new Error("rate limited");
+        const body = await res.json();
+        if (body.error && /rate|429|too many/i.test(JSON.stringify(body.error))) throw new Error("rate limited");
+        if (body.error) throw Object.assign(new Error(body.error.data ?? body.error.message ?? "RPC error"), { fatal: true });
+        return body.result;
+      } catch (e) {
+        if (e.fatal && attempt >= 1) throw e; // one retry on the other node, then report it
+        ep.next = Date.now() + ep.gap * 3 * 2 ** Math.min(attempt, 4);
+      }
+    }
+    throw new Error("The public archival RPC is busy. Try again in a minute.");
+  };
+  const p = archivalQueue.then(run, run);
+  archivalQueue = p.catch(() => {});
+  return p;
+}
+
 const view = async (account_id, method_name, args = {}) => {
   const r = await rpc("query", {
     request_type: "call_function", finality: "final", account_id, method_name,
@@ -51,13 +89,13 @@ const account = (account_id) => rpc("query", { request_type: "view_account", fin
 const keys = async (account_id) => (await rpc("query", { request_type: "view_access_key_list", finality: "final", account_id })).keys;
 
 async function decision(hash) {
-  const r = await rpc("EXPERIMENTAL_tx_status", { tx_hash: hash, sender_account_id: SENTINEL, wait_until: "NONE" });
+  const r = await archival("EXPERIMENTAL_tx_status", { tx_hash: hash, sender_account_id: SENTINEL, wait_until: "NONE" });
   for (const o of r.receipts_outcome)
     for (const log of o.outcome.logs) {
       if (!log.startsWith("EVENT_JSON:")) continue;
       const e = JSON.parse(log.slice(11));
       if (e.standard === "agentguard" && /^payment_(paid|pending|blocked)$/.test(e.event))
-        return { vault: o.outcome.executor_id, status: e.event.slice(8), reason: e.data.reason ?? null, recipient: e.data.recipient, amount: e.data.amount, final: r.final_execution_status };
+        return { vault: o.outcome.executor_id, status: e.event.slice(8), reason: e.data.reason ?? null, recipient: e.data.recipient, amount: e.data.amount, id: e.data.id, final: r.final_execution_status };
     }
   return { status: "none", final: r.final_execution_status };
 }
@@ -153,26 +191,48 @@ const CHECKS = [
   },
   {
     claim: "240 rule-breaking requests: every answer as the rules say, nothing paid to anyone not allowed",
-    sample: 20,
+    sample: 6,
     async run(ev, all = false) {
       const res = ev.stress.results;
-      const pick = all ? res : [...res].sort(() => Math.random() - 0.5).slice(0, this.sample);
       const vault = ev.stress.summary.vault;
       const allow = new Set(await view(vault, "get_allowlist"));
-      let good = 0, paid = 0;
+      // 1. The vault's own record of every request (contract state, a few reads).
+      const records = [];
+      for (let before; ; ) {
+        const page = await view(vault, "get_history", before ? { before, limit: 100 } : { limit: 100 });
+        records.push(...page);
+        if (page.length < 100 || page.at(-1).id === "0") break;
+        before = page.at(-1).id;
+      }
+      const byMemo = new Map(); // newest first; a trial run before the test reused the first labels
+      for (const p of records) {
+        const n = /^stress #(\d+):/.exec(p.memo ?? "")?.[1];
+        if (n !== undefined && !byMemo.has(n)) byMemo.set(n, p);
+      }
+      const outcome = (p) => (p.status === "paid" ? "paid" : `${["pending", "expired", "denied"].includes(p.status) ? "pending" : p.status}:${p.reason}`);
+      let good = 0;
       const bad = [], paidTo = new Set();
+      for (const r of res) {
+        const p = byMemo.get(String(r.i));
+        const got = p ? outcome(p) : "no record";
+        if (p?.status === "paid") { paidTo.add(p.recipient); if (!allow.has(p.recipient)) bad.push(`#${r.i} paid ${p.recipient}, not allowlisted`); }
+        if (got === r.expected && p?.recipient === r.to) good++;
+        else bad.push(`#${r.i} expected ${r.expected}, the vault's record says ${got}`);
+      }
+      // 2. Re-read transactions: every paid one plus a random sample (or all), each must match its record.
+      const paidRows = res.filter((r) => r.expected === "paid");
+      const pick = all ? res : [...paidRows, ...res.filter((r) => r.expected !== "paid").sort(() => Math.random() - 0.5).slice(0, this.sample)];
+      let txOk = 0;
       for (const [i, r] of pick.entries()) {
+        this.progress?.(`240 records checked. Re-reading transactions: ${i + 1}/${pick.length}…`);
         const d = await decision(r.tx.split("/").pop());
         const got = `${d.status}${d.reason ? `:${d.reason}` : ""}`;
-        const paidOk = d.status !== "paid" || allow.has(d.recipient);
-        if (d.status === "paid") { paid++; paidTo.add(d.recipient); }
-        if (got === r.expected && d.vault === vault && paidOk) good++;
-        else bad.push(`#${r.i} expected ${r.expected}, chain says ${got}`);
-        this.progress?.(`${i + 1}/${pick.length} re-checked…`);
+        if (got === r.expected && d.vault === vault && d.id === byMemo.get(String(r.i))?.id) txOk++;
+        else bad.push(`#${r.i} transaction says ${got}`);
       }
       return {
         ok: bad.length === 0,
-        detail: `${all ? "All" : `${pick.length} random`} of ${res.length} transactions re-read from the chain: ${good}/${pick.length} match the expected outcome${bad.length ? `. Mismatches: ${bad.join("; ")}` : ""}. ${paid ? `${paid === 1 ? "The one paid request went" : `All ${paid} paid requests went`} to <code>${[...paidTo].join("</code>, <code>")}</code>, which is on the vault's allowlist.` : "None of these were paid: all blocked or held, as expected."} The flagged scammer is allowlisted on this vault on purpose: every request to it was still blocked.`,
+        detail: `The vault's own on-chain record of each request: ${good}/${res.length} match the expected outcome. ${all ? "All" : `${pick.length}`} of their transactions re-read (${all ? "" : `all ${paidRows.length} paid + ${pick.length - paidRows.length} random`}): ${txOk}/${pick.length} match${bad.length ? `. Mismatches: ${bad.slice(0, 5).join("; ")}` : ""}. ${paidTo.size ? `Every paid request went to <code>${[...paidTo].join("</code>, <code>")}</code>, on the vault's allowlist.` : ""} The flagged scammer is allowlisted on this vault on purpose: every request to it was still blocked.`,
         more: !all,
       };
     },
@@ -200,7 +260,7 @@ function show(li, state, html, link, extra) {
 
 let ev;
 async function runCheck(c, li, all = false) {
-  show(li, "running", all ? "Re-reading all 240 transactions (about a minute)…" : "Asking the chain…");
+  show(li, "running", all ? "Re-reading all 240 transactions, one at a time (about 6 minutes)…" : "Asking the chain…");
   c.progress = (msg) => (li.querySelector(".check-detail").textContent = msg);
   try {
     const r = await c.run(ev, all);
@@ -209,7 +269,7 @@ async function runCheck(c, li, all = false) {
       extra = document.createElement("button");
       extra.type = "button";
       extra.className = "link check-more";
-      extra.textContent = "Check all 240";
+      extra.textContent = "Re-read all 240 transactions (about 6 min)";
       extra.addEventListener("click", () => runCheck(c, li, true).then(summarize));
       const wrap = document.createElement("span");
       wrap.append(" ", extra);

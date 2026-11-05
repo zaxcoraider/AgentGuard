@@ -7,6 +7,11 @@ const TX_URL = (h) => `https://testnet.nearblocks.io/txns/${h}`;
 const ACCOUNT_URL = (a) => `https://testnet.nearblocks.io/address/${a}`;
 const $ = (id) => document.getElementById(id);
 
+// On the real domain, Sentinel has its own address: send "/sentinel" links to sentinel.agentguard.app.
+if (location.hostname === "agentguard.app" || location.hostname === "www.agentguard.app") {
+  for (const a of document.querySelectorAll('a[href="/sentinel"]')) a.href = "https://sentinel.agentguard.app/";
+}
+
 // ---------- RPC, gently: public endpoint, so throttle and retry ----------
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let last = 0;

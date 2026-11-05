@@ -9,6 +9,11 @@ const EXPLORER = "https://testnet.nearblocks.io";
 const TGAS = 10n ** 12n;
 const YOCTO = 10n ** 24n;
 const $ = (id) => document.getElementById(id);
+
+// On the real domain, Sentinel has its own address: send "/sentinel" links to sentinel.agentguard.app.
+if (location.hostname === "agentguard.app" || location.hostname === "www.agentguard.app") {
+  for (const a of document.querySelectorAll('a[href="/sentinel"]')) a.href = "https://sentinel.agentguard.app/";
+}
 const el = (tag, props = {}, ...kids) => {
   const n = document.createElement(tag);
   for (const [k, v] of Object.entries(props)) {

@@ -144,7 +144,7 @@ export class AgentGuard {
       exists = false;
     }
 
-    let registryStatus: AddressFacts["registryStatus"] = registry ? "unknown" : "clear";
+    let registryStatus: AddressFacts["registryStatus"] = registry ? "unknown" : "none";
     let registryReasons: string[] = [];
     if (registry) {
       try {

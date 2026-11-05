@@ -36,3 +36,8 @@ services:
         sync: false
       - key: DGRID_API_KEY
         sync: false
+      # NEAR Agent Market (optional): the agent's aat_ API token and the webhook signing secret (whsec_)
+      - key: AGENT_MARKET_TOKEN
+        sync: false
+      - key: AGENT_MARKET_WEBHOOK_SECRET
+        sync: false

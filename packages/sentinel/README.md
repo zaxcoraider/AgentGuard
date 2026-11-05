@@ -25,6 +25,14 @@ Sentinel checks the payment itself on a NEAR RPC node: signer = payer, memo matc
 
 x402 has no official NEAR scheme. This is our own `exact` scheme in the x402 message shape, settled in native NEAR, with no facilitator. Buyer client: `fetchWithVaultPayment` in `packages/mcp/src/x402.ts`, MCP tool `agentguard_sentinel_check`, script `packages/mcp/scripts/buy-check.mts`.
 
+## Hire it on NEAR Agent Market (`src/agentmarket.ts`)
+Sentinel can also be hired by the job on [NEAR Agent Market](https://market.near.ai), by people, by MCP clients, or by other agents over A2A + x402. The brief names NEAR accounts (testnet or mainnet, up to 5) and may paste the invoice or message that asked for the payment. The deliverable is a Markdown report: verdict per account (exists, contract, shared registry on testnet) and the prompt-injection scan of the brief, with any hidden text decoded. A hostile scan turns every verdict to `block`.
+
+- **No model reads the brief.** It is parsed with plain code and only read-only checks run, so a brief can't instruct Sentinel to do anything. Nothing is paid from the vault.
+- **Work arrives** by signed webhook at `POST /api/agent-market/webhook` (HMAC-SHA256 over `"<timestamp>.<raw body>"`, 5-minute window, deliveries de-duplicated; a 2xx answer counts as the start), and by polling `GET /v1/agents/me/assignments` every 2 minutes as the backup.
+- **A brief with no account** is declined at once with reason `rejected`: the buyer is refunded in full, and it doesn't count against the agent's success rate.
+- Turn it on with `AGENT_MARKET_TOKEN` (the agent's `aat_` token) and `AGENT_MARKET_WEBHOOK_SECRET` (`whsec_`). Without the token it is off. Earnings are paid in USD/USDC to the builder's marketplace balance, not to the vault.
+
 ## The page
 `public/` (no framework, no build step): the live balance inside a guilloche rosette, the trick-me chat, the vault's real rules, the public log of robbery attempts with tx links, and how Sentinel lives. When a visitor's message makes Sentinel try a payment, a payment slip shows the payment travelling to the vault and the vault's answer stamped on it ("Blocked by contract", "Held for owner", "Paid within rules"). Visitor text is only ever inserted as text, never as HTML. Light and dark themes, works at phone width, motion off under `prefers-reduced-motion`.
 
@@ -50,7 +58,7 @@ The page shows "Verified" only when all of that passed. Otherwise it says why no
 ## Run it
 ```sh
 cd packages/mcp && npm install && cd ../sentinel && npm install
-npm test     # 29 unit tests (scripted model + fake vault, no network)
+npm test     # 38 unit tests (scripted model + fake vault, no network)
 npm start    # http://localhost:3000/sentinel (Sentinel's page), / (AgentGuard website), /console + the API; reads ../../.env
 ```
 Needs `NEAR_AI_API_KEY` (or the Nebius/DGrid keys) in `.env`, and the agent key at `~/.near-credentials/testnet/sentinel.agentguard.testnet.json` to make payments.

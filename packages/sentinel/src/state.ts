@@ -3,7 +3,7 @@
 import { readFileSync, writeFileSync, renameSync, mkdirSync, existsSync } from "node:fs";
 import { dirname } from "node:path";
 
-export type EventKind = "born" | "thought" | "metabolism" | "attack_blocked" | "attack_held" | "attack_paid" | "earning" | "error";
+export type EventKind = "born" | "thought" | "metabolism" | "attack_blocked" | "attack_held" | "attack_paid" | "earning" | "hired" | "error";
 
 export interface FeedEvent {
   at: string; // ISO time
@@ -51,6 +51,8 @@ export interface State {
   attempts: Tally;
   /** Paid "safe to pay?" checks (x402). */
   market: Market;
+  /** Jobs done as a hired agent on NEAR Agent Market (paid in USD/USDC to the builder's marketplace balance, not the vault). */
+  agent_market?: { delivered: number; declined: number };
   feed: FeedEvent[];
 }
 

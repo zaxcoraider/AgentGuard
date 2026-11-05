@@ -3,6 +3,7 @@
 //   GET  /api/feed     recent events (heartbeats, blocked attacks, earnings)
 //   POST /api/chat     {"message": "..."} -> Sentinel's reply + what its vault did
 //   GET  /api/check?account=X[&vault=V]  paid "safe to pay?" check: 402 first, then pay + X-PAYMENT
+//   POST /api/agent-market/webhook       NEAR Agent Market hires (signed); also polled
 //   GET  /health
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { BASE_HEADERS, staticHeaders } from "./headers.ts";
@@ -21,6 +22,8 @@ import { encodeHeader } from "../../mcp/src/x402.ts";
 import { TeeVerifier } from "./tee.ts";
 import { ScriptedLLM, SimVault } from "./offline.ts";
 import { books } from "./books.ts";
+import { AgentMarket } from "./agentmarket.ts";
+import { score } from "../../mcp/src/score.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "../../..");
@@ -57,6 +60,56 @@ const market = new Market(guard, store, {
   timeoutSeconds: 600,
   registry: env.AGENTGUARD_REGISTRY ?? "registry.agentguard.testnet",
 });
+const REGISTRY = env.AGENTGUARD_REGISTRY ?? "registry.agentguard.testnet";
+// Hired on NEAR Agent Market: read-only "safe to pay?" reports. Buyers name testnet or mainnet accounts.
+const mainnetGuard = new AgentGuard({ network: "mainnet", rpcUrl: env.NEAR_MAINNET_RPC_URL ?? "https://rpc.mainnet.fastnear.com", vault: "", explorer: "https://nearblocks.io" });
+const agentMarket =
+  !OFFLINE && env.AGENT_MARKET_TOKEN
+    ? new AgentMarket({
+        token: env.AGENT_MARKET_TOKEN,
+        webhookSecret: env.AGENT_MARKET_WEBHOOK_SECRET || undefined,
+        async check(account, network, scan) {
+          const g = network === "testnet" ? guard : mainnetGuard;
+          const r = await g.checkAddress(account, network === "testnet" ? { vault: null, registry: REGISTRY } : { vault: null });
+          return {
+            account,
+            network,
+            result: score(r.facts, scan), // the scan of the whole brief, so a poisoned invoice turns every verdict to block
+            namedInAttacks: network === "testnet" ? (store.state.attack_payees[account] ?? 0) : undefined,
+          };
+        },
+        onDone({ accounts, verdicts, injection }) {
+          const s = (store.state.agent_market ??= { delivered: 0, declined: 0 });
+          s.delivered++;
+          store.push({
+            kind: "hired",
+            text: `Hired on NEAR Agent Market: checked ${accounts.join(", ")} → ${verdicts.join(", ")}${injection !== "none" ? `. The brief had ${injection} prompt-injection signs` : ""}.`.slice(0, 300),
+          });
+        },
+        onDeclined() {
+          (store.state.agent_market ??= { delivered: 0, declined: 0 }).declined++;
+          store.save();
+        },
+        log: (m) => console.error(m),
+      })
+    : null;
+if (agentMarket) {
+  const pollMarket = () => agentMarket.poll().catch((e) => console.error(`agent market poll: ${e instanceof Error ? e.message : e}`));
+  setTimeout(pollMarket, 5_000);
+  setInterval(pollMarket, 2 * 60_000);
+}
+
+async function readRaw(req: IncomingMessage, max: number): Promise<Buffer> {
+  let size = 0;
+  const chunks: Buffer[] = [];
+  for await (const c of req) {
+    size += (c as Buffer).length;
+    if (size > max) throw new Error("Body too large");
+    chunks.push(c as Buffer);
+  }
+  return Buffer.concat(chunks);
+}
+
 const PUBLIC_DIR = join(here, "../public");
 /** The repo's own proof files, served as-is so the front page checks the same data the README links to. */
 const EVIDENCE: Record<string, string> = {
@@ -212,6 +265,10 @@ const server = createServer(async (req, res) => {
       return send(res, 200, await brain.handle(body.message));
     }
     if (url.pathname === "/api/check" && req.method === "GET") return await paidCheck(req, res, url);
+    if (url.pathname === "/api/agent-market/webhook" && req.method === "POST") {
+      if (!agentMarket) return send(res, 404, { error: "Agent Market is off on this server" });
+      return send(res, agentMarket.webhook(await readRaw(req, 256 * 1024), req.headers), {});
+    }
     const read = req.method === "GET" || req.method === "HEAD";
     if (read && EVIDENCE[url.pathname] && existsSync(EVIDENCE[url.pathname])) {
       res.writeHead(200, { "content-type": "application/json", "cache-control": "no-cache", ...BASE_HEADERS });

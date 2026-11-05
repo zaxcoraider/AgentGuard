@@ -8,7 +8,8 @@ export interface AddressFacts {
   account: string;
   exists: boolean;
   isContract: boolean;
-  registryStatus: "clear" | "reported" | "flagged" | "dismissed" | "unknown";
+  /** "none" = no shared registry was consulted (none configured, or none on this network). */
+  registryStatus: "clear" | "reported" | "flagged" | "dismissed" | "unknown" | "none";
   registryReasons: string[];
   allowlisted: boolean;
   allowlist: string[];
@@ -83,6 +84,7 @@ export function score(f: AddressFacts, injection?: ScanResult): CheckResult {
   if (f.isContract && !f.allowlisted) warn.push("is a smart contract, not a person or shop account");
 
   const verdict: Verdict = block.length ? "block" : warn.length ? "warn" : "allow";
-  const reasons = block.length ? [...block, ...warn] : warn.length ? warn : [hasAllowlist ? "allowlisted and clear in the shared registry" : "exists, is not a contract, and is clear in the shared registry"];
+  const registryNote = f.registryStatus === "none" ? "no shared registry was checked" : "clear in the shared registry";
+  const reasons = block.length ? [...block, ...warn] : warn.length ? warn : [hasAllowlist ? `allowlisted; ${registryNote}` : `exists and is not a contract; ${registryNote}`];
   return injection ? { account: f.account, verdict, reasons, facts: f, injection } : { account: f.account, verdict, reasons, facts: f };
 }

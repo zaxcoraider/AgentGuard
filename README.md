@@ -141,6 +141,7 @@ It fetches every transaction in TESTNET-RESULTS and compares each stated outcome
 | HTTP 402 | x402-shaped, but our own scheme in native NEAR, not an official x402 network |
 | TEE checks not done | RTMR3 event-log replay, image provenance, NVIDIA token signature, TLS binding |
 | Registry | Two throwaway accounts can flag an account. Curators can dismiss, and a flag can only block payments to that account, never move funds |
+| Security model | [**SECURITY.md**](SECURITY.md): who can do what, what it stops, what it doesn't, what you have to trust, and a rebuild of the vault code that matches the on-chain hash. Not audited |
 
 ## License
 

@@ -6,8 +6,8 @@ Lets any MCP agent (Claude Code, Claude Desktop, Codex, ...) pay on NEAR through
 
 | Tool | What it does |
 |---|---|
-| `agentguard_pay` | Ask the vault to pay `recipient` `amount_near`. Returns `paid` / `pending` / `blocked`, the reason and the tx link |
-| `agentguard_check_address` | "Is this address safe to pay?" Shared scam registry, account exists, is a contract, on the allowlist, lookalike names. Returns `allow` / `warn` / `block` + reasons |
+| `agentguard_pay` | Ask the vault to pay `recipient` `amount_near`. Returns `paid` / `pending` / `blocked`, the reason and the tx link. Pass the invoice / email / page as `source_text`: if it shows prompt-injection tricks, the vault is asked to **hold** the payment for the owner (`flagged_for_review`) |
+| `agentguard_check_address` | "Is this address safe to pay?" Shared scam registry, account exists, is a contract, on the allowlist, lookalike names, and (with `source_text`) a prompt-injection scan of the text asking for the payment. Returns `allow` / `warn` / `block` + reasons |
 | `agentguard_balance` | Balance, available, spent in 24h, paid / blocked / pending counts |
 | `agentguard_policy` | Per-payment cap, 24h limit, approval threshold, allowlist, registry, locked |
 | `agentguard_payment_status` | One payment by id (e.g. did the owner approve it?) |
@@ -96,7 +96,7 @@ As the owner, with 1 yoctoNEAR attached: `approve {"id": "1"}` / `deny {"id": "1
 ## Try it without an agent
 
 ```sh
-npm test                       # 16 unit tests: scoring, lookalikes, NEAR amount math, HTTP 402 payment checks
+npm test                       # 24 unit tests: scoring, lookalikes, prompt-injection scan, NEAR amount math, HTTP 402 payment checks
 npx tsx scripts/live-demo.ts   # starts the server over stdio and calls every tool on testnet
 ```
 
@@ -117,3 +117,17 @@ agentguard_pay agentguard-shop.testnet 5        -> blocked, over_per_payment_lim
 The key is limited by NEAR itself to `request_payment` on the vault. It cannot transfer NEAR, call owner methods (withdraw, set_policy, approve, ...), attach deposits, call other contracts, add keys, deploy code or delete the account. Proof on testnet: `scripts/prove-agent-key.sh` (12/12 refused) and `docs/TESTNET-RESULTS.md` in the repo root.
 
 `agentguard_check_address` is advice for the agent. The rules that matter run in the vault contract, whatever the agent decides.
+
+## Prompt-injection scan (`src/inject.ts`)
+
+Give `agentguard_pay` or `agentguard_check_address` the text that asked for the payment (`source_text`). It is scanned for known tricks, with no model involved:
+
+| Sign | Severity |
+|---|---|
+| Invisible characters: zero-width, direction overrides, Unicode "tag" characters (hidden text is decoded and returned as `hidden_text`) | hostile |
+| "Ignore your previous instructions", "new instructions:", "you are now…" | hostile |
+| "Don't tell the owner", "without approval", "bypass the limit / allowlist" | hostile |
+| Fake role markers: `<system>`, `[SYSTEM]`, `<\|im_start\|>` | hostile |
+| Text aimed at an AI ("if you are an AI assistant…"), hidden HTML/CSS, "our payment address has changed", other NEAR accounts in the text, long encoded blobs | suspicious |
+
+What happens: `check_address` turns hostile into `block` and suspicious into `warn`. `agentguard_pay` (which also scans the memo) sends any hit to the vault with `force_review`, so **the contract holds the payment for the owner** instead of paying it. The scan can only make things stricter. It is a heuristic and can be evaded; a clean scan proves nothing, and the vault's rules still decide. Live run: [TESTNET-RESULTS §14](../../docs/TESTNET-RESULTS.md) (`scripts/injection-demo.mts`: same shop, same kind of amount, the clean invoice is paid and the poisoned one is held).

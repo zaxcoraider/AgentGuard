@@ -3,6 +3,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { Account, JsonRpcProvider } from "near-api-js";
 import { score, type AddressFacts, type CheckResult } from "./score.js";
+import { scanText } from "./inject.js";
 import { nearToYocto, yoctoToNear } from "./units.js";
 
 export interface Config {
@@ -54,7 +55,8 @@ export class AgentGuard {
   }
 
   /** Ask the vault to pay. Signed with the agent's function-call key; the vault decides. */
-  async pay(recipient: string, amountNear: string, memo?: string) {
+  /** Ask the vault to pay. forceReview = the vault holds it for the owner whatever the other rules say. */
+  async pay(recipient: string, amountNear: string, memo?: string, opts: { forceReview?: boolean } = {}) {
     if (!this.cfg.agentKey)
       throw new Error(`No agent key. Set AGENTGUARD_AGENT_KEY or create ~/.near-credentials/${this.cfg.network}/${this.cfg.vault}.json`);
     const amount = nearToYocto(amountNear);
@@ -62,7 +64,7 @@ export class AgentGuard {
     const res = await account.callFunctionRaw({
       contractId: this.cfg.vault,
       methodName: "request_payment",
-      args: { recipient, amount, memo: memo ?? "" },
+      args: { recipient, amount, memo: memo ?? "", ...(opts.forceReview ? { force_review: true } : {}) },
       gas: 100_000_000_000_000n,
       deposit: 0n,
     });
@@ -125,7 +127,7 @@ export class AgentGuard {
   }
 
   /** Gather facts about a recipient and score them. */
-  async checkAddress(account: string, opts: { vault?: string | null; registry?: string } = {}): Promise<CheckResult> {
+  async checkAddress(account: string, opts: { vault?: string | null; registry?: string; context?: string } = {}): Promise<CheckResult> {
     // By default judge against our own vault. vault: null = no vault (no allowlist), registry given explicitly.
     const vault = opts.vault === undefined ? this.cfg.vault : opts.vault;
     const allowlist = vault ? await this.view<string[]>(vault, "get_allowlist").catch(() => [] as string[]) : [];
@@ -156,7 +158,8 @@ export class AgentGuard {
         registryStatus = "unknown";
       }
     }
-    return score({ account, exists, isContract, registryStatus, registryReasons, allowlisted: allowlist.includes(account), allowlist, hasAllowlist: Boolean(vault) });
+    const injection = opts.context ? scanText(opts.context, { recipient: account, self: vault ? [vault] : [] }) : undefined;
+    return score({ account, exists, isContract, registryStatus, registryReasons, allowlisted: allowlist.includes(account), allowlist, hasAllowlist: Boolean(vault) }, injection);
   }
 
   txUrl(hash: string) {

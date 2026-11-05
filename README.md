@@ -80,8 +80,8 @@ cd contracts/vault && cargo test        # 43 unit + fuzz (5,000 random steps) + 
 cd ../factory && cargo test             # 14 unit + 6 sandbox
 cd ../registry && cargo test            # 13 unit
 
-# TypeScript: 45 tests, no network needed
-cd ../../packages/mcp && npm install && npm test        # 16
+# TypeScript: 53 tests, no network needed
+cd ../../packages/mcp && npm install && npm test        # 24
 cd ../sentinel && npm install && npm test               # 29
 ```
 
@@ -95,13 +95,13 @@ cd packages/mcp && npm run build && AGENTGUARD_VAULT=demo2.agentguard.testnet np
 
 Everything is deployed on NEAR testnet (ids in [`deployments/testnet.json`](deployments/testnet.json)), and every claim below has transaction links in [`docs/TESTNET-RESULTS.md`](docs/TESTNET-RESULTS.md).
 
-**Don't trust the links, check them.** One command re-checks it all against testnet (Node 24, no install, no keys, about 90 seconds):
+**Don't trust the links, check them.** One command re-checks it all against testnet (Node 24, no install, no keys, about 6 minutes, because public archival nodes are slow):
 
 ```sh
 node scripts/verify-evidence.mjs
 ```
 
-It fetches every transaction in TESTNET-RESULTS and compares each stated outcome (paid / held / blocked, and the reason) with the vault's own on-chain event. It re-derives all 240 stress-test results from the chain, confirms that every "paid" was a real transfer to an allowed account, and checks the live state: code hashes, no full-access keys, Sentinel locked. It exits non-zero if anything disagrees.
+It fetches every transaction in TESTNET-RESULTS from a NEAR archival node and compares each stated outcome (paid / held / blocked, and the reason) with the vault's own on-chain event. It checks all 240 stress-test results against the stress vault's own on-chain records, re-reads their transactions (every paid one plus a random sample; `--all-stress-tx` for all 240) and confirms that every "paid" was a real transfer to an allowed account. Then it checks the live state: code hashes, no full-access keys, Sentinel locked. It exits non-zero if anything disagrees.
 
 | Claim | Evidence |
 |---|---|

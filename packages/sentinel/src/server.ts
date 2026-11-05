@@ -168,6 +168,9 @@ async function buildStatus() {
       }),
       // Its vault is locked and pays only its compute account, so it can't share revenue with anyone.
       can_pay_out_profit: false,
+      agent_market: agentMarket
+        ? { listed: "https://market.near.ai/a/agentguard-sentinel", ...(s.agent_market ?? { delivered: 0, declined: 0 }), ...agentMarket.health }
+        : null,
     },
     attempts: {
       ...s.attempts,

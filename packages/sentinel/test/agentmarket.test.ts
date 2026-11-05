@@ -126,3 +126,17 @@ test("no webhook secret configured → webhook route answers 404", () => {
   const m = new AgentMarket({ token: "aat_x", check: fakeCheck, fetch: (async () => new Response("{}")) as unknown as typeof fetch });
   assert.equal(m.webhook(Buffer.from("{}"), {}), 404);
 });
+
+test("health: a working poll records the time; a failing one records the error without secrets", async () => {
+  const ok = fakeMarket();
+  await ok.m.poll();
+  assert.ok(ok.m.health.last_poll_ok_at);
+  assert.equal(ok.m.health.last_error, null);
+  const bad = new AgentMarket({
+    token: "aat_secret123", check: fakeCheck,
+    fetch: (async () => new Response("bad token aat_secret123", { status: 401 })) as unknown as typeof fetch,
+  });
+  await assert.rejects(bad.poll());
+  assert.match(bad.health.last_error!, /401/);
+  assert.doesNotMatch(bad.health.last_error!, /aat_secret123/);
+});

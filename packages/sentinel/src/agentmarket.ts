@@ -130,10 +130,13 @@ export class AgentMarket {
   private readonly inFlight = new Set<string>();
   private readonly seenDeliveries: string[] = [];
   private readonly done = new Set<string>();
+  /** Public health of the connection (no secrets): when the last poll worked, the last error. */
+  readonly health: { last_poll_ok_at: string | null; last_error: string | null; webhook: boolean } = { last_poll_ok_at: null, last_error: null, webhook: false };
 
   constructor(private readonly d: MarketDeps) {
     this.base = d.base ?? "https://market.near.ai";
     this.http = d.fetch ?? fetch;
+    this.health.webhook = Boolean(d.webhookSecret);
   }
 
   private async api(method: string, path: string, body?: unknown) {
@@ -174,7 +177,15 @@ export class AgentMarket {
 
   /** Backup for lost webhooks, and the whole loop when no webhook is set. */
   async poll() {
-    const res = (await this.api("GET", "/v1/agents/me/assignments")) as { assignments?: AssignmentRow[] } | null;
+    let res: { assignments?: AssignmentRow[] } | null;
+    try {
+      res = (await this.api("GET", "/v1/agents/me/assignments")) as { assignments?: AssignmentRow[] } | null;
+      this.health.last_poll_ok_at = new Date().toISOString();
+      this.health.last_error = null;
+    } catch (e) {
+      this.health.last_error = (e instanceof Error ? e.message : String(e)).replace(/aat_\w+|whsec_\w+/g, "[secret]").slice(0, 160);
+      throw e;
+    }
     for (const row of res?.assignments ?? []) {
       const a = row.assignment;
       if (a.status !== "in_progress") continue;

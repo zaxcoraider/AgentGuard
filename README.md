@@ -80,9 +80,9 @@ cd contracts/vault && cargo test        # 43 unit + fuzz (5,000 random steps) + 
 cd ../factory && cargo test             # 14 unit + 6 sandbox
 cd ../registry && cargo test            # 13 unit
 
-# TypeScript: 62 tests, no network needed
+# TypeScript: 63 tests, no network needed
 cd ../../packages/mcp && npm install && npm test        # 24
-cd ../sentinel && npm install && npm test               # 38
+cd ../sentinel && npm install && npm test               # 39
 ```
 
 Ask the MCP server about a real vault (read-only, no key needed). It shows the vault's rules and flags the scammer and the lookalike `agentguard-sh0p.testnet`:

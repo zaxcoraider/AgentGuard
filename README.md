@@ -6,11 +6,11 @@
 
 An AI agent that can pay is one prompt injection away from paying a scammer. AgentGuard takes the spending rules out of the agent's prompt and puts them in a contract the agent can't get around, and that even its owner can lock for good.
 
-**Website: [sentinel-47ip.onrender.com](https://sentinel-47ip.onrender.com).** What AgentGuard is, live numbers from the chain, and a button that makes your browser check our claims against NEAR testnet itself.
+**Website: [agentguard.app](https://agentguard.app).** What AgentGuard is, live numbers from the chain, and a button that makes your browser check our claims against NEAR testnet itself.
 
-**Live demo: [Sentinel](https://sentinel-47ip.onrender.com/sentinel)**, the first app built on AgentGuard. An AI agent with real (testnet) money in a locked AgentGuard vault. Try to talk it into paying you.
+**Live demo: [Sentinel](https://sentinel.agentguard.app)**, the first app built on AgentGuard. An AI agent with real (testnet) money in a locked AgentGuard vault. Try to talk it into paying you.
 
-**Console: [sentinel-47ip.onrender.com/console](https://sentinel-47ip.onrender.com/console).** Create a vault for your own agent with a NEAR wallet, set its limits, and approve or deny the payments it asks for. You can look at any vault without a wallet.
+**Console: [agentguard.app/console](https://agentguard.app/console).** Create a vault for your own agent with a NEAR wallet, set its limits, and approve or deny the payments it asks for. You can look at any vault without a wallet.
 
 Built for NEAR HACKATHON 2026 · Tracks: AI Security & Defense, Agent Economy, Autonomous Business · Runs on NEAR testnet · MIT
 
@@ -52,7 +52,7 @@ If the AI is fooled, the contract still says no.
 
 ## See it in 2 minutes (no install)
 
-1. **Open [Sentinel](https://sentinel-47ip.onrender.com/sentinel) and try to scam it.** If you convince the AI, you'll see the vault's answer stamped on the payment: *Blocked by contract*, with a link to the transaction.
+1. **Open [Sentinel](https://sentinel.agentguard.app) and try to scam it.** If you convince the AI, you'll see the vault's answer stamped on the payment: *Blocked by contract*, with a link to the transaction.
 2. **See a real blocked attack on-chain.** The AI was talked into paying 0.03 NEAR; the vault refused (`recipient_not_allowlisted`): [tx 36qW…](https://testnet.nearblocks.io/txns/36qWxB4cRBwqRiihfHPuo2GWfBXj2AVW26fSrhpeNbGg).
 3. **See that the vault is locked.** Its owner then tried to allowlist an attacker and to withdraw; both were refused: [lock tx 9QFB…](https://testnet.nearblocks.io/txns/9QFBjv7AzAqcaCjJdm8z1kq9pV47rt9Adz2XjfqaJf7h), details in [TESTNET-RESULTS §11](docs/TESTNET-RESULTS.md).
 4. **See that nobody holds a key to the money.** Sentinel's vault has a single key, and it can only call `request_payment`:
@@ -121,7 +121,7 @@ It fetches every transaction in TESTNET-RESULTS and compares each stated outcome
 
 ## Use it in your own agent
 
-**In the browser:** open the [Console](https://sentinel-47ip.onrender.com/console), connect a testnet wallet, create a vault, and make an agent key. The key is generated in your browser and downloaded as a file; only its public key goes on-chain.
+**In the browser:** open the [Console](https://agentguard.app/console), connect a testnet wallet, create a vault, and make an agent key. The key is generated in your browser and downloaded as a file; only its public key goes on-chain.
 
 **From the command line:** follow [**Get your own vault**](packages/mcp#get-your-own-vault-testnet-about-2-minutes): four commands to create a vault, make an agent key, add it, and point the MCP server at it. Then ask your agent to pay. The vault decides.
 

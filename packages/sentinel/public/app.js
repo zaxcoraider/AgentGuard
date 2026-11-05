@@ -1,5 +1,11 @@
 // Sentinel's page. No framework. All visitor text is inserted with textContent, never as HTML.
 const $ = (id) => document.getElementById(id);
+
+// On sentinel.<domain>, "/" is Sentinel itself, so send the AgentGuard links to the main domain.
+if (location.hostname.startsWith("sentinel.")) {
+  const main = location.origin.replace("//sentinel.", "//");
+  for (const a of document.querySelectorAll('a[href="/"], a[href^="/console"]')) a.href = main + a.getAttribute("href");
+}
 const SVG = "http://www.w3.org/2000/svg";
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 

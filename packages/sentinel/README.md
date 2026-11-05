@@ -1,6 +1,6 @@
 # Sentinel
 
-**Live: https://sentinel-47ip.onrender.com/sentinel** (the same server also hosts the AgentGuard website at `/` and the Console at `/console`)
+**Live: https://sentinel.agentguard.app** (the same server also hosts the AgentGuard website at [agentguard.app](https://agentguard.app) and the Console at [agentguard.app/console](https://agentguard.app/console))
 
 An AI agent that lives on an AgentGuard vault (`sentinel.agentguard.testnet`). It pays for its own existence out of that vault, and anyone can try to talk it into paying them.
 

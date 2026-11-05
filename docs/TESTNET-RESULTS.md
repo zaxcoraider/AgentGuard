@@ -158,7 +158,7 @@ The steps in `packages/mcp/README.md` ("Get your own vault"), run as written by 
 
 ## 10. Sentinel live on the internet
 
-Deployed on Render from `render.yaml`: **https://sentinel-47ip.onrender.com** (page + API + heartbeat). The secrets are set in Render, not the repo. The agent key there is Sentinel's function-call key, which can only call `request_payment`.
+Deployed on Render from `render.yaml`: **https://sentinel.agentguard.app** (page + API + heartbeat; first served at sentinel-47ip.onrender.com, which still works). The secrets are set in Render, not the repo. The agent key there is Sentinel's function-call key, which can only call `request_payment`.
 
 | What | Result | Tx |
 |---|---|---|
@@ -185,7 +185,7 @@ From now on nobody, including the owner, can change what Sentinel's vault pays, 
 
 ## 12. A new user, start to finish in the browser (Console)
 
-A fresh testnet account (`zaxtest.testnet`) used only the [Console](https://sentinel-47ip.onrender.com/console) and a browser wallet (NEAR Connect):
+A fresh testnet account (`zaxtest.testnet`) used only the [Console](https://agentguard.app/console) and a browser wallet (NEAR Connect):
 
 | Step | Result |
 |---|---|

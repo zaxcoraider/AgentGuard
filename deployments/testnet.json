@@ -110,7 +110,10 @@
   },
   "services": {
     "sentinel": {
-      "url": "https://sentinel-47ip.onrender.com",
+      "url": "https://sentinel.agentguard.app",
+      "website": "https://agentguard.app",
+      "console": "https://agentguard.app/console",
+      "render_url": "https://sentinel-47ip.onrender.com",
       "host": "Render (render.yaml)",
       "vault": "sentinel.agentguard.testnet",
       "deployed": "2026-11-03"

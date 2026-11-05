@@ -101,7 +101,7 @@ Everything is deployed on NEAR testnet (ids in [`deployments/testnet.json`](depl
 node scripts/verify-evidence.mjs
 ```
 
-It fetches every transaction in TESTNET-RESULTS from a NEAR archival node and compares each stated outcome (paid / held / blocked, and the reason) with the vault's own on-chain event. It checks all 240 stress-test results against the stress vault's own on-chain records, re-reads their transactions (every paid one plus a random sample; `--all-stress-tx` for all 240) and confirms that every "paid" was a real transfer to an allowed account. Then it checks the live state: code hashes, no full-access keys, Sentinel locked. It exits non-zero if anything disagrees.
+It fetches every transaction in TESTNET-RESULTS from a NEAR archival node and compares each stated outcome (paid / held / blocked, and the reason) with the vault's own on-chain event. It checks all 240 stress-test results against the stress vault's own on-chain records, re-reads their transactions (every paid one plus a random sample; `--all-stress-tx` for all 240) and confirms that every "paid" was a real transfer to an allowed account. Then it checks the live state: code hashes, no full-access keys, Sentinel locked. It exits non-zero if anything disagrees (tested: with one stress result falsified in `docs/stress-run.json`, it names that request and fails).
 
 | Claim | Evidence |
 |---|---|

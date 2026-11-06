@@ -38,8 +38,10 @@ Without a key the server still runs, read-only.
 ### Claude Code
 
 ```sh
-claude mcp add agentguard -e AGENTGUARD_VAULT=demo2.agentguard.testnet -- node /absolute/path/to/packages/mcp/dist/index.js
+claude mcp add agentguard -e AGENTGUARD_VAULT=demo2.agentguard.testnet -- npx -y @zaxcoraider/agentguard-mcp
 ```
+
+Published on npm as [`@zaxcoraider/agentguard-mcp`](https://www.npmjs.com/package/@zaxcoraider/agentguard-mcp). From a clone instead: `-- node /absolute/path/to/packages/mcp/dist/index.js`.
 
 Then ask Claude: *"Check if agentguard-evil.testnet is safe to pay, then pay agentguard-shop.testnet 0.05 NEAR for coffee."*
 
@@ -49,8 +51,8 @@ Then ask Claude: *"Check if agentguard-evil.testnet is safe to pay, then pay age
 {
   "mcpServers": {
     "agentguard": {
-      "command": "node",
-      "args": ["/absolute/path/to/packages/mcp/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "@zaxcoraider/agentguard-mcp"],
       "env": { "AGENTGUARD_VAULT": "demo2.agentguard.testnet", "NEAR_NETWORK": "testnet" }
     }
   }

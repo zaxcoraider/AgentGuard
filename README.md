@@ -125,6 +125,8 @@ It fetches every transaction in TESTNET-RESULTS from a NEAR archival node and co
 
 **In the browser:** open the [Console](https://agentguard.app/console), connect a testnet wallet, create a vault, and make an agent key. The key is generated in your browser and downloaded as a file; only its public key goes on-chain.
 
+**In Claude Code (or any MCP agent):** `claude mcp add agentguard -e AGENTGUARD_VAULT=your-vault.agentguard.testnet -- npx -y @zaxcoraider/agentguard-mcp` ([on npm](https://www.npmjs.com/package/@zaxcoraider/agentguard-mcp)). Without an agent key it runs read-only.
+
 **From the command line:** follow [**Get your own vault**](packages/mcp#get-your-own-vault-testnet-about-2-minutes): four commands to create a vault, make an agent key, add it, and point the MCP server at it. Then ask your agent to pay. The vault decides.
 
 ## NEAR features used

@@ -1,7 +1,6 @@
 /* AgentGuard Console. Builds on style.css tokens (paper, ink, stamp). */
 [hidden] { display: none !important; }
 .top-links { align-items: center; }
-.net { font-size: 0.78rem; color: var(--held); border: 1px solid currentColor; border-radius: 3px; padding: 1px 6px; }
 .who { font-size: 0.9rem; color: var(--ink); }
 .who #who-name { font-weight: 700; }
 

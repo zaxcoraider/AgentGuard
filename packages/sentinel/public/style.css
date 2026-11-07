@@ -57,7 +57,26 @@ code { font: 500 0.92em/1 var(--text); background: var(--paper-deep); padding: 0
 .mark { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font: 700 1.35rem/1 var(--display); letter-spacing: 0.01em; }
 .mark-seal { width: 30px; height: 30px; color: var(--ink); }
 .mark-logo { width: 34px; height: 34px; display: block; }
-.top-links { display: flex; gap: 20px; font-size: 0.9rem; color: var(--ink-soft); flex-wrap: wrap; }
+.top-links { display: flex; gap: 20px; font-size: 0.9rem; color: var(--ink-soft); flex-wrap: wrap; align-items: center; }
+
+/* Network switch: testnet is live, mainnet is shown but can't be picked yet */
+.netswitch { display: inline-flex; border: 1px solid var(--rule); border-radius: 999px; padding: 2px; font-size: 0.78rem; line-height: 1; white-space: nowrap; }
+.netswitch > span { padding: 5px 10px; border-radius: 999px; }
+.ns-on { background: var(--ink); color: var(--paper); font-weight: 700; }
+.ns-on::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #5cc79a; margin-right: 6px; vertical-align: 1px; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .ns-on::before { background: #1f6b4f; } }
+:root[data-theme="dark"] .ns-on::before { background: #1f6b4f; }
+.ns-off { position: relative; color: var(--ink-soft); opacity: 0.6; cursor: not-allowed; }
+.ns-off small { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.ns-off:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.ns-tip {
+  position: absolute; top: calc(100% + 8px); right: 0; z-index: 10;
+  padding: 6px 10px; border-radius: 4px; background: var(--ink); color: var(--paper);
+  font-size: 0.8rem; font-weight: 500; white-space: nowrap;
+  opacity: 0; visibility: hidden; transition: opacity 0.15s;
+}
+.ns-off:hover, .ns-off:focus { opacity: 1; }
+.ns-off:hover .ns-tip, .ns-off:focus .ns-tip { opacity: 1; visibility: visible; }
 
 /* ---- hero ---- */
 .hero { display: grid; gap: 40px; padding-block: 24px 56px; align-items: start; }

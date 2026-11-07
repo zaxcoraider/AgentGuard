@@ -1,42 +1,18 @@
-<p align="center">
-  <img src="docs/screens/agentguard-logo.png" alt="AgentGuard logo: a shield with a keyhole" width="120" height="120">
-</p>
+![AgentGuard logo: a shield with a keyhole](https://raw.githubusercontent.com/zaxcoraider/AgentGuard/main/docs/screens/agentguard-logo-120.png)
 
-<h1 align="center">AgentGuard</h1>
+# AgentGuard
 
-<h3 align="center">AI agents are getting wallets, and one fake invoice can talk them into paying a scammer.<br>AgentGuard moves the spending rules out of the prompt and into a NEAR contract.<br>If the AI is fooled, the contract still says no.</h3>
+**AI agents are getting wallets, and one fake invoice can talk them into paying a scammer. AgentGuard moves the spending rules out of the prompt and into a NEAR contract. If the AI is fooled, the contract still says no.**
 
-<p align="center">
-  <a href="https://sentinel.agentguard.app"><img alt="Try to rob Sentinel" src="https://img.shields.io/badge/▶_Try_to_rob_Sentinel-live-C1272D?style=for-the-badge&labelColor=1C2A4A"></a>
-  <a href="https://agentguard.app/#verify"><img alt="Verify it yourself" src="https://img.shields.io/badge/✓_Verify_it_yourself-7_checks-1F6B4F?style=for-the-badge&labelColor=1C2A4A"></a>
-  <a href="https://agentguard.app/console"><img alt="Protect your agent" src="https://img.shields.io/badge/🛡_Protect_your_agent-2_minutes-E9EEE9?style=for-the-badge&labelColor=1C2A4A"></a>
-</p>
+[![Try to rob Sentinel](https://img.shields.io/badge/▶_Try_to_rob_Sentinel-live-C1272D?style=for-the-badge&labelColor=1C2A4A)](https://sentinel.agentguard.app) [![Verify it yourself](https://img.shields.io/badge/✓_Verify_it_yourself-7_checks-1F6B4F?style=for-the-badge&labelColor=1C2A4A)](https://agentguard.app/#verify) [![Protect your agent](https://img.shields.io/badge/🛡_Protect_your_agent-2_minutes-E9EEE9?style=for-the-badge&labelColor=1C2A4A)](https://agentguard.app/console)
 
-<p align="center">
-  <img alt="NEAR testnet" src="https://img.shields.io/badge/NEAR-testnet-00EC97?style=flat-square&labelColor=1C2A4A">
-  <a href="https://www.npmjs.com/package/@zaxcoraider/agentguard-mcp"><img alt="npm" src="https://img.shields.io/npm/v/@zaxcoraider/agentguard-mcp?style=flat-square&label=npm&labelColor=1C2A4A"></a>
-  <a href="https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.zaxcoraider/agentguard-mcp"><img alt="Official MCP Registry" src="https://img.shields.io/badge/MCP_Registry-listed-E9EEE9?style=flat-square&labelColor=1C2A4A"></a>
-  <a href="https://agentguard-sentinel.market.near.ai"><img alt="NEAR Agent Market" src="https://img.shields.io/badge/NEAR_Agent_Market-hire_Sentinel-E9EEE9?style=flat-square&labelColor=1C2A4A"></a>
-  <img alt="NEAR AI Cloud TEE" src="https://img.shields.io/badge/NEAR_AI_Cloud-TEE_verified-E9EEE9?style=flat-square&labelColor=1C2A4A">
-  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/License-MIT-E9EEE9?style=flat-square&labelColor=1C2A4A"></a>
-</p>
+![NEAR testnet](https://img.shields.io/badge/NEAR-testnet-00EC97?style=flat-square&labelColor=1C2A4A) [![npm](https://img.shields.io/npm/v/@zaxcoraider/agentguard-mcp?style=flat-square&label=npm&labelColor=1C2A4A)](https://www.npmjs.com/package/@zaxcoraider/agentguard-mcp) [![Official MCP Registry](https://img.shields.io/badge/MCP_Registry-listed-E9EEE9?style=flat-square&labelColor=1C2A4A)](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.zaxcoraider/agentguard-mcp) [![NEAR Agent Market](https://img.shields.io/badge/NEAR_Agent_Market-hire_Sentinel-E9EEE9?style=flat-square&labelColor=1C2A4A)](https://agentguard-sentinel.market.near.ai) ![NEAR AI Cloud TEE](https://img.shields.io/badge/NEAR_AI_Cloud-TEE_verified-E9EEE9?style=flat-square&labelColor=1C2A4A) [![MIT license](https://img.shields.io/badge/License-MIT-E9EEE9?style=flat-square&labelColor=1C2A4A)](https://github.com/zaxcoraider/AgentGuard/blob/main/LICENSE)
 
-<p align="center">
-  <a href="#-see-it-in-5-minutes">See it</a> ·
-  <a href="#-the-problem">The problem</a> ·
-  <a href="#%EF%B8%8F-how-it-works">How it works</a> ·
-  <a href="#-zero-master-keys">Zero master keys</a> ·
-  <a href="#-sentinel-an-agent-that-earns">Sentinel</a> ·
-  <a href="#-use-it-in-your-agent">Use it</a> ·
-  <a href="#-proof">Proof</a> ·
-  <a href="#-roadmap">Roadmap</a> ·
-  <a href="#-run-it-locally">Run locally</a>
-</p>
+[See it](#-see-it-in-5-minutes) · [The problem](#-the-problem) · [How it works](#%EF%B8%8F-how-it-works) · [Zero master keys](#-zero-master-keys) · [Sentinel](#-sentinel-an-agent-that-earns) · [Use it](#-use-it-in-your-agent) · [Proof](#-proof) · [Roadmap](#-roadmap) · [Run locally](#-run-it-locally)
 
-<p align="center">
-  <img src="docs/screens/sentinel-blocked.jpg" alt="Sentinel's chat: the AI believed a fake logo invoice and tried to pay 0.03 NEAR to agentguard-user.testnet. The vault's answer is stamped on the payment slip: Blocked by contract, not on the list of accounts it may pay." width="100%">
-  <br><sub>A real attack on the live Sentinel, Nov 7 2026. The AI believed a fake invoice and tried to pay. The vault blocked it on-chain.</sub>
-</p>
+![Sentinel's chat: the AI believed a fake logo invoice and tried to pay 0.03 NEAR to agentguard-user.testnet. The vault's answer is stamped on the payment slip: Blocked by contract.](https://raw.githubusercontent.com/zaxcoraider/AgentGuard/main/docs/screens/sentinel-blocked.jpg)
+
+*A real attack on the live Sentinel, Nov 7 2026. The AI believed a fake invoice and tried to pay. The vault blocked it on-chain.*
 
 ---
 
@@ -46,15 +22,11 @@
 |:---|:---|:---|
 | Caps, an allowlist, a hold on repeated payments, and a shared scam registry, checked on-chain for every payment. A fooled AI can ask; it can't pay. | No full-access key on any vault or on the scam registry. Nobody can move the money or change that code, and that includes us. Check it with one click. | Sentinel, the first app on AgentGuard, sells "is this account safe to pay?" checks to other agents and runs its business from a locked vault. |
 
-<table>
-  <tr>
-    <td align="center" width="25%"><h3>0</h3><sub>master keys on any vault<br>or on the scam registry</sub></td>
-    <td align="center" width="25%"><h3>7 / 7</h3><sub>claims your browser checks<br>against the chain itself</sub></td>
-    <td align="center" width="25%"><h3>240 / 240</h3><sub>on-chain attacks answered<br>exactly as the rules say</sub></td>
-    <td align="center" width="25%"><h3>60,000</h3><sub>random fuzz steps,<br>every rule held after each</sub></td>
-  </tr>
-</table>
-<p align="center"><sub>Measured on NEAR testnet, Nov 3–7 2026. Every number links to transactions in <a href="docs/TESTNET-RESULTS.md">TESTNET-RESULTS</a>.</sub></p>
+| **0** | **7 / 7** | **240 / 240** | **60,000** |
+|:---:|:---:|:---:|:---:|
+| master keys on any vault or on the scam registry | claims your browser checks against the chain itself | on-chain attacks answered exactly as the rules say | random fuzz steps, every rule held after each |
+
+*Measured on NEAR testnet, Nov 3–7 2026. Every number links to transactions in [TESTNET-RESULTS](https://github.com/zaxcoraider/AgentGuard/blob/main/docs/TESTNET-RESULTS.md).*
 
 ## 📸 See it in 5 minutes
 
@@ -64,11 +36,11 @@ No install, no wallet.
 
 **2 · Don't trust us, verify it (1 min).** On **[agentguard.app](https://agentguard.app/#verify)**, press **Run the checks**. Your browser asks NEAR testnet directly, not our server: who holds keys, whether the rules are locked, the scam flag, a blocked attack, and all 240 stress-test results.
 
-<p align="center"><img src="docs/screens/verify.jpg" alt="Verify it: 7 green checks, run by the browser against NEAR testnet, including 0 full-access keys on every vault and on the registry, and 240 of 240 stress results" width="88%"></p>
+![Verify it: 7 green checks, run by the browser against NEAR testnet, including 0 full-access keys on every vault and on the registry, and 240 of 240 stress results](https://raw.githubusercontent.com/zaxcoraider/AgentGuard/main/docs/screens/verify.jpg)
 
 **3 · See a vault nobody can override (1 min).** Open **[Sentinel's vault in the Console](https://agentguard.app/console?vault=sentinel.agentguard.testnet)**. Its rules are locked: after locking, its owner tried to allowlist an attacker and to withdraw, and both were refused ([lock tx 9QFB…](https://testnet.nearblocks.io/txns/9QFBjv7AzAqcaCjJdm8z1kq9pV47rt9Adz2XjfqaJf7h)).
 
-<p align="center"><img src="docs/screens/console.jpg" alt="AgentGuard Console showing sentinel.agentguard.testnet: Rules locked badge, rules table (0.05 NEAR per payment, 1 NEAR per 24 hours, unknown recipients blocked), one agent key limited to request_payment" width="88%"></p>
+![AgentGuard Console showing sentinel.agentguard.testnet: Rules locked, rules table, one agent key limited to request_payment](https://raw.githubusercontent.com/zaxcoraider/AgentGuard/main/docs/screens/console.jpg)
 
 **4 · See the business (1 min).** The [Business section](https://agentguard.app/#business) shows Sentinel's live books, losses included, what one check costs to run, the break-even point, and a what-if calculator.
 
@@ -97,9 +69,9 @@ flowchart LR
 
 | | Step | What happens |
 |:-:|---|---|
-| 1 | **A vault is born with no master key** | The [factory](contracts/factory) creates `<name>.agentguard.testnet` from immutable code (a NEAR global contract, by hash). Nobody holds a key that can sign a transfer out of it. |
+| 1 | **A vault is born with no master key** | The [factory](https://github.com/zaxcoraider/AgentGuard/tree/main/contracts/factory) creates `<name>.agentguard.testnet` from immutable code (a NEAR global contract, by hash). Nobody holds a key that can sign a transfer out of it. |
 | 2 | **The agent gets a key that can only ask** | A function-call key limited to `request_payment`. It can't transfer, add keys, change rules or withdraw. |
-| 3 | **The contract decides every payment** | Per-payment and daily caps, an allowlist, a hold on the same payment twice within 10 minutes (the "it failed, please retry" trick), and a lookup in the [shared scam registry](contracts/registry). If the registry doesn't answer, the payment is **blocked**. [All rules, in order](contracts/vault#what-request_paymentrecipient-amount-memo-returns). |
+| 3 | **The contract decides every payment** | Per-payment and daily caps, an allowlist, a hold on the same payment twice within 10 minutes (the "it failed, please retry" trick), and a lookup in the [shared scam registry](https://github.com/zaxcoraider/AgentGuard/tree/main/contracts/registry). If the registry doesn't answer, the payment is **blocked**. [All rules, in order](https://github.com/zaxcoraider/AgentGuard/tree/main/contracts/vault#what-request_paymentrecipient-amount-memo-returns). |
 | 4 | **Held payments wait for the owner** | The owner approves or denies them in the [Console](https://agentguard.app/console). |
 | 5 | **Lock it for good** | `lock_rules()` is one-way. After it nobody, the owner included, can loosen a rule or withdraw. Making it stricter (pause, deny, revoke) still works. |
 
@@ -113,11 +85,11 @@ Most "agent wallet guards" still trust someone: the owner can switch the rules o
 | Shared scam registry | **0** | Its code is frozen: its last key was deleted ([tx HM3d…](https://testnet.nearblocks.io/txns/HM3d2dGMLMmtPBdXaemuS8GCeSeRC2madeHrmD1r9hJY)) and it has no upgrade method |
 | Factory (`agentguard.testnet`) | 1 | Can only change how **future** vaults are made. Existing vaults run code by hash, which can't change |
 
-What you still have to trust, honestly: the registry's curator can confirm or dismiss a reported account (it can't move funds or loosen a vault's rules), and NEAR itself. Full threat model: **[SECURITY.md](SECURITY.md)**.
+What you still have to trust, honestly: the registry's curator can confirm or dismiss a reported account (it can't move funds or loosen a vault's rules), and NEAR itself. Full threat model: **[SECURITY.md](https://github.com/zaxcoraider/AgentGuard/blob/main/SECURITY.md)**.
 
 ## 💸 Sentinel, an agent that earns
 
-[Sentinel](packages/sentinel) is the first app built on AgentGuard, and the live demo. It's a small AI business that runs inside the constraints a human set once, then locked:
+[Sentinel](https://github.com/zaxcoraider/AgentGuard/tree/main/packages/sentinel) is the first app built on AgentGuard, and the live demo. It's a small AI business that runs inside the constraints a human set once, then locked:
 
 | Treasury | Sales | Procurement | Constraints |
 |---|---|---|---|
@@ -137,15 +109,15 @@ claude mcp add agentguard -e AGENTGUARD_VAULT=your-vault.agentguard.testnet \
   -- npx -y @zaxcoraider/agentguard-mcp
 ```
 
-Seven tools: pay, check an address, balance, policy, payment status, history, and buy Sentinel's paid check. Pass the invoice or email that asked for a payment as `source_text`: if it hides instructions (invisible characters, "ignore your instructions"…), the payment is **held** for the owner. Without an agent key the server runs read-only. [Setup](packages/mcp#setup).
+Seven tools: pay, check an address, balance, policy, payment status, history, and buy Sentinel's paid check. Pass the invoice or email that asked for a payment as `source_text`: if it hides instructions (invisible characters, "ignore your instructions"…), the payment is **held** for the owner. Without an agent key the server runs read-only. [Setup](https://github.com/zaxcoraider/AgentGuard/tree/main/packages/mcp#setup).
 
 **In the browser:** the **[Console](https://agentguard.app/console)**: wallet → vault → limits → agent key, in about 2 minutes.
 
-**From the command line:** [four commands](packages/mcp#get-your-own-vault-testnet-about-2-minutes) to create a vault, make an agent key, add it, and point the MCP server at it.
+**From the command line:** [four commands](https://github.com/zaxcoraider/AgentGuard/tree/main/packages/mcp#get-your-own-vault-testnet-about-2-minutes) to create a vault, make an agent key, add it, and point the MCP server at it.
 
 ## 🧾 Proof
 
-Everything is deployed on NEAR testnet (ids in [`deployments/testnet.json`](deployments/testnet.json)). Every claim has transaction links in **[TESTNET-RESULTS](docs/TESTNET-RESULTS.md)**.
+Everything is deployed on NEAR testnet (ids in [`deployments/testnet.json`](https://github.com/zaxcoraider/AgentGuard/blob/main/deployments/testnet.json)). Every claim has transaction links in **[TESTNET-RESULTS](https://github.com/zaxcoraider/AgentGuard/blob/main/docs/TESTNET-RESULTS.md)**.
 
 | Claim | Evidence |
 |---|---|
@@ -159,7 +131,7 @@ Everything is deployed on NEAR testnet (ids in [`deployments/testnet.json`](depl
 | 240 rule-breaking requests, every answer as the rules say, nothing paid to anyone not allowed | Stress test, all txs listed (§13) |
 | A poisoned invoice is held on-chain | Prompt-injection scan → held (§14) |
 | Nobody can change the scam registry's code | Key deletion + empty key list (§15) |
-| No sequence of actions breaks the rules | Fuzz test: 60,000 random steps, deliberately broken contracts caught ([vault README](contracts/vault#fuzzing-srcfuzz_testsrs)) |
+| No sequence of actions breaks the rules | Fuzz test: 60,000 random steps, deliberately broken contracts caught ([vault README](https://github.com/zaxcoraider/AgentGuard/tree/main/contracts/vault#fuzzing-srcfuzz_testsrs)) |
 
 **Re-check it all yourself** (Node 24, no install, no keys, ~6 minutes because public archival nodes are slow). It compares every stated outcome with the vault's own on-chain event, all 240 stress results with the vault's records, and the live keys and rules:
 
@@ -171,53 +143,43 @@ node scripts/verify-evidence.mjs
 
 | Part | What it does |
 |---|---|
-| [**Vault contract**](contracts/vault) | The firewall. Every payment comes out `paid`, `pending` or `blocked`, with a reason |
-| [**Factory**](contracts/factory) | Creates vaults born without a full-access key, on immutable code; refunds if creation fails |
-| [**Scam registry**](contracts/registry) | Shared blocklist: anyone reports with evidence; two reporters or a curator flag an account. Code frozen |
-| [**MCP server**](packages/mcp) | Lets any AI agent pay through a vault, check an address and scan an invoice. On npm |
-| [**Console**](packages/sentinel/public/console.html) | Web app: create a vault, set limits, approve or deny held payments, make agent keys, lock the rules. Wallets via NEAR Connect |
-| [**Website**](packages/sentinel/public/index.html) | What AgentGuard is, live chain numbers, "Verify it", and the business case |
-| [**Sentinel**](packages/sentinel) | The live AI agent on a locked vault: chat, paid checks, Agent Market, TEE verification |
+| [**Vault contract**](https://github.com/zaxcoraider/AgentGuard/tree/main/contracts/vault) | The firewall. Every payment comes out `paid`, `pending` or `blocked`, with a reason |
+| [**Factory**](https://github.com/zaxcoraider/AgentGuard/tree/main/contracts/factory) | Creates vaults born without a full-access key, on immutable code; refunds if creation fails |
+| [**Scam registry**](https://github.com/zaxcoraider/AgentGuard/tree/main/contracts/registry) | Shared blocklist: anyone reports with evidence; two reporters or a curator flag an account. Code frozen |
+| [**MCP server**](https://github.com/zaxcoraider/AgentGuard/tree/main/packages/mcp) | Lets any AI agent pay through a vault, check an address and scan an invoice. On npm |
+| [**Console**](https://github.com/zaxcoraider/AgentGuard/blob/main/packages/sentinel/public/console.html) | Web app: create a vault, set limits, approve or deny held payments, make agent keys, lock the rules. Wallets via NEAR Connect |
+| [**Website**](https://github.com/zaxcoraider/AgentGuard/blob/main/packages/sentinel/public/index.html) | What AgentGuard is, live chain numbers, "Verify it", and the business case |
+| [**Sentinel**](https://github.com/zaxcoraider/AgentGuard/tree/main/packages/sentinel) | The live AI agent on a locked vault: chat, paid checks, Agent Market, TEE verification |
 
 **NEAR features used:** global contracts by hash (immutable vault code), function-call access keys with a gas allowance, cross-contract calls with callbacks (the registry lookup, failing closed), NEAR AI Cloud (TEE inference, attestation, signed replies), NEAR Agent Market (A2A + x402).
 
 ## 🗺 Roadmap
 
-<table>
-  <tr>
-    <th width="33%">✅ Shipped (testnet)</th>
-    <th width="33%">🔜 Next · Nov 2026 – Q1 2027</th>
-    <th width="34%">🧭 2027</th>
-  </tr>
-  <tr valign="top">
-    <td>
-      • Vault contract with caps, allowlist, repeat-payment hold, fail-closed registry check<br>
-      • Factory: vaults on immutable code, born with no key<br>
-      • Shared scam registry, code frozen<br>
-      • <code>lock_rules()</code>: rules nobody can loosen<br>
-      • MCP server on npm + official MCP Registry, with a prompt-injection scan<br>
-      • Console: create, manage and lock a vault from a wallet<br>
-      • Sentinel: live AI agent on a locked vault, TEE-verified brain<br>
-      • Paid checks over HTTP 402 + NEAR Agent Market listing<br>
-      • "Verify it" in the browser, 240-attack stress test, fuzz test
-    </td>
-    <td>
-      • <b>Mainnet launch</b> of the factory, vault code and registry<br>
-      • <b>Stablecoins</b>: USDC and other NEP-141 tokens in vaults<br>
-      • <b>TEE-signed invoice verdicts</b> the contract checks itself, not only the MCP server<br>
-      • <b>DAO or multisig owners</b> for team treasuries<br>
-      • <b>Registry curators by DAO vote</b> instead of one account<br>
-      • Reproducible Docker build of the vault code, and an external audit
-    </td>
-    <td>
-      • <b>NEAR Intents</b>: guarded cross-chain payouts<br>
-      • <b>Chain Signatures</b>: the same firewall for an agent's spending on other chains<br>
-      • Drop-in integrations for agent frameworks (OpenAI Agents SDK, LangChain, CrewAI)<br>
-      • Wallet integrations that create a vault for any new agent<br>
-      • Revenue: a small fee per vault created and paid access to the registry at volume
-    </td>
-  </tr>
-</table>
+### ✅ Shipped (testnet)
+- Vault contract with caps, allowlist, repeat-payment hold, fail-closed registry check
+- Factory: vaults on immutable code, born with no key
+- Shared scam registry, code frozen
+- `lock_rules()`: rules nobody can loosen
+- MCP server on npm + official MCP Registry, with a prompt-injection scan
+- Console: create, manage and lock a vault from a wallet
+- Sentinel: live AI agent on a locked vault, TEE-verified brain
+- Paid checks over HTTP 402 + NEAR Agent Market listing
+- "Verify it" in the browser, 240-attack stress test, fuzz test
+
+### 🔜 Next · Nov 2026 – Q1 2027
+- **Mainnet launch** of the factory, vault code and registry
+- **Stablecoins**: USDC and other NEP-141 tokens in vaults
+- **TEE-signed invoice verdicts** the contract checks itself, not only the MCP server
+- **DAO or multisig owners** for team treasuries
+- **Registry curators by DAO vote** instead of one account
+- Reproducible Docker build of the vault code, and an external audit
+
+### 🧭 2027
+- **NEAR Intents**: guarded cross-chain payouts
+- **Chain Signatures**: the same firewall for an agent's spending on other chains
+- Drop-in integrations for agent frameworks (OpenAI Agents SDK, LangChain, CrewAI)
+- Wallet integrations that create a vault for any new agent
+- Revenue: a small fee per vault created and paid access to the registry at volume
 
 ## 🛠 Run it locally
 
@@ -256,7 +218,7 @@ cd packages/mcp && npm run build && AGENTGUARD_VAULT=demo2.agentguard.testnet np
 | Prompt-injection scan | A heuristic in the MCP server. It can only make things stricter; a clean scan proves nothing |
 | TEE checks not done | RTMR3 event-log replay, image provenance, NVIDIA token signature, TLS binding |
 | Registry | Two throwaway accounts can flag an account; a curator can dismiss. A flag only blocks payments to that account, never moves funds |
-| Audit | Not audited. Threat model, trust list and a rebuild of the vault code that matches the on-chain hash: **[SECURITY.md](SECURITY.md)** |
+| Audit | Not audited. Threat model, trust list and a rebuild of the vault code that matches the on-chain hash: **[SECURITY.md](https://github.com/zaxcoraider/AgentGuard/blob/main/SECURITY.md)** |
 
 Found a problem? Please report it privately through [GitHub security advisories](https://github.com/zaxcoraider/AgentGuard/security/advisories/new).
 

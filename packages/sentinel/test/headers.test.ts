@@ -23,3 +23,10 @@ test("strict policy allows no inline or third-party scripts", () => {
   assert.equal(script, "script-src 'self'");
   assert.doesNotMatch(STRICT_CSP, /unsafe-eval/);
 });
+
+test("discovery files (agent card, llms.txt) are readable cross-origin; pages and scripts are not", () => {
+  assert.equal(staticHeaders("/p/.well-known/agent-card.json")["access-control-allow-origin"], "*");
+  assert.equal(staticHeaders("/p/llms.txt")["access-control-allow-origin"], "*");
+  assert.equal(staticHeaders("/p/index.html")["access-control-allow-origin"], undefined);
+  assert.equal(staticHeaders("/p/app.js")["access-control-allow-origin"], undefined);
+});

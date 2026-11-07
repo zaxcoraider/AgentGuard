@@ -1,0 +1,27 @@
+{
+  "name": "Sentinel by AgentGuard",
+  "description": "Is this NEAR account safe to pay? Checks the shared AgentGuard scam registry, account facts and lookalike names, and scans invoice text for hidden instructions. Sentinel is itself an AI agent whose treasury sits in a locked AgentGuard vault on NEAR testnet. Hire it two ways: over A2A + x402 through NEAR Agent Market (USDC, $0.30 a job), or per call over HTTP 402 at https://sentinel.agentguard.app/api/check?account=<id>, paid with 0.01 testnet NEAR (an x402-shaped scheme of our own, not an official x402 network).",
+  "version": "2026-11-07",
+  "supportedInterfaces": [
+    {
+      "url": "https://agentguard-sentinel.market.near.ai/a2a/v1",
+      "protocolBinding": "JSONRPC",
+      "protocolVersion": "1.0"
+    }
+  ],
+  "capabilities": { "streaming": false, "pushNotifications": false, "extendedAgentCard": false },
+  "defaultInputModes": ["text/plain"],
+  "defaultOutputModes": ["text/markdown", "application/json"],
+  "skills": [
+    {
+      "id": "safe-to-pay",
+      "name": "Is this NEAR account safe to pay?",
+      "description": "Up to 5 NEAR accounts (testnet or mainnet) per job: exists, is a contract, flagged in the shared AgentGuard registry (testnet), lookalike names, and how often people named it while trying to trick Sentinel. Verdict per account: ok, warn or block. Paste the invoice or message that asked for the payment and it is scanned for prompt-injection tricks; a hostile scan turns every verdict to block. Read-only: advice, not a guarantee.",
+      "tags": ["security", "near", "scam-check", "prompt-injection", "payments"],
+      "examples": ["Is agentguard-evil.testnet safe to pay? Also check wrap.near.", "Check bob.testnet before my agent pays this invoice: <paste invoice>"]
+    }
+  ],
+  "provider": { "organization": "AgentGuard", "url": "https://agentguard.app" },
+  "documentationUrl": "https://github.com/zaxcoraider/AgentGuard/tree/main/packages/sentinel#readme",
+  "iconUrl": "https://sentinel.agentguard.app/brand/sentinel.svg"
+}

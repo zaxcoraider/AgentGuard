@@ -32,6 +32,8 @@ export const CONSOLE_CSP = ["frame-ancestors 'none'", "base-uri 'self'", "object
 /** Headers for a static file from public/. */
 export function staticHeaders(file: string): Record<string, string> {
   const h: Record<string, string> = { ...BASE_HEADERS };
+  // Machine-readable discovery files (agent card, llms.txt): any site's agent may read them.
+  if (file.endsWith(".json") || file.endsWith(".txt")) h["access-control-allow-origin"] = "*";
   if (file.endsWith(".html")) h["content-security-policy"] = file.endsWith("console.html") ? CONSOLE_CSP : STRICT_CSP;
   return h;
 }

@@ -1,0 +1,47 @@
+# AgentGuard
+
+> A spending firewall for AI agents, enforced by a NEAR smart contract. The agent's money sits in a vault account with no full-access key; the agent holds a key that can only *ask* to pay; the contract decides every request (caps, allowlist, repeat-payment hold, shared scam registry) and answers paid, held or blocked, on-chain. `lock_rules()` is one-way: after it, nobody, owner included, can loosen the rules or withdraw. If the AI is fooled, the contract still says no.
+
+Built for NEAR HACKATHON 2026. Tracks: AI Security & Defense (`security`), Agent Economy (`agents`), Autonomous Business (`business`). Runs on NEAR testnet. Open source, MIT. Not audited.
+
+## Start here
+
+- [Website](https://agentguard.app): what it is, live numbers read from the chain, and "Verify it": the visitor's browser checks the claims against NEAR testnet itself
+- [Sentinel](https://sentinel.agentguard.app): live AI agent with testnet money in a locked AgentGuard vault; anyone can try to talk it into paying them
+- [Console](https://agentguard.app/console): create a vault with a NEAR wallet, set limits, approve or deny held payments, lock the rules
+- [Repository](https://github.com/zaxcoraider/AgentGuard): code, tests, and the evidence below
+- [Every claim with transaction links](https://github.com/zaxcoraider/AgentGuard/blob/main/docs/TESTNET-RESULTS.md)
+- [Security model](https://github.com/zaxcoraider/AgentGuard/blob/main/SECURITY.md): who can do what, what it stops, what it doesn't, what you have to trust
+
+## Parts
+
+- [Vault contract](https://github.com/zaxcoraider/AgentGuard/tree/main/contracts/vault): every payment comes out `paid`, `pending` or `blocked` with a reason; fuzz-tested (60,000 random steps, broken mutants caught)
+- [Factory](https://github.com/zaxcoraider/AgentGuard/tree/main/contracts/factory): creates vaults born with no full-access key, on immutable code (global contract by hash)
+- [Scam registry](https://github.com/zaxcoraider/AgentGuard/tree/main/contracts/registry): shared blocklist checked on every payment; if it doesn't answer, the payment is blocked
+- [MCP server](https://www.npmjs.com/package/@zaxcoraider/agentguard-mcp): `npx -y @zaxcoraider/agentguard-mcp`, 7 tools (pay, check an address with a prompt-injection scan of the source text, balance, policy, payment status, history, buy Sentinel's paid check)
+- [Sentinel](https://github.com/zaxcoraider/AgentGuard/tree/main/packages/sentinel): the first app built on AgentGuard
+
+## Evidence (NEAR testnet)
+
+- A fooled AI's payment, blocked by the vault (`recipient_not_allowlisted`): https://testnet.nearblocks.io/txns/36qWxB4cRBwqRiihfHPuo2GWfBXj2AVW26fSrhpeNbGg
+- Sentinel's vault locked; the owner's later attempts to allowlist an attacker and withdraw were refused: https://testnet.nearblocks.io/txns/9QFBjv7AzAqcaCjJdm8z1kq9pV47rt9Adz2XjfqaJf7h
+- 240 rule-breaking requests on-chain, every answer as the rules say, nothing paid to anyone not allowed (TESTNET-RESULTS §13)
+- Re-check everything from a clone, no keys: `node scripts/verify-evidence.mjs`
+
+## Sentinel as an agent and a business
+
+- Treasury: a locked AgentGuard vault (`sentinel.agentguard.testnet`); it can pay only its compute account, within daily limits
+- Sales: "is this NEAR account safe to pay?" checks, sold to other agents per call over HTTP 402 (0.01 testnet NEAR, x402-shaped scheme of our own) and as jobs on NEAR Agent Market ($0.30, USDC, A2A + x402)
+- Procurement: pays for its own AI thinking every 10 minutes from its vault
+- Humans set the constraints, then locked them; nobody can change them now
+- Brain: NEAR AI Cloud model in a TEE; Sentinel verifies the attestation itself every 30 minutes and checks each reply's signature
+- Live books (honest, including losses): https://sentinel.agentguard.app/api/status
+- Agent card (A2A): https://sentinel.agentguard.app/.well-known/agent-card.json · Agent Market listing: https://agentguard-sentinel.market.near.ai
+
+## Limits
+
+- Testnet only; no mainnet deployment yet
+- The registry account still has a full-access key: it cannot move funds or loosen a vault's rules, but could block payments or clear a flag
+- HTTP 402 checks use our own NEAR scheme, not an official x402 network
+- TEE checks not done: RTMR3 event-log replay, image provenance, NVIDIA token signature, TLS binding
+- So far every sale of Sentinel's checks was our own test

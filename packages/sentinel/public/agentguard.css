@@ -157,3 +157,8 @@
 @media (min-width: 840px) { .biz-adopt { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 640px; } }
 .biz-adopt > div:last-child:nth-child(odd) { grid-column: auto; }
 @media (max-width: 839px) { .biz-adopt { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.biz-fit { margin: 0; display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; }
+@media (min-width: 840px) { .biz-fit { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+.biz-fit > div { background: var(--paper); padding: 16px 18px; }
+.biz-fit dt { font: 700 1.05rem/1.2 var(--display); margin-bottom: 6px; }
+.biz-fit dd { margin: 0; font-size: 0.88rem; color: var(--ink-soft); }

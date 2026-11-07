@@ -48,6 +48,40 @@ async function books() {
   calc();
 }
 
+// Vaults made by people outside the team, read from the factory contract by the browser.
+const FACTORY = "agentguard.testnet";
+const TEAM = new Set(["agentguard.testnet", "agentguard-user.testnet", "zaxtest.testnet"]);
+async function adoption() {
+  try {
+    const args = btoa(JSON.stringify({ from_index: 0, limit: 500 }));
+    const r = await fetch("https://rpc.testnet.fastnear.com", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: "biz", method: "query", params: { request_type: "call_function", finality: "final", account_id: FACTORY, method_name: "get_vaults", args_base64: args } }),
+    });
+    const j = await r.json();
+    if (!j.result?.result) throw new Error("rpc");
+    const vaults = JSON.parse(new TextDecoder().decode(new Uint8Array(j.result.result)));
+    const outside = vaults.filter((v) => !TEAM.has(v.owner));
+    $("a-total").textContent = String(vaults.length);
+    $("a-outside").textContent = String(outside.length);
+    if (outside.length) {
+      const list = $("a-list");
+      list.append("Outside vaults: ");
+      outside.forEach((v, i) => {
+        const a = document.createElement("a");
+        a.href = `https://testnet.nearblocks.io/address/${v.vault}`;
+        a.textContent = v.vault;
+        list.append(a, i < outside.length - 1 ? ", " : ". ");
+      });
+      $("a-cta").textContent = "Add yours: about 2 minutes.";
+    }
+  } catch {
+    $("a-total").textContent = $("a-outside").textContent = "RPC busy";
+  }
+}
+adoption();
+
 $("c-agents").addEventListener("input", calc);
 $("c-pays").addEventListener("input", calc);
 calc();

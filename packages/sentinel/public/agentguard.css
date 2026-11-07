@@ -154,3 +154,6 @@
 .biz-calc .fine { margin: 0; }
 .biz-plan { margin: 0; padding-left: 1.3em; display: grid; gap: 8px; max-width: 720px; }
 .biz-plan + .fine { margin-top: 14px; }
+@media (min-width: 840px) { .biz-adopt { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 640px; } }
+.biz-adopt > div:last-child:nth-child(odd) { grid-column: auto; }
+@media (max-width: 839px) { .biz-adopt { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

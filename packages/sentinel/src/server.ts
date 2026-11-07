@@ -230,7 +230,7 @@ function visitor(req: IncomingMessage): string {
   return clientIp(req.headers, req.socket.remoteAddress, IP_HEADERS);
 }
 
-const TYPES: Record<string, string> = { ".html": "text/html; charset=utf-8", ".css": "text/css", ".js": "text/javascript", ".mjs": "text/javascript", ".svg": "image/svg+xml", ".png": "image/png", ".json": "application/json", ".txt": "text/plain; charset=utf-8" };
+const TYPES: Record<string, string> = { ".html": "text/html; charset=utf-8", ".css": "text/css", ".js": "text/javascript", ".mjs": "text/javascript", ".svg": "image/svg+xml", ".png": "image/png", ".json": "application/json", ".txt": "text/plain; charset=utf-8", ".ico": "image/x-icon" };
 
 /** "/" -> index.html (AgentGuard), "/sentinel" -> sentinel.html, "/console" -> console.html; never outside public/, never a directory. */
 /** Hosts whose front page is Sentinel instead of the AgentGuard website (e.g. sentinel.agentguard.app). */

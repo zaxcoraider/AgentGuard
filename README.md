@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="packages/sentinel/public/brand/agentguard.svg" alt="AgentGuard logo" width="96" height="96">
+  <img src="docs/screens/agentguard-logo.png" alt="AgentGuard logo: a shield with a keyhole" width="120" height="120">
 </p>
 
 <h1 align="center">AgentGuard</h1>

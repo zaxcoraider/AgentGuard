@@ -31,7 +31,7 @@ Configuration (environment variables):
 | `AGENTGUARD_AGENT_KEY` | read from file | The agent's `ed25519:...` function-call key |
 | `AGENTGUARD_KEY_FILE` | `~/.near-credentials/<network>/<vault>.json` | Where to read the key if the variable above is not set (created by `scripts/gen-agent-key.mjs`) |
 | `NEAR_RPC_URL` | FastNEAR public RPC | Override the RPC endpoint |
-| `SENTINEL_URL` | `http://localhost:3000` | Where `agentguard_sentinel_check` buys checks |
+| `SENTINEL_URL` | `https://sentinel.agentguard.app` | Where `agentguard_sentinel_check` buys checks (set `http://localhost:3000` for a local Sentinel) |
 
 Without a key the server still runs, read-only.
 

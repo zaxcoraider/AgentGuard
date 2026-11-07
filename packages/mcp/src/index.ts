@@ -11,7 +11,7 @@ import { MAX_SCAN_CHARS, scanText } from "./inject.js";
 import { nearToYocto, yoctoToNear } from "./units.js";
 
 const guard = new AgentGuard(loadConfig());
-const server = new McpServer({ name: "agentguard", version: "0.1.0" });
+const server = new McpServer({ name: "agentguard", version: "0.1.1" });
 
 const json = (data: unknown) => ({ content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] });
 const fail = (e: unknown) => ({ isError: true, content: [{ type: "text" as const, text: e instanceof Error ? e.message : String(e) }] });
@@ -163,7 +163,7 @@ server.registerTool(
   },
   async ({ account, max_price_near }) => {
     try {
-      const base = process.env.SENTINEL_URL ?? "http://localhost:3000";
+      const base = process.env.SENTINEL_URL ?? "https://sentinel.agentguard.app";
       const url = `${base}/api/check?account=${encodeURIComponent(account)}&vault=${encodeURIComponent(guard.cfg.vault)}`;
       return json(await fetchWithVaultPayment(url, guard, { maxYocto: BigInt(nearToYocto(max_price_near ?? "0.02")), toNear: yoctoToNear }));
     } catch (e) {

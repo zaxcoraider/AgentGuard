@@ -1,0 +1,29 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.zaxcoraider/agentguard-mcp",
+  "title": "AgentGuard",
+  "description": "Let an AI agent pay on NEAR through a vault whose spending rules a contract enforces, not the agent.",
+  "repository": {
+    "url": "https://github.com/zaxcoraider/AgentGuard",
+    "source": "github",
+    "subfolder": "packages/mcp"
+  },
+  "websiteUrl": "https://agentguard.app",
+  "version": "0.1.1",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@zaxcoraider/agentguard-mcp",
+      "version": "0.1.1",
+      "transport": { "type": "stdio" },
+      "environmentVariables": [
+        { "name": "AGENTGUARD_VAULT", "description": "Your AgentGuard vault account, e.g. my-agent.agentguard.testnet", "isRequired": true },
+        { "name": "NEAR_NETWORK", "description": "testnet (default) or mainnet", "default": "testnet" },
+        { "name": "AGENTGUARD_AGENT_KEY", "description": "The agent's ed25519 function-call key; without it the server is read-only", "isSecret": true },
+        { "name": "AGENTGUARD_KEY_FILE", "description": "Path to a key file to read instead of AGENTGUARD_AGENT_KEY" },
+        { "name": "NEAR_RPC_URL", "description": "Override the NEAR RPC endpoint" },
+        { "name": "SENTINEL_URL", "description": "Where to buy Sentinel's paid check", "default": "https://sentinel.agentguard.app" }
+      ]
+    }
+  ]
+}

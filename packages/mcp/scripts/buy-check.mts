@@ -6,7 +6,7 @@ import { nearToYocto, yoctoToNear } from "../src/units.ts";
 
 const account = process.argv[2] ?? "agentguard-evil.testnet";
 const guard = new AgentGuard(loadConfig({ ...process.env, AGENTGUARD_VAULT: process.env.AGENTGUARD_VAULT ?? "demo2.agentguard.testnet" }));
-const base = process.env.SENTINEL_URL ?? "http://localhost:3000";
+const base = process.env.SENTINEL_URL ?? "https://sentinel.agentguard.app";
 const url = `${base}/api/check?account=${encodeURIComponent(account)}&vault=${encodeURIComponent(guard.cfg.vault)}`;
 
 const before = await fetch(url);

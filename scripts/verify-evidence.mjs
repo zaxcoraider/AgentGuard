@@ -11,7 +11,7 @@
 //    on-chain records (its contract state), and a sample of their transactions (always including every
 //    paid one) is re-read to tie records to transactions. Every "paid" must be a real transfer to an
 //    allowlisted, unflagged account.
-// 3. Live state: vault code hashes, no full-access keys, Sentinel's vault locked with one limited key.
+// 3. Live state: vault code hashes, no full-access keys (vaults and registry), Sentinel's vault locked with one limited key.
 //
 // Exit code 0 only if every check passes.
 
@@ -305,6 +305,9 @@ try {
   live("Factory code", f.code_hash === dep.factory.code_sha256_base58, `code_hash ${f.code_hash}`);
   const evil = await view(dep.registry.account, "get_status", { account: dep.demo_accounts.attacker });
   live("Attacker flagged in the registry", JSON.stringify(evil).includes("flagged"), JSON.stringify(evil).slice(0, 120));
+  const rk = (await query("view_access_key_list", dep.registry.account)).keys;
+  const rfull = rk.filter((k) => k.access_key.permission === "FullAccess").length;
+  live("Registry code frozen (no full-access key)", rfull === 0, `${rk.length} key(s), ${rfull} full-access`);
 } catch (e) { live("Factory / registry", false, e.message); }
 
 console.log(failures === 0 ? "\nALL CHECKS PASSED" : `\n${failures} CHECK(S) FAILED`);

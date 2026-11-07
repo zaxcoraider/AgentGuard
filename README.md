@@ -116,6 +116,7 @@ It fetches every transaction in TESTNET-RESULTS from a NEAR archival node and co
 | A new user can follow the guide from nothing to a working vault | Guide run as written (§9) |
 | A new user can do it all in the browser: wallet → vault → agent key → agent payment → approve | Console run with a fresh account (§12) |
 | Sentinel's vault is locked; the owner can't loosen it | Lock + refused owner calls (§11) |
+| Nobody can change the shared scam registry's code: its last full-access key is deleted | Key deletion + empty key list (§15) |
 | 240 rule-breaking requests on-chain: every answer as the rules say, nothing paid to anyone not allowed | Stress test, all txs listed (§13) |
 | No sequence of actions breaks the rules | Fuzz test: 60,000 random steps, every invariant checked after each one; deliberately broken contracts are caught ([vault README](contracts/vault#fuzzing-srcfuzz_testsrs)) |
 
@@ -144,7 +145,7 @@ It fetches every transaction in TESTNET-RESULTS from a NEAR archival node and co
 | Testnet only | No mainnet deployment |
 | HTTP 402 | x402-shaped, but our own scheme in native NEAR, not an official x402 network |
 | TEE checks not done | RTMR3 event-log replay, image provenance, NVIDIA token signature, TLS binding |
-| Registry | Two throwaway accounts can flag an account. Curators can dismiss, and a flag can only block payments to that account, never move funds |
+| Registry | Code frozen: no full-access key since 2026-11-07 (§15). Two throwaway accounts can flag an account. Curators can dismiss, and a flag can only block payments to that account, never move funds |
 | Security model | [**SECURITY.md**](SECURITY.md): who can do what, what it stops, what it doesn't, what you have to trust, and a rebuild of the vault code that matches the on-chain hash. Not audited |
 
 ## License

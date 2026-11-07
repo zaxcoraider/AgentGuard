@@ -41,7 +41,7 @@ Built for NEAR HACKATHON 2026. Tracks: AI Security & Defense (`security`), Agent
 ## Limits
 
 - Testnet only; no mainnet deployment yet
-- The registry account still has a full-access key: it cannot move funds or loosen a vault's rules, but could block payments or clear a flag
+- The registry's code is frozen (no full-access key since 2026-11-07), but its curator `agentguard.testnet` can still confirm or dismiss reports; it cannot move funds or loosen a vault's rules
 - HTTP 402 checks use our own NEAR scheme, not an official x402 network
 - TEE checks not done: RTMR3 event-log replay, image provenance, NVIDIA token signature, TLS binding
 - So far every sale of Sentinel's checks was our own test

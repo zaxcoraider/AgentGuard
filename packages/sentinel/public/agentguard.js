@@ -9,6 +9,7 @@ const ARCHIVAL = [
 ];
 const SENTINEL = "sentinel.agentguard.testnet";
 const ATTACK_TX = "36qWxB4cRBwqRiihfHPuo2GWfBXj2AVW26fSrhpeNbGg"; // a fooled AI's payment, blocked (TESTNET-RESULTS §10)
+const REGISTRY_FREEZE_TX = "HM3d2dGMLMmtPBdXaemuS8GCeSeRC2madeHrmD1r9hJY"; // registry's last full-access key deleted (TESTNET-RESULTS §15)
 const TX_URL = (h) => `https://testnet.nearblocks.io/txns/${h}`;
 const ACCOUNT_URL = (a) => `https://testnet.nearblocks.io/address/${a}`;
 const $ = (id) => document.getElementById(id);
@@ -176,6 +177,19 @@ const CHECKS = [
     async run(ev) {
       const s = await view(ev.dep.registry.account, "get_status", { account: ev.dep.demo_accounts.attacker });
       return { ok: s.status === "flagged", detail: `<code>${ev.dep.registry.account}</code>.get_status(<code>${s.account}</code>) → <code>${s.status}</code>, ${s.report_count} reports. Every vault that uses the registry now blocks payments to it.` };
+    },
+  },
+  {
+    claim: "Nobody can change the shared scam registry's code: it has no full-access key",
+    async run(ev) {
+      const reg = ev.dep.registry.account;
+      const [a, ks] = await Promise.all([account(reg), keys(reg)]);
+      const full = ks.filter((k) => k.access_key.permission === "FullAccess").length;
+      return {
+        ok: full === 0 && !!a.code_hash && a.code_hash !== "11111111111111111111111111111111",
+        detail: `view_access_key_list(<code>${reg}</code>): ${ks.length} key${ks.length === 1 ? "" : "s"}, ${full} full-access. Its code (<code>${a.code_hash.slice(0, 8)}…</code>) has no upgrade method, so with no key it can never be replaced. Its last key was deleted in <code>${REGISTRY_FREEZE_TX.slice(0, 4)}…</code>.`,
+        link: TX_URL(REGISTRY_FREEZE_TX),
+      };
     },
   },
   {

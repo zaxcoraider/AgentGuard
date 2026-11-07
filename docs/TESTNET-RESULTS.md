@@ -226,6 +226,20 @@ The four payouts plus one from the smoke test add up to exactly the 0.12 NEAR da
 
 The scan is a heuristic in the MCP server (`packages/mcp/src/inject.ts`, 8 tests including ordinary invoices that must stay clean). It can only make things stricter, and a clean scan proves nothing: the vault's rules still decide.
 
+## 15. The shared registry's code is frozen (2026-11-07)
+
+The scam registry had kept one full-access key, so its code could have been redeployed: a malicious version couldn't move funds, but could block every payment or clear a flagged scammer. That key is now deleted, run by the owner with `scripts/freeze-registry.sh`. The registry contract has no self-upgrade method, so with no key its code can never change.
+
+| What | Result | Tx |
+|---|---|---|
+| Delete the last full-access key of `registry.agentguard.testnet` (signed by the registry itself) | `DeleteKey`, success | [HM3d…](https://testnet.nearblocks.io/txns/HM3d2dGMLMmtPBdXaemuS8GCeSeRC2madeHrmD1r9hJY) |
+| `view_access_key_list` after | no keys | |
+| Code hash before and after | `2ryQ14xfVtB9iieGrtpAAJmeS1BUT4bPuwSL2K3whdN7` (unchanged) | |
+| The registry still answers: `get_status(agentguard-evil.testnet)` | `flagged`, 2 reports | |
+| Curators | `registry.agentguard.testnet` (keyless), `agentguard.testnet` | |
+
+Trade-off: no curator can be added or removed any more, and a bug in the registry can only be fixed by deploying a new one. Checked by the website's "Verify it" and `scripts/verify-evidence.mjs`.
+
 ## What this does not prove yet
 - The owner (`agentguard-user.testnet`) can still change the policy, approve payments and withdraw on these demo vaults. That is intended: it is their money. Vault v2 adds `lock_rules()`, after which nobody, including the owner, can loosen it. Sentinel's vault is locked on testnet (§11).
 - Sybil reports: two throwaway accounts can flag an account. Curators can dismiss, and a flag only blocks payments to that account (it can't move funds).

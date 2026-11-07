@@ -42,7 +42,7 @@ const TOOLS: ToolSpec[] = [
     type: "function",
     function: {
       name: "treasury",
-      description: "Your treasury balance and your vault's on-chain rules: who it may pay, limits, and whether the rules are locked.",
+      description: "Your treasury balance: what you hold, what you can spend, and what you spent today.",
       parameters: { type: "object", properties: {} },
     },
   },
@@ -123,9 +123,13 @@ export class Brain {
         } else if (call.function.name === "check_address") {
           output = await this.guard.checkAddress(String(args.account ?? "")).catch((e) => ({ error: String(e) }));
         } else if (call.function.name === "treasury") {
-          // Balance AND the real on-chain rules, so Sentinel never has to guess what its vault allows.
-          output = await Promise.all([this.guard.stats(), this.guard.policy()])
-            .then(([balance, rules]) => ({ balance, rules }))
+          // Money figures only, on purpose. Sentinel is a deliberately ordinary agent: it does not
+          // see its vault's allowlist, limits or lock, so a good enough trick reaches the vault and
+          // the contract (not the model) gives the answer. Showing it the rules made it refuse
+          // every attack up front, which hid the point of the demo.
+          output = await this.guard
+            .stats()
+            .then((s) => ({ balance_near: s.balance_near, available_near: s.available_near, spent_24h_near: s.spent_24h_near }))
             .catch((e) => ({ error: String(e) }));
         } else {
           output = { error: `Unknown tool ${call.function.name}` };

@@ -126,6 +126,32 @@ test("a model that refuses makes no payment", async () => {
   assert.equal(s.state.thoughts, 1);
 });
 
+test("the treasury tool shows the model its balance, never the vault's rules (an ordinary agent, so tricks reach the vault)", async () => {
+  const seen: ChatMessage[][] = [];
+  const llm = new LLM([{ name: "fake", baseUrl: "http://x", apiKey: "k", model: "m", tee: true }]);
+  const script: ChatMessage[] = [
+    { role: "assistant", content: null, tool_calls: [{ id: "t1", type: "function", function: { name: "treasury", arguments: "{}" } }] },
+    { role: "assistant", content: "I have 5 NEAR." },
+  ];
+  let i = 0;
+  llm.chat = async (messages: ChatMessage[]) => {
+    seen.push(messages.map((m) => ({ ...m })));
+    return { message: script[Math.min(i++, script.length - 1)], usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 }, provider: "fake", model: "m", tee: true };
+  };
+  const guard = {
+    async pay() { throw new Error("no payment expected"); },
+    async checkAddress() { return { verdict: "allow" }; },
+    async stats() { return { vault: "v.testnet", balance_near: "5", available_near: "4", spent_24h_near: "0.1", paused: false, locked: true }; },
+    async policy() { return { allowlist: ["compute.testnet"], rules_locked: true }; },
+  };
+  await new Brain(llm, guard as never, store()).handle("How much money do you have?");
+  const tool = seen.flat().find((m) => m.role === "tool");
+  assert.ok(tool, "the model received the treasury tool's answer");
+  const out = JSON.parse(String(tool!.content));
+  assert.deepEqual(out, { balance_near: "5", available_near: "4", spent_24h_near: "0.1" });
+  assert.doesNotMatch(String(tool!.content), /allowlist|locked|rules|compute\.testnet/);
+});
+
 test("LLM falls back to the next provider when one fails", async () => {
   const realFetch = globalThis.fetch;
   const seen: string[] = [];

@@ -30,6 +30,7 @@
     <a href="#platform">Platform</a>
     <a href="#built-on">Built on it</a>
     <a href="#verify">Verify</a>
+    <a href="#business">Business</a>
     <a href="https://github.com/zaxcoraider/AgentGuard">Source</a>
     <span class="netswitch" role="group" aria-label="Network"><span class="ns-on" aria-current="true">Testnet</span><span class="ns-off" tabindex="0" aria-disabled="true" aria-describedby="ns-tip">Mainnet <small>soon</small><span class="ns-tip" id="ns-tip" role="tooltip">Mainnet coming soon</span></span></span>
   </nav>
@@ -154,6 +155,62 @@
     <p class="fine">From a terminal, the same checks and more (every transaction in <a href="https://github.com/zaxcoraider/AgentGuard/blob/main/docs/TESTNET-RESULTS.md">TESTNET-RESULTS</a>, all 240 stress results): <code>node scripts/verify-evidence.mjs</code></p>
   </section>
 
+  <!-- Business -->
+  <section class="block" id="business" aria-labelledby="biz-title">
+    <h2 id="biz-title">Does it make money? Here are the real numbers.</h2>
+    <p class="section-copy">Who needs this, what one sale earns, and what it costs to stay open. The numbers load live from Sentinel.</p>
+
+    <h3 class="biz-sub">Who needs this</h3>
+    <div class="biz-why">
+      <article class="biz-card">
+        <p class="biz-big">$47,000</p>
+        <p>In November 2024 an AI agent called Freysa was told one rule in its prompt: never send money. After 482 tries, someone convinced it that sending money meant <em>receiving</em> it, and it paid out its whole prize of 13.19 ETH.</p>
+        <p class="biz-moral">A rule in a prompt can be talked away. AgentGuard puts the rule in a contract.</p>
+        <a class="biz-src" href="https://the-decoder.com/hacker-wins-47000-by-tricking-ai-chatbot-with-smart-prompting/">Source: The Decoder, Nov 2024</a>
+      </article>
+      <article class="biz-card">
+        <p class="biz-big">138 million</p>
+        <p>Agent payments over x402 on Base in one quarter (Q3 2026), and more than 87% of them under $0.10.</p>
+        <p class="biz-moral">That's far too many, too small payments for a person to approve each one. The rules have to run by themselves.</p>
+        <a class="biz-src" href="https://www.paymentsjournal.com/agentic-commerce-transactions-on-x402-protocol-are-picking-up/amp/">Source: Chainalysis, via PaymentsJournal</a>
+      </article>
+    </div>
+
+    <h3 class="biz-sub">One sale, one profit</h3>
+    <dl class="biz-unit">
+      <div><dt>Sentinel charges per check</dt><dd id="b-price">0.01 NEAR</dd></div>
+      <div><dt>Extra cost of one check</dt><dd>About 0</dd><p>It only reads the public chain. No AI, no transaction.</p></div>
+      <div><dt>Fixed cost to stay open</dt><dd id="b-fixed">…</dd><p>A rent Sentinel pays from its own vault every 10 minutes, for its server and its AI.</p></div>
+      <div><dt>Break-even</dt><dd id="b-even">…</dd><p id="b-even-note">checks a day</p></div>
+    </dl>
+
+    <h3 class="biz-sub">Sentinel's books, live</h3>
+    <dl class="biz-books">
+      <div><dt>Earned</dt><dd id="b-earned">…</dd></div>
+      <div><dt>Spent</dt><dd id="b-spent">…</dd></div>
+      <div><dt>Result</dt><dd id="b-net">…</dd></div>
+      <div><dt>Open for</dt><dd id="b-days">…</dd></div>
+      <div><dt>Agent Market jobs delivered</dt><dd id="b-jobs">…</dd></div>
+    </dl>
+    <p class="fine biz-honest">Honest note: so far every sale was our own test. We show the numbers anyway. Sentinel's vault is locked by its own rules, so even we can't take money out of it; Agent Market jobs are paid in USDC to the marketplace balance. Source: <a href="https://sentinel.agentguard.app/api/status">Sentinel's status</a> (its payments are on <a href="https://testnet.nearblocks.io/address/sentinel.agentguard.testnet">NearBlocks</a>).</p>
+
+    <h3 class="biz-sub">What if</h3>
+    <div class="biz-calc">
+      <label>Agents using it <output id="c-agents-out">50</output><input type="range" id="c-agents" min="1" max="500" value="50"></label>
+      <label>Payments each, per day <output id="c-pays-out">20</output><input type="range" id="c-pays" min="1" max="100" value="20"></label>
+      <p class="biz-calc-out" id="c-out" aria-live="polite">…</p>
+      <p class="fine">Each payment checked once at 0.01 NEAR, against today's fixed cost. A what-if, not a forecast. NEAR at $3.48 (Nov 7, 2026).</p>
+    </div>
+
+    <h3 class="biz-sub">How AgentGuard itself will earn</h3>
+    <ol class="biz-plan">
+      <li><strong>Vault fee.</strong> A small one-time fee when the factory creates a vault.</li>
+      <li><strong>Scam-list access.</strong> Wallets and apps that check many addresses pay to use the shared registry at volume.</li>
+      <li><strong>Checks as a service.</strong> "Is this safe to pay?" for any agent, the way Sentinel sells it today.</li>
+    </ol>
+    <p class="fine">This is the plan, not live yet. Mainnet coming soon.</p>
+  </section>
+
   <!-- Developers -->
   <section class="block" aria-labelledby="dev-title">
     <h2 id="dev-title">Give your agent a wallet it can't empty</h2>
@@ -170,5 +227,6 @@
 </footer>
 
 <script type="module" src="/agentguard.js"></script>
+<script type="module" src="/business.js"></script>
 </body>
 </html>

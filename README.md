@@ -7,6 +7,7 @@
 <h3 align="center">AI agents are getting wallets, and one fake invoice can talk them into paying a scammer.<br>AgentGuard moves the spending rules out of the prompt and into a NEAR contract.<br>If the AI is fooled, the contract still says no.</h3>
 
 <p align="center">
+  <a href="https://youtu.be/DInKclSnPkc"><img alt="Watch the demo" src="https://img.shields.io/badge/🎬_Watch_the_demo-2_min-C1272D?style=for-the-badge&labelColor=1C2A4A"></a>
   <a href="https://sentinel.agentguard.app"><img alt="Try to rob Sentinel" src="https://img.shields.io/badge/▶_Try_to_rob_Sentinel-live-C1272D?style=for-the-badge&labelColor=1C2A4A"></a>
   <a href="https://agentguard.app/#verify"><img alt="Verify it yourself" src="https://img.shields.io/badge/✓_Verify_it_yourself-7_checks-1F6B4F?style=for-the-badge&labelColor=1C2A4A"></a>
   <a href="https://agentguard.app/console"><img alt="Protect your agent" src="https://img.shields.io/badge/🛡_Protect_your_agent-2_minutes-E9EEE9?style=for-the-badge&labelColor=1C2A4A"></a>

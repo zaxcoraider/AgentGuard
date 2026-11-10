@@ -38,7 +38,7 @@
     "prepublishOnly": "npm test && npm run build"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "1.32.1",
+    "@modelcontextprotocol/sdk": "1.32.2",
     "near-api-js": "7.3.1",
     "zod": "4.6.7"
   },

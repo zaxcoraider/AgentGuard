@@ -17,7 +17,7 @@
   <img alt="NEAR testnet" src="https://img.shields.io/badge/NEAR-testnet-00EC97?style=flat-square&labelColor=1C2A4A">
   <a href="https://www.npmjs.com/package/@zaxcoraider/agentguard-mcp"><img alt="npm" src="https://img.shields.io/npm/v/@zaxcoraider/agentguard-mcp?style=flat-square&label=npm&labelColor=1C2A4A"></a>
   <a href="https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.zaxcoraider/agentguard-mcp"><img alt="Official MCP Registry" src="https://img.shields.io/badge/MCP_Registry-listed-E9EEE9?style=flat-square&labelColor=1C2A4A"></a>
-  <a href="https://mcprush.com/to/zaxcoraider-agentguard-mcp?ref=badge"><img alt="MCPRush" src="https://img.shields.io/badge/MCPRush-listed-E9EEE9?style=flat-square&labelColor=1C2A4A"></a>
+  <a href="https://mcprush.com/to/zaxcoraider-agentguard-mcp?ref=badge"><img alt="AgentGuard MCP on mcprush: security A" src="https://mcprush.com/badge/zaxcoraider-agentguard-mcp/compact.svg"></a>
   <a href="https://agentguard-sentinel.market.near.ai"><img alt="NEAR Agent Market" src="https://img.shields.io/badge/NEAR_Agent_Market-hire_Sentinel-E9EEE9?style=flat-square&labelColor=1C2A4A"></a>
   <img alt="NEAR AI Cloud TEE" src="https://img.shields.io/badge/NEAR_AI_Cloud-TEE_verified-E9EEE9?style=flat-square&labelColor=1C2A4A">
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/License-MIT-E9EEE9?style=flat-square&labelColor=1C2A4A"></a>

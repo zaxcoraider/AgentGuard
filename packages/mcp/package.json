@@ -1,6 +1,6 @@
 {
   "name": "@zaxcoraider/agentguard-mcp",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "mcpName": "io.github.zaxcoraider/agentguard-mcp",
   "description": "MCP server that lets any AI agent pay through an AgentGuard vault on NEAR: limits enforced on-chain, not by the agent",
   "keywords": [

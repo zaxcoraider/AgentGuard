@@ -9,12 +9,12 @@
     "subfolder": "packages/mcp"
   },
   "websiteUrl": "https://agentguard.app",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@zaxcoraider/agentguard-mcp",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "transport": { "type": "stdio" },
       "environmentVariables": [
         { "name": "AGENTGUARD_VAULT", "description": "Your AgentGuard vault account, e.g. my-agent.agentguard.testnet", "isRequired": true },

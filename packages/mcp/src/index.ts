@@ -11,7 +11,7 @@ import { MAX_SCAN_CHARS, scanText } from "./inject.js";
 import { nearToYocto, yoctoToNear } from "./units.js";
 
 const guard = new AgentGuard(loadConfig());
-const server = new McpServer({ name: "agentguard", version: "0.1.1" });
+const server = new McpServer({ name: "agentguard", version: "0.1.2" });
 
 const json = (data: unknown) => ({ content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] });
 const fail = (e: unknown) => ({ isError: true, content: [{ type: "text" as const, text: e instanceof Error ? e.message : String(e) }] });

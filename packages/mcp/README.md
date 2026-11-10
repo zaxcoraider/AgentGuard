@@ -1,5 +1,7 @@
 # AgentGuard MCP server
 
+[![AgentGuard MCP server](https://mcprush.com/badge/zaxcoraider-agentguard-mcp/compact.svg)](https://mcprush.com/to/zaxcoraider-agentguard-mcp?ref=badge)
+
 Lets any MCP agent (Claude Code, Claude Desktop, Codex, ...) pay on NEAR through an **AgentGuard vault**. The agent holds only a function-call key that can *ask* the vault to pay. The vault contract decides on-chain: `paid`, `pending` (waits for the human owner) or `blocked`. A prompt-injected agent can ask for anything; the contract still says no.
 
 ## Tools

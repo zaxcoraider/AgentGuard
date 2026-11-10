@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  typescript:
+    name: MCP server + Sentinel tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            packages/mcp/package-lock.json
+            packages/sentinel/package-lock.json
+
+      - name: MCP server - install
+        working-directory: packages/mcp
+        run: npm ci
+      - name: MCP server - test (24)
+        working-directory: packages/mcp
+        run: npm test
+      - name: MCP server - build
+        working-directory: packages/mcp
+        run: npm run build
+
+      - name: Sentinel - install
+        working-directory: packages/sentinel
+        run: npm ci
+      - name: Sentinel - test (41)
+        working-directory: packages/sentinel
+        run: npm test

@@ -1,0 +1,18 @@
+# Security alerts + weekly update PRs. cooldown: only suggest versions at least
+# 14 days old (supply-chain rule used across this repo).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directories: ["/packages/mcp", "/packages/sentinel"]
+    schedule: { interval: weekly }
+    cooldown: { default-days: 14 }
+    open-pull-requests-limit: 5
+  - package-ecosystem: cargo
+    directories: ["/contracts/vault", "/contracts/factory", "/contracts/registry"]
+    schedule: { interval: weekly }
+    cooldown: { default-days: 14 }
+    open-pull-requests-limit: 5
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly }
+    cooldown: { default-days: 14 }

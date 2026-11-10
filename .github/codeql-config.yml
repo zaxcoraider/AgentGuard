@@ -1,0 +1,3 @@
+# Third-party code copied in as-is (NEAR Connect wallet library); not ours to fix.
+paths-ignore:
+  - packages/sentinel/public/vendor
